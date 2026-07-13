@@ -1,0 +1,181 @@
+/* =======================================================================
+   FILE: style.css (Master CSS - Global Framework)
+   TEMA: Azure Sky Cloud (100% Anti Horizontal Scroll & Sleek UI)
+   STANDAR PENAMAAN: .app- (Modular, Reusable, & Responsive)
+   ======================================================================= */
+
+/* 1. RESET GLOBAL & STRUKTUR ANTI-GESER MUTLAK */
+*, *::before, *::after {
+  box-sizing: border-box !important;
+  margin: 0;
+  padding: 0;
+  min-width: 0; /* Mencegah elemen flex pecah melebihi container */
+}
+
+:root {
+  /* Palet Warna Azure Sky Cloud */
+  --color-primary: #3882F6;
+  --color-primary-hover: #2563EB;
+  --color-primary-light: #F0F9FF;
+  --color-surface: #FFFFFF;
+  --color-background: #E0F2FE;
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #64748B;
+  --color-border: #E2E8F0;
+  --color-danger: #EF4444;
+  --color-success: #10B981;
+
+  /* Kalibrasi Font Sleek Compact (Nyaman & Rapi di HP) */
+  --font-sm: 0.75rem;      /* 12px */
+  --font-base: 0.875rem;   /* 14px */
+  --font-lg: 1.25rem;      /* 20px */
+  
+  /* Layout & Spacing */
+  --pad-input: 0.65rem 0.85rem;
+  --pad-card: 1.75rem 1.5rem;
+  --radius-sm: 6px;
+  --radius-md: 12px;
+}
+
+/* 2. BASE LAYOUT CORE */
+body {
+  font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  background-color: var(--color-background);
+  color: var(--color-text-primary);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  overflow-x: hidden; /* Perlindungan mutlak anti horizontal scroll */
+}
+
+/* 3. KOMPONEN KARTU KONTEN (.app-card) */
+.app-card {
+  background-color: var(--color-surface);
+  width: 100%;
+  max-width: 340px; /* Standar ergonomis di HP & duduk rapi di PC */
+  padding: var(--pad-card);
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.05), 0 8px 10px -6px rgba(15, 23, 42, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.app-title {
+  font-size: var(--font-lg);
+  font-weight: 700;
+  text-align: center;
+  color: var(--color-text-primary);
+  margin-bottom: 0.25rem;
+  letter-spacing: -0.025em;
+}
+
+.app-subtitle {
+  font-size: var(--font-sm);
+  color: var(--color-text-secondary);
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+/* 4. STRUKTUR FORM & ELEMEN INPUT MODULAR */
+.app-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+  margin-bottom: 1rem;
+  position: relative; /* Menampung absolut elemen seperti icon mata */
+}
+
+.app-input-group label {
+  font-weight: 600;
+  font-size: var(--font-sm);
+  color: var(--color-text-primary);
+}
+
+.app-input {
+  width: 100%;
+  padding: var(--pad-input);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-base);
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.app-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px var(--color-primary-light);
+}
+
+.app-input::placeholder {
+  color: var(--color-text-secondary);
+  opacity: 0.6;
+}
+
+/* 5. KOMPONEN TOMBOL UTAMA CORNERSTONE */
+.app-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background-color: var(--color-primary);
+  color: #FFFFFF;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-base);
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  margin-top: 0.5rem;
+}
+
+.app-btn:hover {
+  background-color: var(--color-primary-hover);
+}
+
+.app-btn:active {
+  transform: scale(0.98);
+}
+
+.app-btn:disabled {
+  background-color: var(--color-text-secondary);
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* 6. GLOBAL ALERT / NOTIFIKASI */
+.app-alert {
+  padding: 0.65rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-sm);
+  text-align: center;
+  margin-bottom: 1rem;
+  display: none; /* Dikontrol via JavaScript */
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.app-alert-error {
+  background-color: #FEE2E2;
+  color: var(--color-danger);
+  border: 1px solid #FCA5A5;
+}
+
+.app-alert-success {
+  background-color: #D1FAE5;
+  color: var(--color-success);
+  border: 1px solid #6EE7B7;
+}
+
+/* 7. UTILITY CLASSES COMPONENTS (REUSABLE) */
+.text-center { text-align: center; }
+.mt-2 { margin-top: 0.5rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.w-full { width: 100%; }
