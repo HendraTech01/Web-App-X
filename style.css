@@ -179,3 +179,370 @@ body {
 .mt-2 { margin-top: 0.5rem; }
 .mb-2 { margin-bottom: 0.5rem; }
 .w-full { width: 100%; }
+
+/* =======================================================================
+   SIDEBAR COMPONENT
+   AZURE SKY CLOUD MASTER CSS
+   ======================================================================= */
+
+/* -----------------------------------------------------------------------
+   SIDEBAR CONTAINER
+------------------------------------------------------------------------ */
+
+.app-sidebar-container{
+    width:240px;
+    background:var(--color-surface);
+    border-right:1px solid var(--color-border);
+
+    display:flex;
+    flex-direction:column;
+    flex-shrink:0;
+
+    transition:
+        width .25s ease,
+        transform .25s ease;
+}
+
+.app-sidebar-inner{
+    display:flex;
+    flex-direction:column;
+    height:100%;
+    width:100%;
+}
+
+
+/* -----------------------------------------------------------------------
+   HEADER
+------------------------------------------------------------------------ */
+
+.app-sidebar-header{
+
+    position:relative;
+
+    display:flex;
+    align-items:center;
+    gap:.75rem;
+
+    padding:1.5rem 1.25rem;
+
+    border-bottom:1px solid var(--color-border);
+
+}
+
+.app-sidebar-avatar{
+
+    width:36px;
+    height:36px;
+
+    border-radius:50%;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    background:var(--color-primary-light);
+
+    color:var(--color-primary);
+
+    font-weight:700;
+
+}
+
+.app-sidebar-user-info{
+
+    display:flex;
+    flex-direction:column;
+
+    overflow:hidden;
+
+}
+
+.app-sidebar-username{
+
+    font-size:var(--font-base);
+
+    font-weight:600;
+
+    white-space:nowrap;
+
+    overflow:hidden;
+
+    text-overflow:ellipsis;
+
+}
+
+.app-sidebar-role{
+
+    font-size:11px;
+
+    color:var(--color-text-secondary);
+
+}
+
+.app-menu-close-btn{
+
+    display:none;
+
+}
+
+
+/* -----------------------------------------------------------------------
+   NAVIGATION
+------------------------------------------------------------------------ */
+
+.app-sidebar-nav{
+
+    flex:1;
+
+    display:flex;
+    flex-direction:column;
+
+    gap:.35rem;
+
+    padding:1.25rem .75rem;
+
+    overflow-y:auto;
+    overflow-x:hidden;
+
+}
+
+.app-nav-item{
+
+    display:flex;
+    align-items:center;
+
+    gap:.75rem;
+
+    padding:.65rem .85rem;
+
+    border-radius:var(--radius-sm);
+
+    text-decoration:none;
+
+    color:var(--color-text-secondary);
+
+    font-size:var(--font-base);
+
+    font-weight:500;
+
+    transition:all .2s ease;
+
+}
+
+.app-nav-item:hover{
+
+    color:var(--color-primary);
+
+    background:var(--color-primary-light);
+
+}
+
+.app-nav-item-active{
+
+    background:var(--color-primary-light)!important;
+
+    color:var(--color-primary)!important;
+
+    font-weight:600;
+
+}
+
+
+/* -----------------------------------------------------------------------
+   FOOTER
+------------------------------------------------------------------------ */
+
+.app-sidebar-footer{
+
+    flex-shrink:0;
+
+    padding:1rem .75rem;
+
+    border-top:1px solid var(--color-border);
+
+}
+
+.app-logout-btn{
+
+    width:100%;
+
+    padding:.6rem;
+
+    border-radius:var(--radius-sm);
+
+    border:1px solid #fee2e2;
+
+    background:none;
+
+    color:var(--color-danger);
+
+    cursor:pointer;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    gap:.5rem;
+
+    font-weight:600;
+
+    transition:.2s;
+
+}
+
+.app-logout-btn:hover{
+
+    background:#fff5f5;
+
+}
+
+
+/* -----------------------------------------------------------------------
+   MAIN CONTENT
+------------------------------------------------------------------------ */
+
+.app-main-content{
+
+    flex:1;
+
+    min-width:0;
+
+    display:flex;
+    flex-direction:column;
+
+    transition:all .25s ease;
+
+}
+
+
+/* -----------------------------------------------------------------------
+   MOBILE HEADER
+------------------------------------------------------------------------ */
+
+.app-mobile-header{
+
+    display:none;
+
+    align-items:center;
+    justify-content:space-between;
+
+    padding:.75rem 1rem;
+
+    background:var(--color-surface);
+
+    border-bottom:1px solid var(--color-border);
+
+}
+
+.app-hamburger-btn{
+
+    background:none;
+
+    border:none;
+
+    cursor:pointer;
+
+    display:flex;
+
+    align-items:center;
+
+    padding:.25rem;
+
+}
+
+
+/* -----------------------------------------------------------------------
+   CONTENT
+------------------------------------------------------------------------ */
+
+.app-content-body{
+
+    flex:1;
+
+    padding:1.5rem;
+
+    overflow-y:auto;
+
+}
+
+
+/* -----------------------------------------------------------------------
+   DESKTOP COLLAPSE
+------------------------------------------------------------------------ */
+
+body.sidebar-collapse .app-sidebar-container{
+
+    width:0;
+
+    overflow:hidden;
+
+    border-right:none;
+
+}
+
+
+/* -----------------------------------------------------------------------
+   RESPONSIVE
+------------------------------------------------------------------------ */
+
+@media (max-width:768px){
+
+    .app-mobile-header{
+
+        display:flex;
+
+    }
+
+    .app-sidebar-container{
+
+        display:none;
+
+    }
+
+    body.menu-mode-active .app-sidebar-container{
+
+        display:flex !important;
+
+        position:fixed;
+
+        inset:0;
+
+        width:100vw;
+
+        height:100vh;
+
+        z-index:9999;
+
+        overflow-y:auto;
+
+        overflow-x:hidden;
+
+        -webkit-overflow-scrolling:touch;
+
+    }
+
+    body.menu-mode-active .app-main-content{
+
+        display:none;
+
+    }
+
+    body.menu-mode-active .app-menu-close-btn{
+
+        display:flex;
+
+        position:absolute;
+
+        right:1rem;
+
+        top:1.5rem;
+
+        background:none;
+
+        border:none;
+
+        cursor:pointer;
+
+    }
+
+}
