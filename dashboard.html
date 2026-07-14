@@ -7,246 +7,8 @@
   
   <link rel="stylesheet" href="style.css">
 
-  <style>
-    /* Bodi diubah menjadi layout Flex mendatar untuk menampung Sidebar di kiri & Konten di kanan */
-    body {
-      padding: 0 !important;
-      align-items: stretch !important;
-      justify-content: flex-start !important;
-      background-color: #F8FAFC !important; /* Latar belakang area konten abu-abu sangat bersih */
-    }
-
-    /* Induk Wadah Layout Utama */
-    .app-layout-wrapper {
-      display: flex;
-      width: 100%;
-      min-height: 100vh;
-    }
-
-    /* -------------------------------------------------------------
-       CSS SIDEBAR COMPONENT STRUCTURE (TEMA MASTER & REUSABLE)
-       ------------------------------------------------------------- */
-    .app-sidebar-container {
-      width: 240px;
-      background-color: var(--color-surface);
-      border-right: 1px solid var(--color-border);
-      display: flex;
-      flex-direction: column;
-      flex-shrink: 0;
-    }
-
-    .app-sidebar-inner {
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-      width: 100%;
-    }
-
-    .app-sidebar-header {
-      padding: 1.5rem 1.25rem;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      border-bottom: 1px solid var(--color-border);
-      position: relative;
-    }
-
-    .app-sidebar-avatar {
-      width: 36px;
-      height: 36px;
-      background-color: var(--color-primary-light);
-      color: var(--color-primary);
-      font-weight: 700;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .app-sidebar-user-info {
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-
-    .app-sidebar-username {
-      font-size: var(--font-base);
-      font-weight: 600;
-      color: var(--color-text-primary);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .app-sidebar-role {
-      font-size: 11px;
-      color: var(--color-text-secondary);
-    }
-
-    .app-menu-close-btn {
-      display: none; /* Hanya muncul di portrait mobile */
-    }
-
-    .app-sidebar-nav {
-      padding: 1.25rem 0.75rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-      flex-grow: 1;
-    }
-
-    .app-nav-item {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.65rem 0.85rem;
-      color: var(--color-text-secondary);
-      text-decoration: none;
-      font-size: var(--font-base);
-      font-weight: 500;
-      border-radius: var(--radius-sm);
-      transition: all 0.2s ease;
-    }
-
-    .app-nav-item:hover {
-      color: var(--color-primary);
-      background-color: var(--color-primary-light);
-    }
-
-    .app-nav-item-active {
-      color: var(--color-primary) !important;
-      background-color: var(--color-primary-light) !important;
-      font-weight: 600;
-    }
-
-    .app-sidebar-footer {
-      padding: 1rem 0.75rem;
-      border-top: 1px solid var(--color-border);
-    }
-
-    .app-logout-btn {
-      width: 100%;
-      background: none;
-      border: 1px solid #fee2e2;
-      color: var(--color-danger);
-      padding: 0.6rem;
-      border-radius: var(--radius-sm);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      font-size: var(--font-base);
-      font-weight: 600;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-
-    .app-logout-btn:hover {
-      background-color: #fff5f5;
-    }
-
-    /* -------------------------------------------------------------
-       AREA KONTEN UTAMA (MAIN CONTENT ZONE)
-       ------------------------------------------------------------- */
-    .app-main-content {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-    }
-
-    /* Mobile Top Header (Untuk Portrait Mobile) */
-    .app-mobile-header {
-      background-color: var(--color-surface);
-      border-bottom: 1px solid var(--color-border);
-      padding: 0.75rem 1rem;
-      display: none; /* Tersembunyi di landscape PC */
-      align-items: center;
-      justify-content: space-between;
-    }
-
-    .app-hamburger-btn {
-      background: none;
-      border: none;
-      cursor: pointer;
-      color: var(--color-text-primary);
-      display: flex;
-      align-items: center;
-      padding: 0.25rem;
-    }
-
-    .app-content-body {
-      padding: 1.5rem;
-      overflow-y: auto;
-      flex-grow: 1;
-    }
-
-    /* Gaya Khusus Card Pilihan Menu di Dashboard */
-    .menu-grid {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 1.25rem;
-      margin-top: 1.25rem;
-    }
-
-    .menu-choice-card {
-      max-width: 100% !important;
-      margin: 0 !important;
-      cursor: pointer;
-      border: 1px solid var(--color-border);
-      text-decoration: none;
-    }
-
-    .menu-choice-card:hover {
-      transform: translateY(-2px);
-      border-color: var(--color-primary);
-      box-shadow: 0 12px 20px -8px rgba(56, 130, 246, 0.15);
-    }
-
-    /* -------------------------------------------------------------
-       ATURAN RESPONSIVE PORTRAIT MUTLAK (SOP SYARAT EKSKLUSIF)
-       ------------------------------------------------------------- */
-    @media (max-width: 768px) and (orientation: portrait), (max-width: 576px) {
-      .app-mobile-header {
-        display: flex; /* Tampilkan top bar untuk memicu menu */
-      }
-
-      /* Bawaan portrait: Sembunyikan sidebar ke latar belakang */
-      .app-sidebar-container {
-        display: none;
-      }
-
-      /* LOGIKA LOGIS: JIKA SIDESHOW AKTIF (DIKETUK) */
-      body.menu-mode-active .app-sidebar-container {
-        display: flex !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        position: fixed;
-        top: 0;
-        left: 0;
-        z-index: 9999;
-      }
-
-      /* SYARAT KETAT ANDA: KONTEN LAIN HILANG TOTAL HANYA MENU SAJA */
-      body.menu-mode-active .app-main-content {
-        display: none !important;
-      }
-
-      /* Tampilkan tombol silang penutup khusus di portrait */
-      body.menu-mode-active .app-menu-close-btn {
-        display: flex;
-        position: absolute;
-        right: 1rem;
-        top: 1.5rem;
-        background: none;
-        border: none;
-        color: var(--color-text-secondary);
-        cursor: pointer;
-      }
-    }
-  </style>
 </head>
-<body>
+<body class="dashboard-page">
 
   <script>
     if (!localStorage.getItem("wax_logged_user")) {
@@ -262,7 +24,7 @@
     <div class="app-main-content">
       
       <header class="app-mobile-header">
-        <div class="app-title" style="font-size: 1rem; margin: 0;">Web App X</div>
+        <div class="app-title app-header-title">Web App X</div>
         <button type="button" class="app-hamburger-btn" onclick="toggleMobileMenu()" title="Buka Menu">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="3" y1="12" x2="21" y2="12"></line>
@@ -273,18 +35,18 @@
       </header>
 
       <main class="app-content-body">
-        <div class="app-title" style="text-align: left; font-size: 1.4rem;">Dashboard Utama</div>
-        <p style="font-size: var(--font-sm); color: var(--color-text-secondary); margin-top: 0.2rem;">
+        <div class="app-title app-page-title">Dashboard Utama</div>
+        <p class="page-subtitle">
           Selamat datang kembali di pusat kendali operasional internal sistem.
         </p>
 
         <div class="menu-grid">
           
           <a href="eupd.html" class="app-card menu-choice-card">
-            <div class="app-title" style="text-align: left; font-size: 1.05rem; color: var(--color-primary);">
+            <div class="app-title menu-card-title">
               Form Pengajuan EUPD
             </div>
-            <p style="font-size: var(--font-sm); color: var(--color-text-secondary); margin-top: 0.4rem; line-height: 1.4;">
+            <p class="menu-card-description">
               Akses cepat pengisian lembar penugasan, master data armada kendaraan, dan input rincian biaya langsung ke Google Sheets.
             </p>
           </a>
