@@ -201,6 +201,7 @@ body {
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  transition: width 0.25s ease, opacity 0.25s ease;
 }
 
 .app-sidebar-inner {
@@ -208,6 +209,7 @@ body {
   flex-direction: column;
   height: 100%;
   width: 100%;
+  transition: opacity 0.25s ease;
 }
 
 .app-sidebar-header {
@@ -324,9 +326,15 @@ body {
   background-color: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
   padding: 0.75rem 1rem;
-  display: none;
+  display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 1rem;
+}
+
+.app-mobile-header .app-title {
+  flex: 1;
+  margin: 0;
 }
 
 .app-hamburger-btn {
@@ -337,6 +345,43 @@ body {
   display: flex;
   align-items: center;
   padding: 0.25rem;
+  order: -1;
+}
+
+.app-hamburger-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+body.sidebar-collapsed .app-sidebar-container {
+  width: 0;
+  min-width: 0;
+  overflow: hidden;
+  border-right: none;
+}
+
+body.sidebar-collapsed .app-sidebar-inner {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+body.sidebar-collapsed .app-main-content {
+  width: 100%;
+  margin-left: 0;
+}
+
+.app-menu-close-btn {
+  display: none;
+  position: absolute;
+  left: 1rem;
+  top: 1.25rem;
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
 }
 
 .app-content-body {
@@ -396,10 +441,6 @@ body {
 }
 
 @media (max-width: 768px), (orientation: landscape) and (max-width: 1024px) {
-  .app-mobile-header {
-    display: flex;
-  }
-
   .app-sidebar-container {
     display: none;
   }
