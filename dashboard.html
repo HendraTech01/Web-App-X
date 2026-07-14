@@ -19,7 +19,10 @@
   <div class="app-layout-wrapper">
     
     <div id="sidebar-slot" class="app-sidebar-container">
+      <div class="app-sidebar-inner" style="display:flex;justify-content:center;align-items:center;height:100%;padding:1.5rem;color:var(--color-text-secondary);">
+        Memuat menu...
       </div>
+    </div>
 
     <div class="app-main-content">
       
@@ -60,6 +63,7 @@
   <script>
     // Eksekusi pemanggilan komponen menu otomatis ketika halaman siap dibuka
     document.addEventListener("DOMContentLoaded", loadSidebar);
+    loadSidebar();
   </script>
 </body>
 </html>
