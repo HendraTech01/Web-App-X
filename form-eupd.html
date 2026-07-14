@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Form EUPD - Web App X</title>
   <link rel="stylesheet" href="style.css">
+  <script src="app.js"></script>
   <style>
     body { padding: 0 !important; align-items: stretch !important; justify-content: flex-start !important; background-color: #F8FAFC !important; }
     .app-layout-wrapper { display: flex; width: 100%; min-height: 100vh; }
@@ -279,12 +280,7 @@
     // 1. MEMUAT SIDEBAR & MASTER DATA SHEET
     async function initForm() {
       try {
-        const resMenu = await fetch("menu.html");
-        if (resMenu.ok) {
-          document.getElementById("sidebar-slot").innerHTML = await resMenu.text();
-          const script = document.getElementById("sidebar-slot").querySelector("script");
-          if (script) eval(script.innerHTML);
-        }
+        await loadSidebar();
 
         // Set Tanggal Hari Ini & Jadwal Berangkat
         const now = new Date().toISOString().split("T")[0];
@@ -512,15 +508,6 @@
       const grandTotal = totUangMakan + totBBM + totInap + totLain;
       document.getElementById("grand-total-display").innerText = "Rp " + grandTotal.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       document.getElementById("Total Biaya Keseluruhan").value = grandTotal;
-    }
-
-    function toggleMobileMenu() {
-      document.body.classList.toggle('menu-mode-active');
-    }
-
-    function handleLogout() {
-      localStorage.removeItem('wax_logged_user');
-      window.location.replace('index.html');
     }
 
     // 5. SUBMIT FORM KE BACKEND GAS
