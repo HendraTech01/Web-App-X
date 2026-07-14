@@ -6,7 +6,7 @@
   <title>Dashboard - Web App X</title>
   
   <link rel="stylesheet" href="style.css">
-
+  <script src="app.js"></script>
 </head>
 <body class="dashboard-page">
 
@@ -58,40 +58,8 @@
   </div>
 
   <script>
-    // 1. FUNGSI LOAD FILE COMPONENT secara Asynchronous (Reusable Fetch)
-    async function loadSidebarComponent() {
-      try {
-        const response = await fetch("menu.html");
-        if (response.ok) {
-          const htmlContent = await response.text();
-          document.getElementById("sidebar-slot").innerHTML = htmlContent;
-          
-          // Re-trigger script internal di menu.html agar nama user muncul setelah diinject
-          const scriptElement = document.getElementById("sidebar-slot").querySelector("script");
-          if (scriptElement) {
-            eval(scriptElement.innerHTML);
-          }
-        } else {
-          document.getElementById("sidebar-slot").innerHTML = "<p style='padding:1rem;color:red;'>Gagal memuat komponen menu.</p>";
-        }
-      } catch (error) {
-        console.error("Error modular component loading:", error);
-      }
-    }
-
-    // 2. FUNGSI PEMICU BUKA/TUTUP MENU SECARA RESPONSIF PORTRAIT MUTLAK
-    function toggleMobileMenu() {
-      document.body.classList.toggle("menu-mode-active");
-    }
-
-    // 3. FUNGSI LOGOUT (HAPUS SESI DAN BALIK KE GERBANG PENGHUBUNG)
-    function handleLogout() {
-      localStorage.removeItem("wax_logged_user");
-      window.location.replace("index.html");
-    }
-
     // Eksekusi pemanggilan komponen menu otomatis ketika halaman siap dibuka
-    document.addEventListener("DOMContentLoaded", loadSidebarComponent);
+    document.addEventListener("DOMContentLoaded", loadSidebar);
   </script>
 </body>
 </html>
