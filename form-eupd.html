@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form EUPD - Web App X</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { padding: 0 !important; align-items: stretch !important; justify-content: flex-start !important; background-color: #F8FAFC !important; }
+    .app-layout-wrapper { display: flex; width: 100%; min-height: 100vh; }
+    .app-sidebar-container { width: 240px; background-color: var(--color-surface); border-right: 1px solid var(--color-border); display: flex; flex-direction: column; flex-shrink: 0; }
+    .app-main-content { flex-grow: 1; display: flex; flex-direction: column; min-width: 0; }
+    .app-mobile-header { background-color: var(--color-surface); border-bottom: 1px solid var(--color-border); padding: 0.75rem 1rem; display: none; align-items: center; justify-content: space-between; }
+    .app-hamburger-btn { background: none; border: none; cursor: pointer; color: var(--color-text-primary); padding: 0.25rem; }
+    .app-content-body { padding: 1.5rem; overflow-y: auto; flex-grow: 1; }
+    
+    /* Layout Kartu Form & Grid */
+    .form-section-card { background: white; border-radius: var(--radius-md); border: 1px solid var(--color-border); padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.02); max-width: 100% !important; }
+    .section-header { font-size: 1.1rem; font-weight: 700; color: var(--color-primary); margin-bottom: 1.25rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--color-primary-light); display: flex; align-items: center; gap: 0.5rem; }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+    .grid-4 { display: grid; grid-template-columns: 1.5fr 1fr 1fr 1fr; gap: 1rem; }
+    
+    /* Autocomplete Typeahead Dropdown */
+    .autocomplete-wrapper { position: relative; width: 100%; }
+    .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; z-index: 1000; background: white; border: 1px solid var(--color-primary); border-radius: 0 0 var(--radius-sm) var(--radius-sm); max-height: 180px; overflow-y: auto; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); display: none; }
+    .autocomplete-item { padding: 0.65rem 0.85rem; font-size: var(--font-sm); cursor: pointer; border-bottom: 1px solid #F1F5F9; }
+    .autocomplete-item:hover { background-color: var(--color-primary-light); color: var(--color-primary); font-weight: 600; }
+    
+    /* Dynamic Item Row (Bundle/Multi) */
+    .dynamic-row { background: #F8FAFC; border: 1px dashed #CBD5E1; padding: 1rem; border-radius: var(--radius-sm); margin-bottom: 1rem; position: relative; }
+    .btn-remove-row { position: absolute; top: 0.5rem; right: 0.5rem; background: #FEE2E2; color: #EF4444; border: none; border-radius: 4px; padding: 0.25rem 0.5rem; font-size: 11px; font-weight: 600; cursor: pointer; }
+    .btn-add-row { width: auto; padding: 0.5rem 1rem; background-color: var(--color-primary-light); color: var(--color-primary); border: 1px dashed var(--color-primary); border-radius: var(--radius-sm); font-size: var(--font-sm); font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem; margin-top: 0.25rem; }
+    .btn-add-row:hover { background-color: #E0F2FE; }
+    
+    /* Grand Total Box */
+    .grand-total-box { background: linear-gradient(135deg, #1E3A8A, #3B82F6); color: white; padding: 1.5rem; border-radius: var(--radius-md); text-align: right; margin-top: 2rem; box-shadow: 0 10px 20px -5px rgba(59, 130, 246, 0.3); }
+    .grand-total-label { font-size: var(--font-base); font-weight: 500; opacity: 0.9; }
+    .grand-total-value { font-size: 1.8rem; font-weight: 800; margin-top: 0.2rem; }
+    
+    /* Proteksi Responsif Mobile */
+    @media (max-width: 768px) and (orientation: portrait), (max-width: 576px) {
+      .app-mobile-header { display: flex; }
+      .app-sidebar-container { display: none; }
+      body.menu-mode-active .app-sidebar-container { display: flex !important; width: 100vw !important; height: 100vh !important; position: fixed; top: 0; left: 0; z-index: 9999; }
+      body.menu-mode-active .app-main-content { display: none !important; }
+      body.menu-mode-active .app-menu-close-btn { display: flex; position: absolute; right: 1rem; top: 1.5rem; background: none; border: none; color: var(--color-text-secondary); cursor: pointer; }
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr !important; gap: 0.75rem; }
+      .grand-total-box { text-align: center; }
+    }
+  </style>
+</head>
+<body>
+  <script>if (!localStorage.getItem("wax_logged_user")) window.location.replace("login.html");</script>
+
+  <div class="app-layout-wrapper">
+    <div id="sidebar-slot" class="app-sidebar-container"></div>
+
+    <div class="app-main-content">
+      <header class="app-mobile-header">
+        <div class="app-title" style="font-size: 1rem; margin: 0;">Web App X</div>
+        <button type="button" class="app-hamburger-btn" onclick="document.body.classList.toggle('menu-mode-active')">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+      </header>
+
+      <main class="app-content-body">
+        <div class="app-title" style="text-align: left; font-size: 1.4rem;">Form Pengajuan EUPD</div>
+        <p style="font-size: var(--font-sm); color: var(--color-text-secondary); margin-bottom: 1.5rem;">Lengkapi rincian penugasan dan estimasi biaya operasional di bawah ini.</p>
+
+        <div id="form-alert" class="app-alert"></div>
+
+        <form id="form-eupd-main" onsubmit="handleSimpanEUPD(event)">
+          
+          <div class="form-section-card">
+            <div class="section-header">📌 1. Informasi Dokumen & Armada</div>
+            <div class="grid-3">
+              <div class="app-input-group">
+                <label>Nomor Pengajuan EUPD (#1)</label>
+                <input type="text" class="app-input" value="Generate Otomatis Saat Disimpan" disabled style="background:#F1F5F9; font-style:italic; font-size:12px;">
+              </div>
+              <div class="app-input-group">
+                <label for="Tanggal Dokumen">Tanggal Dokumen (#2)</label>
+                <input type="date" id="Tanggal Dokumen" name="Tanggal Dokumen" class="app-input" required>
+              </div>
+              <div class="app-input-group">
+                <label for="Pembuat Dokumen">Nama Pembuat (#3) [Manual]</label>
+                <input type="text" id="Pembuat Dokumen" name="Pembuat Dokumen" class="app-input" placeholder="Ketik nama pembuat..." required>
+              </div>
+            </div>
+            <div class="grid-3 mt-2">
+              <div class="app-input-group">
+                <label for="Warehouse Asal">Warehouse Asal (#4)</label>
+                <div class="autocomplete-wrapper">
+                  <input type="text" id="Warehouse Asal" name="Warehouse Asal" class="app-input" placeholder="Ketik WH (cth: Bitung)..." required oninput="filterAutocomplete(this, masterWH, 'nama')">
+                  <div class="autocomplete-list"></div>
+                </div>
+              </div>
+              <div class="app-input-group">
+                <label for="No Kendaraan">No Kendaraan (#6)</label>
+                <div class="autocomplete-wrapper">
+                  <input type="text" id="No Kendaraan" name="No Kendaraan" class="app-input" placeholder="Ketik Nopol (cth: KT)..." required oninput="filterAutocomplete(this, masterKendaraan, 'nopol', selectKendaraanCallback)">
+                  <div class="autocomplete-list"></div>
+                </div>
+              </div>
+              <div class="app-input-group">
+                <label for="Jenis Kendaraan">Jenis Kendaraan (#7)</label>
+                <input type="text" id="Jenis Kendaraan" name="Jenis Kendaraan" class="app-input" readonly style="background:#F1F5F9;" placeholder="Terisi otomatis...">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section-card">
+            <div class="section-header">📌 2. Tim Perjalanan (Driver & Karyawan)</div>
+            <div class="grid-2">
+              <div>
+                <label style="font-weight:600; font-size:var(--font-sm); display:block; margin-bottom:0.35rem;">Nama Driver (#5) [Bisa Lebih dari 1]</label>
+                <div id="driver-container">
+                  <div class="autocomplete-wrapper mb-2 driver-row">
+                    <input type="text" class="app-input driver-input" placeholder="Ketik nama driver..." required oninput="filterAutocomplete(this, masterDriver, 'nama', updateJumlahKaryawan)">
+                    <div class="autocomplete-list"></div>
+                  </div>
+                </div>
+                <button type="button" class="btn-add-row" onclick="addDriverRow()">+ Tambah Driver</button>
+              </div>
+              <div class="app-input-group">
+                <label for="Jumlah Karyawan">Jumlah Karyawan (#12) [Auto-Count]</label>
+                <input type="number" id="Jumlah Karyawan" name="Jumlah Karyawan" class="app-input" value="1" readonly style="background:#F1F5F9; font-weight:700; color:var(--color-primary);">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section-card">
+            <div class="section-header">📌 3. Tujuan & Jadwal Perjalanan</div>
+            <div class="grid-3 mb-2">
+              <div class="app-input-group">
+                <label for="Jadwal Berangkat">Jadwal Berangkat (#8)</label>
+                <input type="date" id="Jadwal Berangkat" name="Jadwal Berangkat" class="app-input" required onchange="hitungSelisihHari()">
+              </div>
+              <div class="app-input-group">
+                <label for="Jadwal Sampai">Jadwal Pulang (#8)</label>
+                <input type="date" id="Jadwal Sampai" name="Jadwal Sampai" class="app-input" required onchange="hitungSelisihHari()">
+              </div>
+              <div class="app-input-group">
+                <label for="Jumlah Hari">Jumlah Hari Perjalanan (#13)</label>
+                <input type="number" id="Jumlah Hari" name="Jumlah Hari" class="app-input" value="1" readonly style="background:#F1F5F9; font-weight:700;">
+              </div>
+            </div>
+            
+            <label style="font-weight:600; font-size:var(--font-sm); display:block; margin-top:1rem; margin-bottom:0.35rem;">Paket Pemesan, Tujuan, & Alamat (#9, #10, #11) [Kesatuan]</label>
+            <div id="tujuan-container">
+              <div class="dynamic-row tujuan-bundle">
+                <div class="grid-3">
+                  <div class="autocomplete-wrapper">
+                    <input type="text" class="app-input input-pemesan" placeholder="Pemesan (#9)..." required oninput="filterAutocomplete(this, masterPemesan, 'nama')">
+                    <div class="autocomplete-list"></div>
+                  </div>
+                  <div class="autocomplete-wrapper">
+                    <input type="text" class="app-input input-tujuan" placeholder="Nama Tujuan (#10)..." required oninput="filterAutocomplete(this, masterTujuan, 'nama')">
+                    <div class="autocomplete-list"></div>
+                  </div>
+                  <div>
+                    <input type="text" class="app-input input-alamat" placeholder="Alamat Manual (#11)..." required>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <button type="button" class="btn-add-row" onclick="addTujuanRow()">+ Tambah Tujuan/Pemesan</button>
+          </div>
+
+          <div class="form-section-card">
+            <div class="section-header">📌 4. Biaya Uang Makan</div>
+            <div class="grid-2">
+              <div class="app-input-group">
+                <label for="Uang Makan Per Hari">Uang Makan Per Hari / Orang (#14) [Ketik Angka Bulat]</label>
+                <input type="text" id="Uang Makan Per Hari" class="app-input" placeholder="Cth: 50000" required oninput="cleanNumberInput(this); calculateAll();" onblur="formatDecimalDisplay(this)">
+              </div>
+              <div class="app-input-group">
+                <label for="Total Uang Makan">Total Uang Makan (#15) [Auto-Calc]</label>
+                <input type="text" id="Total Uang Makan" name="Total Uang Makan" class="app-input" readonly style="background:#F1F5F9; font-weight:700;">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section-card">
+            <div class="section-header">📌 5. Konsumsi BBM (Berangkat & Pulang)</div>
+            <div id="bbm-container">
+              <div class="dynamic-row bbm-bundle" data-tipe="berangkat">
+                <span style="font-size:12px; font-weight:700; color:#1E40AF; display:block; margin-bottom:0.5rem;">🚀 BBM Rute Berangkat (#16, #17, #18)</span>
+                <div class="grid-4">
+                  <input type="text" class="app-input bbm-jenis" placeholder="Jenis BBM (Pertalite/Solar)...">
+                  <input type="number" class="app-input bbm-jarak" placeholder="Jarak (KM)...">
+                  <input type="number" step="any" class="app-input bbm-liter" placeholder="Jumlah (Liter)..." oninput="calcBBMRow(this)">
+                  <input type="text" class="app-input bbm-harga" placeholder="Harga/Liter (Rp)..." oninput="cleanNumberInput(this); calcBBMRow(this);" onblur="formatDecimalDisplay(this)">
+                </div>
+                <div class="mt-2 text-right" style="font-size:13px; font-weight:600;">Total BBM Berangkat: Rp <span class="bbm-total-display">0,00</span></div>
+                <input type="hidden" class="bbm-total-val" value="0">
+              </div>
+
+              <div class="dynamic-row bbm-bundle" data-tipe="pulang">
+                <span style="font-size:12px; font-weight:700; color:#065F46; display:block; margin-bottom:0.5rem;">🏁 BBM Rute Pulang (#16, #17, #18)</span>
+                <div class="grid-4">
+                  <input type="text" class="app-input bbm-jenis" placeholder="Jenis BBM (Pertalite/Solar)...">
+                  <input type="number" class="app-input bbm-jarak" placeholder="Jarak (KM)...">
+                  <input type="number" step="any" class="app-input bbm-liter" placeholder="Jumlah (Liter)..." oninput="calcBBMRow(this)">
+                  <input type="text" class="app-input bbm-harga" placeholder="Harga/Liter (Rp)..." oninput="cleanNumberInput(this); calcBBMRow(this);" onblur="formatDecimalDisplay(this)">
+                </div>
+                <div class="mt-2 text-right" style="font-size:13px; font-weight:600;">Total BBM Pulang: Rp <span class="bbm-total-display">0,00</span></div>
+                <input type="hidden" class="bbm-total-val" value="0">
+              </div>
+            </div>
+            <button type="button" class="btn-add-row" onclick="addBBMRow()">+ Tambah Data BBM Tambahan</button>
+          </div>
+
+          <div class="form-section-card">
+            <div class="section-header">📌 6. Biaya Penginapan</div>
+            <div class="grid-3">
+              <div class="app-input-group">
+                <label for="Jumlah Hari Menginap">Hari Menginap (#19) [Auto/Edit]</label>
+                <input type="number" id="Jumlah Hari Menginap" name="Jumlah Hari Menginap" class="app-input" value="0" oninput="calculateAll()">
+              </div>
+              <div class="app-input-group">
+                <label for="Biaya Penginapan Per Hari">Biaya / Hari / Driver (#19)</label>
+                <input type="text" id="Biaya Penginapan Per Hari" class="app-input" placeholder="Cth: 250000" oninput="cleanNumberInput(this); calculateAll();" onblur="formatDecimalDisplay(this)">
+              </div>
+              <div class="app-input-group">
+                <label for="Total Biaya Penginapan">Total Penginapan (#20) [Auto]</label>
+                <input type="text" id="Total Biaya Penginapan" name="Total Biaya Penginapan" class="app-input" readonly style="background:#F1F5F9; font-weight:700;">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-section-card">
+            <div class="section-header">📌 7. Biaya Lain-lain & Grand Total</div>
+            <label style="font-weight:600; font-size:var(--font-sm); display:block; margin-bottom:0.35rem;">Rincian Biaya Lain-lain (#21) [Kesatuan]</label>
+            <div id="biaya-container">
+              <div class="dynamic-row biaya-bundle">
+                <div class="grid-3">
+                  <input type="text" class="app-input biaya-nama" placeholder="Nama Biaya (cth: Buruh, Tol)...">
+                  <input type="number" class="app-input biaya-qty" placeholder="Kuantiti..." value="1" oninput="calcBiayaRow(this)">
+                  <input type="text" class="app-input biaya-harga" placeholder="Harga Satuan (Rp)..." oninput="cleanNumberInput(this); calcBiayaRow(this);" onblur="formatDecimalDisplay(this)">
+                </div>
+                <div class="mt-2 text-right" style="font-size:13px; font-weight:600;">Subtotal: Rp <span class="biaya-subtotal-display">0,00</span></div>
+                <input type="hidden" class="biaya-subtotal-val" value="0">
+              </div>
+            </div>
+            <button type="button" class="btn-add-row" onclick="addBiayaRow()">+ Tambah Biaya Lain</button>
+
+            <div class="grand-total-box">
+              <div class="grand-total-label">TOTAL BIAYA KESELURUHAN (#22)</div>
+              <div class="grand-total-value" id="grand-total-display">Rp 0,00</div>
+              <input type="hidden" id="Total Biaya Keseluruhan" name="Total Biaya Keseluruhan" value="0">
+            </div>
+          </div>
+
+          <button type="submit" id="btn-simpan-eupd" class="app-btn" style="padding: 1rem; font-size: 1.1rem;">💾 Simpan & Terbitkan Pengajuan EUPD</button>
+        </form>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // GANTI URL DI BAWAH INI DENGAN URL WEB APP GAS ANDA
+    const GAS_URL = "https://script.google.com/macros/s/MASUKKAN_URL_WEB_APP_ANDA_DISINI/exec";
+
+    let masterWH = [], masterKendaraan = [], masterDriver = [], masterPemesan = [], masterTujuan = [];
+
+    // 1. MEMUAT SIDEBAR & MASTER DATA SHEET
+    async function initForm() {
+      try {
+        const resMenu = await fetch("menu.html");
+        if (resMenu.ok) {
+          document.getElementById("sidebar-slot").innerHTML = await resMenu.text();
+          const script = document.getElementById("sidebar-slot").querySelector("script");
+          if (script) eval(script.innerHTML);
+        }
+
+        // Set Tanggal Hari Ini & Jadwal Berangkat
+        const now = new Date().toISOString().split("T")[0];
+        document.getElementById("Tanggal Dokumen").value = now;
+        document.getElementById("Jadwal Berangkat").value = now;
+        document.getElementById("Jadwal Sampai").value = now;
+        
+        // Isi default pembuat dari user login jika kosong
+        const logged = localStorage.getItem("wax_logged_user") || "";
+        document.getElementById("Pembuat Dokumen").value = logged;
+
+        // Fetch Master Dropdown dari GAS
+        fetchMaster("ListWH", data => masterWH = data.map(d => ({ nama: d.Nama || d.nama })));
+        fetchMaster("ListKendaraan", data => masterKendaraan = data.map(d => ({ nopol: d["Nomor Polisi Kendaraan"] || d.nopol, jenis: d["Jenis Kendaraan"] || d.jenis || "" })));
+        fetchMaster("ListTeamSupplyChain", data => masterDriver = data.map(d => ({ nama: d.Nama || d.nama })));
+        fetchMaster("ListPemesan", data => masterPemesan = data.map(d => ({ nama: d.Nama || d.nama })));
+        fetchMaster("ListTujuan", data => masterTujuan = data.map(d => ({ nama: d.Nama || d.nama })));
+      } catch (err) { console.error("Init Error:", err); }
+    }
+
+    async function fetchMaster(sheetName, callback) {
+      try {
+        const res = await fetch(`${GAS_URL}?action=getData&sheet=${sheetName}`);
+        const json = await res.json();
+        if (json.status === "success") callback(json.data);
+      } catch (err) { console.error("Gagal fetch " + sheetName, err); }
+    }
+
+    // 2. SISTEM AUTOCOMPLETE TYPEAHEAD
+    function filterAutocomplete(inputEl, masterArray, keyName, onSelectCallback = null) {
+      const wrapper = inputEl.closest(".autocomplete-wrapper");
+      const listEl = wrapper.querySelector(".autocomplete-list");
+      const val = inputEl.value.trim().toLowerCase();
+
+      if (!val) { listEl.style.display = "none"; return; }
+
+      const filtered = masterArray.filter(item => item[keyName] && String(item[keyName]).toLowerCase().includes(val));
+      
+      if (filtered.length === 0) { listEl.style.display = "none"; return; }
+
+      listEl.innerHTML = "";
+      filtered.forEach(item => {
+        const div = document.createElement("div");
+        div.className = "autocomplete-item";
+        div.innerText = item[keyName];
+        div.onclick = () => {
+          inputEl.value = item[keyName];
+          listEl.style.display = "none";
+          if (onSelectCallback) onSelectCallback(item, inputEl);
+        };
+        listEl.appendChild(div);
+      });
+      listEl.style.display = "block";
+    }
+
+    // Sembunyikan list autocomplete jika klik di luar
+    document.addEventListener("click", e => {
+      if (!e.target.closest(".autocomplete-wrapper")) {
+        document.querySelectorAll(".autocomplete-list").forEach(l => l.style.display = "none");
+      }
+    });
+
+    function selectKendaraanCallback(item) {
+      document.getElementById("Jenis Kendaraan").value = item.jenis || "Standar";
+    }
+
+    // 3. FITUR MULTI-ROW DINAMIS
+    function addDriverRow() {
+      const container = document.getElementById("driver-container");
+      const div = document.createElement("div");
+      div.className = "autocomplete-wrapper mb-2 driver-row";
+      div.style.position = "relative";
+      div.innerHTML = `
+        <input type="text" class="app-input driver-input" placeholder="Ketik nama driver tambahan..." required style="padding-right: 2.5rem;" oninput="filterAutocomplete(this, masterDriver, 'nama', updateJumlahKaryawan)">
+        <button type="button" class="btn-remove-row" style="top:0.6rem; right:0.5rem;" onclick="this.parentElement.remove(); updateJumlahKaryawan();">X</button>
+        <div class="autocomplete-list"></div>
+      `;
+      container.appendChild(div);
+      updateJumlahKaryawan();
+    }
+
+    function updateJumlahKaryawan() {
+      const count = document.querySelectorAll(".driver-input").length;
+      document.getElementById("Jumlah Karyawan").value = count || 1;
+      calculateAll();
+    }
+
+    function addTujuanRow() {
+      const container = document.getElementById("tujuan-container");
+      const div = document.createElement("div");
+      div.className = "dynamic-row tujuan-bundle";
+      div.innerHTML = `
+        <button type="button" class="btn-remove-row" onclick="this.parentElement.remove()">Hapus</button>
+        <div class="grid-3">
+          <div class="autocomplete-wrapper">
+            <input type="text" class="app-input input-pemesan" placeholder="Pemesan (#9)..." required oninput="filterAutocomplete(this, masterPemesan, 'nama')">
+            <div class="autocomplete-list"></div>
+          </div>
+          <div class="autocomplete-wrapper">
+            <input type="text" class="app-input input-tujuan" placeholder="Nama Tujuan (#10)..." required oninput="filterAutocomplete(this, masterTujuan, 'nama')">
+            <div class="autocomplete-list"></div>
+          </div>
+          <div><input type="text" class="app-input input-alamat" placeholder="Alamat Manual (#11)..." required></div>
+        </div>
+      `;
+      container.appendChild(div);
+    }
+
+    function addBBMRow() {
+      const container = document.getElementById("bbm-container");
+      const div = document.createElement("div");
+      div.className = "dynamic-row bbm-bundle";
+      div.setAttribute("data-tipe", "tambahan");
+      div.innerHTML = `
+        <button type="button" class="btn-remove-row" onclick="this.parentElement.remove(); calculateAll();">Hapus</button>
+        <span style="font-size:12px; font-weight:700; color:#475569; display:block; margin-bottom:0.5rem;">⛽ BBM Tambahan (#16, #17, #18)</span>
+        <div class="grid-4">
+          <input type="text" class="app-input bbm-jenis" placeholder="Jenis BBM...">
+          <input type="number" class="app-input bbm-jarak" placeholder="Jarak (KM)...">
+          <input type="number" step="any" class="app-input bbm-liter" placeholder="Jumlah (Liter)..." oninput="calcBBMRow(this)">
+          <input type="text" class="app-input bbm-harga" placeholder="Harga/Liter (Rp)..." oninput="cleanNumberInput(this); calcBBMRow(this);" onblur="formatDecimalDisplay(this)">
+        </div>
+        <div class="mt-2 text-right" style="font-size:13px; font-weight:600;">Total BBM Tambahan: Rp <span class="bbm-total-display">0,00</span></div>
+        <input type="hidden" class="bbm-total-val" value="0">
+      `;
+      container.appendChild(div);
+    }
+
+    function addBiayaRow() {
+      const container = document.getElementById("biaya-container");
+      const div = document.createElement("div");
+      div.className = "dynamic-row biaya-bundle";
+      div.innerHTML = `
+        <button type="button" class="btn-remove-row" onclick="this.parentElement.remove(); calculateAll();">Hapus</button>
+        <div class="grid-3">
+          <input type="text" class="app-input biaya-nama" placeholder="Nama Biaya...">
+          <input type="number" class="app-input biaya-qty" placeholder="Kuantiti..." value="1" oninput="calcBiayaRow(this)">
+          <input type="text" class="app-input biaya-harga" placeholder="Harga Satuan (Rp)..." oninput="cleanNumberInput(this); calcBiayaRow(this);" onblur="formatDecimalDisplay(this)">
+        </div>
+        <div class="mt-2 text-right" style="font-size:13px; font-weight:600;">Subtotal: Rp <span class="biaya-subtotal-display">0,00</span></div>
+        <input type="hidden" class="biaya-subtotal-val" value="0">
+      `;
+      container.appendChild(div);
+    }
+
+    // 4. FORMAT DESIMAL & KALKULASI OTOMATIS
+    function cleanNumberInput(inputEl) {
+      inputEl.value = inputEl.value.replace(/[^0-9]/g, ""); // Hanya izinkan angka bulat saat diketik
+    }
+
+    function formatDecimalDisplay(inputEl) {
+      const val = parseFloat(inputEl.value.replace(/\./g, "").replace(/,/g, "")) || 0;
+      if (val > 0) {
+        inputEl.value = val.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      } else {
+        inputEl.value = "";
+      }
+    }
+
+    function getRawValue(valStr) {
+      if (!valStr) return 0;
+      return parseFloat(String(valStr).replace(/\./g, "").replace(/,/g, ".")) || 0;
+    }
+
+    function hitungSelisihHari() {
+      const tgl1 = new Date(document.getElementById("Jadwal Berangkat").value);
+      const tgl2 = new Date(document.getElementById("Jadwal Sampai").value);
+      if (tgl1 && tgl2 && !isNaN(tgl1) && !isNaN(tgl2)) {
+        const diffTime = Math.abs(tgl2 - tgl1);
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Termasuk hari keberangkatan
+        document.getElementById("Jumlah Hari").value = diffDays > 0 ? diffDays : 1;
+        
+        // Auto default hari menginap (Bisa diedit manual)
+        const inapEl = document.getElementById("Jumlah Hari Menginap");
+        if (inapEl.value === "0" || inapEl.value === "") {
+          inapEl.value = diffDays > 1 ? diffDays - 1 : 0;
+        }
+      }
+      calculateAll();
+    }
+
+    function calcBBMRow(el) {
+      const row = el.closest(".bbm-bundle");
+      const liter = parseFloat(row.querySelector(".bbm-liter").value) || 0;
+      const harga = getRawValue(row.querySelector(".bbm-harga").value);
+      const total = liter * harga;
+      row.querySelector(".bbm-total-display").innerText = total.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      row.querySelector(".bbm-total-val").value = total;
+      calculateAll();
+    }
+
+    function calcBiayaRow(el) {
+      const row = el.closest(".biaya-bundle");
+      const qty = parseFloat(row.querySelector(".biaya-qty").value) || 0;
+      const harga = getRawValue(row.querySelector(".biaya-harga").value);
+      const total = qty * harga;
+      row.querySelector(".biaya-subtotal-display").innerText = total.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      row.querySelector(".biaya-subtotal-val").value = total;
+      calculateAll();
+    }
+
+    function calculateAll() {
+      // A. Total Uang Makan
+      const jmlKaryawan = parseFloat(document.getElementById("Jumlah Karyawan").value) || 1;
+      const jmlHari = parseFloat(document.getElementById("Jumlah Hari").value) || 1;
+      const uangMakanHari = getRawValue(document.getElementById("Uang Makan Per Hari").value);
+      const totUangMakan = jmlKaryawan * jmlHari * uangMakanHari;
+      document.getElementById("Total Uang Makan").value = totUangMakan > 0 ? totUangMakan.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0,00";
+
+      // B. Total BBM
+      let totBBM = 0;
+      document.querySelectorAll(".bbm-total-val").forEach(el => totBBM += parseFloat(el.value) || 0);
+
+      // C. Total Penginapan
+      const hariInap = parseFloat(document.getElementById("Jumlah Hari Menginap").value) || 0;
+      const biayaInapHari = getRawValue(document.getElementById("Biaya Penginapan Per Hari").value);
+      const totInap = jmlKaryawan * hariInap * biayaInapHari;
+      document.getElementById("Total Biaya Penginapan").value = totInap > 0 ? totInap.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0,00";
+
+      // D. Total Biaya Lain
+      let totLain = 0;
+      document.querySelectorAll(".biaya-subtotal-val").forEach(el => totLain += parseFloat(el.value) || 0);
+
+      // GRAND TOTAL (#22)
+      const grandTotal = totUangMakan + totBBM + totInap + totLain;
+      document.getElementById("grand-total-display").innerText = "Rp " + grandTotal.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      document.getElementById("Total Biaya Keseluruhan").value = grandTotal;
+    }
+
+    // 5. SUBMIT FORM KE BACKEND GAS
+    async function handleSimpanEUPD(event) {
+      event.preventDefault();
+      const btn = document.getElementById("btn-simpan-eupd");
+      btn.disabled = true;
+      btn.innerText = "⏳ Menyimpan Data & Menerbitkan Nomor EUPD...";
+
+      // Kumpulkan Multi Drivers
+      const drivers = [];
+      document.querySelectorAll(".driver-input").forEach(el => { if (el.value.trim()) drivers.push(el.value.trim()); });
+
+      // Kumpulkan Multi Tujuans
+      const tujuans = [];
+      document.querySelectorAll(".tujuan-bundle").forEach(row => {
+        tujuans.push({
+          pemesan: row.querySelector(".input-pemesan").value.trim(),
+          tujuan: row.querySelector(".input-tujuan").value.trim(),
+          alamat: row.querySelector(".input-alamat").value.trim()
+        });
+      });
+
+      // Kumpulkan Multi BBMs
+      const bbms = [];
+      document.querySelectorAll(".bbm-bundle").forEach(row => {
+        bbms.push({
+          tipe: row.getAttribute("data-tipe") || "tambahan",
+          jenis: row.querySelector(".bbm-jenis").value.trim(),
+          jarak: row.querySelector(".bbm-jarak").value.trim(),
+          liter: row.querySelector(".bbm-liter").value.trim(),
+          harga: getRawValue(row.querySelector(".bbm-harga").value),
+          total: parseFloat(row.querySelector(".bbm-total-val").value) || 0
+        });
+      });
+
+      // Kumpulkan Multi Biaya Lain
+      const biayas = [];
+      document.querySelectorAll(".biaya-bundle").forEach(row => {
+        if (row.querySelector(".biaya-nama").value.trim()) {
+          biayas.push({
+            nama: row.querySelector(".biaya-nama").value.trim(),
+            qty: parseFloat(row.querySelector(".biaya-qty").value) || 0,
+            jumlah: getRawValue(row.querySelector(".biaya-harga").value),
+            total: parseFloat(row.querySelector(".biaya-subtotal-val").value) || 0
+          });
+        }
+      });
+
+      const payload = {
+        action: "tambahEUPD",
+        "Tanggal Dokumen": document.getElementById("Tanggal Dokumen").value,
+        "Pembuat Dokumen": document.getElementById("Pembuat Dokumen").value,
+        "Warehouse Asal": document.getElementById("Warehouse Asal").value,
+        "No Kendaraan": document.getElementById("No Kendaraan").value,
+        "Jenis Kendaraan": document.getElementById("Jenis Kendaraan").value,
+        "Jadwal Berangkat": document.getElementById("Jadwal Berangkat").value,
+        "Jadwal Sampai": document.getElementById("Jadwal Sampai").value,
+        "Jumlah Karyawan": document.getElementById("Jumlah Karyawan").value,
+        "Jumlah Hari": document.getElementById("Jumlah Hari").value,
+        "Uang Makan Per Hari": getRawValue(document.getElementById("Uang Makan Per Hari").value),
+        "Total Uang Makan": getRawValue(document.getElementById("Total Uang Makan").value),
+        "Jumlah Hari Menginap": document.getElementById("Jumlah Hari Menginap").value,
+        "Biaya Penginapan Per Hari": getRawValue(document.getElementById("Biaya Penginapan Per Hari").value),
+        "Total Biaya Penginapan": getRawValue(document.getElementById("Total Biaya Penginapan").value),
+        "Total Biaya Keseluruhan": document.getElementById("Total Biaya Keseluruhan").value,
+        drivers: drivers,
+        tujuans: tujuans,
+        bbms: bbms,
+        biayas: biayas
+      };
+
+      try {
+        const res = await fetch(GAS_URL, { method: "POST", body: JSON.stringify(payload) });
+        const result = await res.json();
+        
+        if (result.status === "success") {
+          alert(`🎉 SUKSES! Pengajuan EUPD Berhasil Disimpan.\nNomor Dokumen Anda: ${result.noEUPD}`);
+          window.location.replace("list-eupd.html");
+        } else {
+          const alertBox = document.getElementById("form-alert");
+          alertBox.className = "app-alert app-alert-error";
+          alertBox.innerText = result.message || "Gagal menyimpan data.";
+          alertBox.style.display = "block";
+        }
+      } catch (err) {
+        alert("Gagal terhubung ke Google Sheets. Pastikan koneksi aktif.");
+        console.error(err);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "💾 Simpan & Terbitkan Pengajuan EUPD";
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", initForm);
+  </script>
+</body>
+</html>
