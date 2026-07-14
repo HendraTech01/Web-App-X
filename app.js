@@ -24,7 +24,12 @@ async function loadSidebar(slotId = "sidebar-slot") {
 }
 
 function toggleMobileMenu() {
-  document.body.classList.toggle("menu-mode-active");
+  const isMobile = window.matchMedia("(max-width: 1024px)").matches;
+  if (isMobile) {
+    document.body.classList.toggle("menu-mode-active");
+  } else {
+    document.body.classList.toggle("sidebar-collapsed");
+  }
 }
 
 function handleLogout() {
