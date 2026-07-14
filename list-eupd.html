@@ -48,7 +48,7 @@
     <div class="app-main-content">
       <header class="app-mobile-header">
         <div class="app-title" style="font-size: 1rem; margin: 0;">Web App X</div>
-        <button type="button" class="app-hamburger-btn" onclick="document.body.classList.toggle('menu-mode-active')">
+        <button type="button" class="app-hamburger-btn" onclick="toggleMobileMenu()">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
         </button>
       </header>
@@ -101,6 +101,15 @@
           if (script) eval(script.innerHTML);
         }
       } catch (err) { console.error("Error sidebar:", err); }
+    }
+
+    function toggleMobileMenu() {
+      document.body.classList.toggle('menu-mode-active');
+    }
+
+    function handleLogout() {
+      localStorage.removeItem('wax_logged_user');
+      window.location.replace('index.html');
     }
 
     async function loadListEUPD() {
