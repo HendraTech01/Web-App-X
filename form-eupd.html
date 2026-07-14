@@ -93,7 +93,7 @@
               </div>
               <div class="app-input-group">
                 <label for="Tanggal Dokumen">Tanggal Dokumen</label>
-                <input type="date" id="Tanggal Dokumen" name="Tanggal Dokumen" class="app-input" disabled style="background:#F1F5F9; font-style:italic; font-size:12px;">
+                <input type="date" id="Tanggal Dokumen" name="Tanggal Dokumen" class="app-input" disabled style="background:#F1F5F9;">
               </div>
               <div class="app-input-group">
                 <label for="Pembuat Dokumen">Nama Pembuat</label>
@@ -161,7 +161,7 @@
             
             <label style="font-weight:600; font-size:var(--font-sm); display:block; margin-top:1rem; margin-bottom:0.35rem;">Pemesan Pengiriman, Nama Tujuan, & Alamat</label>
             <div id="tujuan-container">
-              <div class="tujuan-bundle grid-3">
+              <div class="dynamic-row tujuan-bundle grid-3">
                 <div class="autocomplete-wrapper">
                   <input type="text" class="app-input input-pemesan" placeholder="Pemesan Pengiriman ..." required oninput="filterAutocomplete(this, masterPemesan, 'nama')">
                   <div class="autocomplete-list"></div>
@@ -198,43 +198,41 @@
               <div class="bbm-section">
                 <div class="bbm-section-header" style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem; margin-bottom:0.75rem;">
                   <span style="font-size:12px; font-weight:700; color:#1E40AF;">🚀 BBM Rute Berangkat (#16, #17, #18)</span>
-                  <button type="button" class="btn-add-row" onclick="addBBMBerangkatRow()">+ Tambah BBM Rute Berangkat</button>
                 </div>
                 <div id="bbm-berangkat-list">
                   <div class="dynamic-row bbm-bundle" data-tipe="berangkat">
-                    <button type="button" class="btn-remove-row" onclick="this.closest('.bbm-bundle').remove(); calculateAll();">Hapus</button>
                     <div class="grid-4">
                       <input type="text" class="app-input bbm-jenis" placeholder="Jenis BBM (Pertalite/Solar/Lainnya)...">
                       <input type="number" class="app-input bbm-jarak" placeholder="Jarak (KM)...">
                       <input type="number" step="any" class="app-input bbm-liter" placeholder="Jumlah (Liter)..." oninput="calcBBMRow(this)">
                       <input type="text" class="app-input bbm-harga" placeholder="Harga/Liter (Rp)..." oninput="cleanNumberInput(this); calcBBMRow(this);" onblur="formatDecimalDisplay(this)">
                     </div>
-                    <div class="mt-2 text-right" style="font-size:13px; font-weight:600;">Total BBM Berangkat: Rp <span class="bbm-total-display">0,00</span></div>
+                    <div class="mt-2 text-right bbt-grand-total" style="font-size:14px; font-weight:700;">Total BBM Berangkat: Rp <span class="bbm-total-display">0,00</span></div>
                     <input type="hidden" class="bbm-total-val" value="0">
                   </div>
                 </div>
-                <div class="mt-2 text-right" style="font-size:13px; font-weight:600;">Total Semua BBM Berangkat: Rp <span id="bbm-total-berangkat">0,00</span></div>
+                <button type="button" class="btn-add-row" onclick="addBBMBerangkatRow()">+ Tambah BBM Rute Berangkat</button>
+                <div class="mt-3 text-right bbt-grand-total" style="font-size:15px; font-weight:800; color:#1E40AF;">Total Semua BBM Berangkat: Rp <span id="bbm-total-berangkat">0,00</span></div>
               </div>
 
               <div class="bbm-section" style="margin-top:1.25rem;">
                 <div class="bbm-section-header" style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem; margin-bottom:0.75rem;">
                   <span style="font-size:12px; font-weight:700; color:#065F46;">🏁 BBM Rute Pulang (#16, #17, #18)</span>
-                  <button type="button" class="btn-add-row" onclick="addBBMPulangRow()">+ Tambah BBM Rute Pulang</button>
                 </div>
                 <div id="bbm-pulang-list">
                   <div class="dynamic-row bbm-bundle" data-tipe="pulang">
-                    <button type="button" class="btn-remove-row" onclick="this.closest('.bbm-bundle').remove(); calculateAll();">Hapus</button>
                     <div class="grid-4">
                       <input type="text" class="app-input bbm-jenis" placeholder="Jenis BBM (Pertalite/Solar/Lainnya)...">
                       <input type="number" class="app-input bbm-jarak" placeholder="Jarak (KM)...">
                       <input type="number" step="any" class="app-input bbm-liter" placeholder="Jumlah (Liter)..." oninput="calcBBMRow(this)">
                       <input type="text" class="app-input bbm-harga" placeholder="Harga/Liter (Rp)..." oninput="cleanNumberInput(this); calcBBMRow(this);" onblur="formatDecimalDisplay(this)">
                     </div>
-                    <div class="mt-2 text-right" style="font-size:13px; font-weight:600;">Total BBM Pulang: Rp <span class="bbm-total-display">0,00</span></div>
+                    <div class="mt-2 text-right bbt-grand-total" style="font-size:14px; font-weight:700;">Total BBM Pulang: Rp <span class="bbm-total-display">0,00</span></div>
                     <input type="hidden" class="bbm-total-val" value="0">
                   </div>
                 </div>
-                <div class="mt-2 text-right" style="font-size:13px; font-weight:600;">Total Semua BBM Pulang: Rp <span id="bbm-total-pulang">0,00</span></div>
+                <button type="button" class="btn-add-row" onclick="addBBMPulangRow()">+ Tambah BBM Rute Pulang</button>
+                <div class="mt-3 text-right bbt-grand-total" style="font-size:15px; font-weight:800; color:#065F46;">Total Semua BBM Pulang: Rp <span id="bbm-total-pulang">0,00</span></div>
               </div>
             </div>
           </div>
@@ -304,9 +302,6 @@
         document.getElementById("Jadwal Sampai").value = now;
         
         // Isi default pembuat dari user login jika kosong
-        const logged = localStorage.getItem("wax_logged_user") || "";
-        document.getElementById("Pembuat Dokumen").value = logged;
-
         // Fetch Master Dropdown dari GAS
         fetchMaster("ListWH", data => masterWH = data.map(d => ({ nama: d.Nama || d.nama })));
         fetchMaster("ListKendaraan", data => masterKendaraan = data.map(d => ({ nopol: d["Nomor Polisi Kendaraan"] || d.nopol, jenis: d["Jenis Kendaraan"] || d.jenis || "" })));
@@ -370,7 +365,7 @@
       div.style.position = "relative";
       div.innerHTML = `
         <input type="text" class="app-input driver-input" placeholder="Ketik nama driver tambahan..." required style="padding-right: 2.5rem;" oninput="filterAutocomplete(this, masterDriver, 'nama', updateJumlahKaryawan)">
-        <button type="button" class="btn-remove-row" style="top:0.6rem; right:0.5rem;" onclick="this.parentElement.remove(); updateJumlahKaryawan();">X</button>
+        <button type="button" class="btn-remove-row" style="top:0.6rem; right:0.5rem;" onclick="this.parentElement.remove(); updateJumlahKaryawan();">x</button>
         <div class="autocomplete-list"></div>
       `;
       container.appendChild(div);
@@ -386,9 +381,9 @@
     function addTujuanRow() {
       const container = document.getElementById("tujuan-container");
       const div = document.createElement("div");
-      div.className = "tujuan-bundle grid-3";
+      div.className = "dynamic-row tujuan-bundle grid-3";
       div.innerHTML = `
-          <button type="button" class="btn-remove-row" onclick="this.closest('.tujuan-bundle').remove();">Hapus</button>
+          <button type="button" class="btn-remove-row" onclick="this.closest('.tujuan-bundle').remove();">x</button>
           <div class="autocomplete-wrapper">
             <input type="text" class="app-input input-pemesan" placeholder="Pemesan Pengiriman ..." required oninput="filterAutocomplete(this, masterPemesan, 'nama')">
             <div class="autocomplete-list"></div>
@@ -408,7 +403,7 @@
       div.className = "dynamic-row bbm-bundle";
       div.setAttribute("data-tipe", tipe);
       div.innerHTML = `
-        <button type="button" class="btn-remove-row" onclick="this.closest('.bbm-bundle').remove(); calculateAll();">Hapus</button>
+        <button type="button" class="btn-remove-row" onclick="this.closest('.bbm-bundle').remove(); calculateAll();">x</button>
         <div class="grid-4">
           <input type="text" class="app-input bbm-jenis" placeholder="Jenis BBM (Pertalite/Solar/Lainnya)...">
           <input type="number" class="app-input bbm-jarak" placeholder="Jarak (KM)...">
@@ -434,7 +429,7 @@
       const div = document.createElement("div");
       div.className = "dynamic-row biaya-bundle";
       div.innerHTML = `
-        <button type="button" class="btn-remove-row" onclick="this.parentElement.remove(); calculateAll();">Hapus</button>
+        <button type="button" class="btn-remove-row" onclick="this.parentElement.remove(); calculateAll();">x</button>
         <div class="grid-3">
           <input type="text" class="app-input biaya-nama" placeholder="Nama Biaya...">
           <input type="number" class="app-input biaya-qty" placeholder="Kuantiti..." value="1" oninput="calcBiayaRow(this)">
@@ -463,6 +458,12 @@
     function getRawValue(valStr) {
       if (!valStr) return 0;
       return parseFloat(String(valStr).replace(/\./g, "").replace(/,/g, ".")) || 0;
+    }
+
+    function formatDateForSheet(value) {
+      if (!value) return "";
+      const [year, month, day] = value.split("-");
+      return `${day}/${month}/${year}`;
     }
 
     function hitungSelisihHari() {
@@ -547,12 +548,15 @@
 
       // Kumpulkan Multi Drivers
       const drivers = [];
-      document.querySelectorAll(".driver-input").forEach(el => { if (el.value.trim()) drivers.push(el.value.trim()); });
+      document.querySelectorAll(".driver-input").forEach((el, idx) => {
+        if (el.value.trim()) drivers.push({ id: idx + 1, nama: el.value.trim() });
+      });
 
       // Kumpulkan Multi Tujuans
       const tujuans = [];
-      document.querySelectorAll(".tujuan-bundle").forEach(row => {
+      document.querySelectorAll(".tujuan-bundle").forEach((row, idx) => {
         tujuans.push({
+          id: idx + 1,
           pemesan: row.querySelector(".input-pemesan").value.trim(),
           tujuan: row.querySelector(".input-tujuan").value.trim(),
           alamat: row.querySelector(".input-alamat").value.trim()
@@ -561,8 +565,9 @@
 
       // Kumpulkan Multi BBMs
       const bbms = [];
-      document.querySelectorAll(".bbm-bundle").forEach(row => {
+      document.querySelectorAll(".bbm-bundle").forEach((row, idx) => {
         bbms.push({
+          id: idx + 1,
           tipe: row.getAttribute("data-tipe") || "tambahan",
           jenis: row.querySelector(".bbm-jenis").value.trim(),
           jarak: row.querySelector(".bbm-jarak").value.trim(),
@@ -574,9 +579,10 @@
 
       // Kumpulkan Multi Biaya Lain
       const biayas = [];
-      document.querySelectorAll(".biaya-bundle").forEach(row => {
+      document.querySelectorAll(".biaya-bundle").forEach((row, idx) => {
         if (row.querySelector(".biaya-nama").value.trim()) {
           biayas.push({
+            id: idx + 1,
             nama: row.querySelector(".biaya-nama").value.trim(),
             qty: parseFloat(row.querySelector(".biaya-qty").value) || 0,
             jumlah: getRawValue(row.querySelector(".biaya-harga").value),
@@ -587,13 +593,13 @@
 
       const payload = {
         action: "tambahEUPD",
-        "Tanggal Dokumen": document.getElementById("Tanggal Dokumen").value,
+        "Tanggal Dokumen": formatDateForSheet(document.getElementById("Tanggal Dokumen").value),
         "Pembuat Dokumen": document.getElementById("Pembuat Dokumen").value,
         "Warehouse Asal": document.getElementById("Warehouse Asal").value,
         "No Kendaraan": document.getElementById("No Kendaraan").value,
         "Jenis Kendaraan": document.getElementById("Jenis Kendaraan").value,
-        "Jadwal Berangkat": document.getElementById("Jadwal Berangkat").value,
-        "Jadwal Sampai": document.getElementById("Jadwal Sampai").value,
+        "Jadwal Berangkat": formatDateForSheet(document.getElementById("Jadwal Berangkat").value),
+        "Jadwal Sampai": formatDateForSheet(document.getElementById("Jadwal Sampai").value),
         "Jumlah Karyawan": document.getElementById("Jumlah Karyawan").value,
         "Jumlah Hari": document.getElementById("Jumlah Hari").value,
         "Uang Makan Per Hari": getRawValue(document.getElementById("Uang Makan Per Hari").value),
