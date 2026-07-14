@@ -440,7 +440,7 @@ body.sidebar-collapsed .app-main-content {
   line-height: 1.4;
 }
 
-@media (max-width: 768px), (orientation: landscape) and (max-width: 1024px) {
+@media (max-width: 768px) {
   .app-sidebar-container {
     display: none;
   }
