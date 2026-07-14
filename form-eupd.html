@@ -161,19 +161,17 @@
             
             <label style="font-weight:600; font-size:var(--font-sm); display:block; margin-top:1rem; margin-bottom:0.35rem;">Pemesan Pengiriman, Nama Tujuan, & Alamat</label>
             <div id="tujuan-container">
-              <div class="dynamic-row tujuan-bundle">
-                <div class="grid-3">
-                  <div class="autocomplete-wrapper">
-                    <input type="text" class="app-input input-pemesan" placeholder="Pemesan Pengiriman ..." required oninput="filterAutocomplete(this, masterPemesan, 'nama')">
-                    <div class="autocomplete-list"></div>
-                  </div>
-                  <div class="autocomplete-wrapper">
-                    <input type="text" class="app-input input-tujuan" placeholder="Nama Tujuan ..." required oninput="filterAutocomplete(this, masterTujuan, 'nama')">
-                    <div class="autocomplete-list"></div>
-                  </div>
-                  <div>
-                    <input type="text" class="app-input input-alamat" placeholder="Alamat ..." required>
-                  </div>
+              <div class="tujuan-bundle grid-3">
+                <div class="autocomplete-wrapper">
+                  <input type="text" class="app-input input-pemesan" placeholder="Pemesan Pengiriman ..." required oninput="filterAutocomplete(this, masterPemesan, 'nama')">
+                  <div class="autocomplete-list"></div>
+                </div>
+                <div class="autocomplete-wrapper">
+                  <input type="text" class="app-input input-tujuan" placeholder="Nama Tujuan ..." required oninput="filterAutocomplete(this, masterTujuan, 'nama')">
+                  <div class="autocomplete-list"></div>
+                </div>
+                <div>
+                  <input type="text" class="app-input input-alamat" placeholder="Alamat ..." required>
                 </div>
               </div>
             </div>
@@ -197,31 +195,48 @@
           <div class="form-section-card">
             <div class="section-header">📌 5. Konsumsi BBM (Berangkat & Pulang)</div>
             <div id="bbm-container">
-              <div class="dynamic-row bbm-bundle" data-tipe="berangkat">
-                <span style="font-size:12px; font-weight:700; color:#1E40AF; display:block; margin-bottom:0.5rem;">🚀 BBM Rute Berangkat (#16, #17, #18)</span>
-                <div class="grid-4">
-                  <input type="text" class="app-input bbm-jenis" placeholder="Jenis BBM (Pertalite/Solar/Lainnya)...">
-                  <input type="number" class="app-input bbm-jarak" placeholder="Jarak (KM)...">
-                  <input type="number" step="any" class="app-input bbm-liter" placeholder="Jumlah (Liter)..." oninput="calcBBMRow(this)">
-                  <input type="text" class="app-input bbm-harga" placeholder="Harga/Liter (Rp)..." oninput="cleanNumberInput(this); calcBBMRow(this);" onblur="formatDecimalDisplay(this)">
+              <div class="bbm-section">
+                <div class="bbm-section-header" style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem; margin-bottom:0.75rem;">
+                  <span style="font-size:12px; font-weight:700; color:#1E40AF;">🚀 BBM Rute Berangkat (#16, #17, #18)</span>
+                  <button type="button" class="btn-add-row" onclick="addBBMBerangkatRow()">+ Tambah BBM Rute Berangkat</button>
                 </div>
-                <div class="mt-2 text-right" style="font-size:13px; font-weight:600;">Total BBM Berangkat: Rp <span class="bbm-total-display">0,00</span></div>
-                <input type="hidden" class="bbm-total-val" value="0">
+                <div id="bbm-berangkat-list">
+                  <div class="dynamic-row bbm-bundle" data-tipe="berangkat">
+                    <button type="button" class="btn-remove-row" onclick="this.closest('.bbm-bundle').remove(); calculateAll();">Hapus</button>
+                    <div class="grid-4">
+                      <input type="text" class="app-input bbm-jenis" placeholder="Jenis BBM (Pertalite/Solar/Lainnya)...">
+                      <input type="number" class="app-input bbm-jarak" placeholder="Jarak (KM)...">
+                      <input type="number" step="any" class="app-input bbm-liter" placeholder="Jumlah (Liter)..." oninput="calcBBMRow(this)">
+                      <input type="text" class="app-input bbm-harga" placeholder="Harga/Liter (Rp)..." oninput="cleanNumberInput(this); calcBBMRow(this);" onblur="formatDecimalDisplay(this)">
+                    </div>
+                    <div class="mt-2 text-right" style="font-size:13px; font-weight:600;">Total BBM Berangkat: Rp <span class="bbm-total-display">0,00</span></div>
+                    <input type="hidden" class="bbm-total-val" value="0">
+                  </div>
+                </div>
+                <div class="mt-2 text-right" style="font-size:13px; font-weight:600;">Total Semua BBM Berangkat: Rp <span id="bbm-total-berangkat">0,00</span></div>
               </div>
 
-              <div class="dynamic-row bbm-bundle" data-tipe="pulang">
-                <span style="font-size:12px; font-weight:700; color:#065F46; display:block; margin-bottom:0.5rem;">🏁 BBM Rute Pulang (#16, #17, #18)</span>
-                <div class="grid-4">
-                  <input type="text" class="app-input bbm-jenis" placeholder="Jenis BBM (Pertalite/Solar)...">
-                  <input type="number" class="app-input bbm-jarak" placeholder="Jarak (KM)...">
-                  <input type="number" step="any" class="app-input bbm-liter" placeholder="Jumlah (Liter)..." oninput="calcBBMRow(this)">
-                  <input type="text" class="app-input bbm-harga" placeholder="Harga/Liter (Rp)..." oninput="cleanNumberInput(this); calcBBMRow(this);" onblur="formatDecimalDisplay(this)">
+              <div class="bbm-section" style="margin-top:1.25rem;">
+                <div class="bbm-section-header" style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem; margin-bottom:0.75rem;">
+                  <span style="font-size:12px; font-weight:700; color:#065F46;">🏁 BBM Rute Pulang (#16, #17, #18)</span>
+                  <button type="button" class="btn-add-row" onclick="addBBMPulangRow()">+ Tambah BBM Rute Pulang</button>
                 </div>
-                <div class="mt-2 text-right" style="font-size:13px; font-weight:600;">Total BBM Pulang: Rp <span class="bbm-total-display">0,00</span></div>
-                <input type="hidden" class="bbm-total-val" value="0">
+                <div id="bbm-pulang-list">
+                  <div class="dynamic-row bbm-bundle" data-tipe="pulang">
+                    <button type="button" class="btn-remove-row" onclick="this.closest('.bbm-bundle').remove(); calculateAll();">Hapus</button>
+                    <div class="grid-4">
+                      <input type="text" class="app-input bbm-jenis" placeholder="Jenis BBM (Pertalite/Solar/Lainnya)...">
+                      <input type="number" class="app-input bbm-jarak" placeholder="Jarak (KM)...">
+                      <input type="number" step="any" class="app-input bbm-liter" placeholder="Jumlah (Liter)..." oninput="calcBBMRow(this)">
+                      <input type="text" class="app-input bbm-harga" placeholder="Harga/Liter (Rp)..." oninput="cleanNumberInput(this); calcBBMRow(this);" onblur="formatDecimalDisplay(this)">
+                    </div>
+                    <div class="mt-2 text-right" style="font-size:13px; font-weight:600;">Total BBM Pulang: Rp <span class="bbm-total-display">0,00</span></div>
+                    <input type="hidden" class="bbm-total-val" value="0">
+                  </div>
+                </div>
+                <div class="mt-2 text-right" style="font-size:13px; font-weight:600;">Total Semua BBM Pulang: Rp <span id="bbm-total-pulang">0,00</span></div>
               </div>
             </div>
-            <button type="button" class="btn-add-row" onclick="addBBMRow()">+ Tambah Data BBM Tambahan</button>
           </div>
 
           <div class="form-section-card">
@@ -236,7 +251,7 @@
                 <input type="text" id="Biaya Penginapan Per Hari" class="app-input" placeholder="Cth: 250000" oninput="cleanNumberInput(this); calculateAll();" onblur="formatDecimalDisplay(this)">
               </div>
               <div class="app-input-group">
-                <label for="Total Biaya Penginapan">Total Penginapan (#20) [Auto]</label>
+                <label for="Total Biaya Penginapan">Total Penginapan</label>
                 <input type="text" id="Total Biaya Penginapan" name="Total Biaya Penginapan" class="app-input" readonly style="background:#F1F5F9; font-weight:700;">
               </div>
             </div>
@@ -371,42 +386,47 @@
     function addTujuanRow() {
       const container = document.getElementById("tujuan-container");
       const div = document.createElement("div");
-      div.className = "dynamic-row tujuan-bundle";
+      div.className = "tujuan-bundle grid-3";
       div.innerHTML = `
-        <button type="button" class="btn-remove-row" onclick="this.parentElement.remove()">Hapus</button>
-        <div class="grid-3">
+          <button type="button" class="btn-remove-row" onclick="this.closest('.tujuan-bundle').remove();">Hapus</button>
           <div class="autocomplete-wrapper">
-            <input type="text" class="app-input input-pemesan" placeholder="Pemesan (#9)..." required oninput="filterAutocomplete(this, masterPemesan, 'nama')">
+            <input type="text" class="app-input input-pemesan" placeholder="Pemesan Pengiriman ..." required oninput="filterAutocomplete(this, masterPemesan, 'nama')">
             <div class="autocomplete-list"></div>
           </div>
           <div class="autocomplete-wrapper">
-            <input type="text" class="app-input input-tujuan" placeholder="Nama Tujuan (#10)..." required oninput="filterAutocomplete(this, masterTujuan, 'nama')">
+            <input type="text" class="app-input input-tujuan" placeholder="Nama Tujuan ..." required oninput="filterAutocomplete(this, masterTujuan, 'nama')">
             <div class="autocomplete-list"></div>
           </div>
-          <div><input type="text" class="app-input input-alamat" placeholder="Alamat Manual (#11)..." required></div>
-        </div>
+          <div><input type="text" class="app-input input-alamat" placeholder="Alamat ..." required></div>
       `;
       container.appendChild(div);
     }
 
-    function addBBMRow() {
-      const container = document.getElementById("bbm-container");
+    function createBBMRow(tipe) {
+      const container = document.getElementById(tipe === "berangkat" ? "bbm-berangkat-list" : "bbm-pulang-list");
       const div = document.createElement("div");
       div.className = "dynamic-row bbm-bundle";
-      div.setAttribute("data-tipe", "tambahan");
+      div.setAttribute("data-tipe", tipe);
       div.innerHTML = `
-        <button type="button" class="btn-remove-row" onclick="this.parentElement.remove(); calculateAll();">Hapus</button>
-        <span style="font-size:12px; font-weight:700; color:#475569; display:block; margin-bottom:0.5rem;">⛽ BBM Tambahan (#16, #17, #18)</span>
+        <button type="button" class="btn-remove-row" onclick="this.closest('.bbm-bundle').remove(); calculateAll();">Hapus</button>
         <div class="grid-4">
-          <input type="text" class="app-input bbm-jenis" placeholder="Jenis BBM...">
+          <input type="text" class="app-input bbm-jenis" placeholder="Jenis BBM (Pertalite/Solar/Lainnya)...">
           <input type="number" class="app-input bbm-jarak" placeholder="Jarak (KM)...">
           <input type="number" step="any" class="app-input bbm-liter" placeholder="Jumlah (Liter)..." oninput="calcBBMRow(this)">
           <input type="text" class="app-input bbm-harga" placeholder="Harga/Liter (Rp)..." oninput="cleanNumberInput(this); calcBBMRow(this);" onblur="formatDecimalDisplay(this)">
         </div>
-        <div class="mt-2 text-right" style="font-size:13px; font-weight:600;">Total BBM Tambahan: Rp <span class="bbm-total-display">0,00</span></div>
+        <div class="mt-2 text-right" style="font-size:13px; font-weight:600;">Total BBM ${tipe === "berangkat" ? "Berangkat" : "Pulang"}: Rp <span class="bbm-total-display">0,00</span></div>
         <input type="hidden" class="bbm-total-val" value="0">
       `;
       container.appendChild(div);
+    }
+
+    function addBBMBerangkatRow() {
+      createBBMRow("berangkat");
+    }
+
+    function addBBMPulangRow() {
+      createBBMRow("pulang");
     }
 
     function addBiayaRow() {
@@ -450,13 +470,12 @@
       const tgl2 = new Date(document.getElementById("Jadwal Sampai").value);
       if (tgl1 && tgl2 && !isNaN(tgl1) && !isNaN(tgl2)) {
         const diffTime = Math.abs(tgl2 - tgl1);
-        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // Termasuk hari keberangkatan
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1; // Termasuk hari keberangkatan
         document.getElementById("Jumlah Hari").value = diffDays > 0 ? diffDays : 1;
-        
-        // Auto default hari menginap (Bisa diedit manual)
+
         const inapEl = document.getElementById("Jumlah Hari Menginap");
         if (inapEl.value === "0" || inapEl.value === "") {
-          inapEl.value = diffDays > 1 ? diffDays - 1 : 0;
+          inapEl.value = Math.max(diffDays - 1, 0);
         }
       }
       calculateAll();
@@ -491,8 +510,17 @@
       document.getElementById("Total Uang Makan").value = totUangMakan > 0 ? totUangMakan.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "0,00";
 
       // B. Total BBM
-      let totBBM = 0;
-      document.querySelectorAll(".bbm-total-val").forEach(el => totBBM += parseFloat(el.value) || 0);
+      let totBBMBerangkat = 0;
+      document.querySelectorAll('.bbm-bundle[data-tipe="berangkat"]').forEach(row => {
+        totBBMBerangkat += parseFloat(row.querySelector('.bbm-total-val')?.value) || 0;
+      });
+      let totBBMPulang = 0;
+      document.querySelectorAll('.bbm-bundle[data-tipe="pulang"]').forEach(row => {
+        totBBMPulang += parseFloat(row.querySelector('.bbm-total-val')?.value) || 0;
+      });
+      document.getElementById('bbm-total-berangkat').innerText = totBBMBerangkat.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      document.getElementById('bbm-total-pulang').innerText = totBBMPulang.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const totBBM = totBBMBerangkat + totBBMPulang;
 
       // C. Total Penginapan
       const hariInap = parseFloat(document.getElementById("Jumlah Hari Menginap").value) || 0;
