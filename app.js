@@ -24,7 +24,7 @@ async function loadSidebar(slotId = "sidebar-slot") {
 }
 
 function toggleMobileMenu() {
-  const isMobile = window.matchMedia("(max-width: 1024px)").matches;
+  const isMobile = window.matchMedia("(max-width: 768px)").matches;
   if (isMobile) {
     document.body.classList.toggle("menu-mode-active");
   } else {
