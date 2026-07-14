@@ -354,21 +354,11 @@ body {
 }
 
 body.sidebar-collapsed .app-sidebar-container {
-  width: 0;
-  min-width: 0;
-  overflow: hidden;
-  border-right: none;
-}
-
-body.sidebar-collapsed .app-sidebar-inner {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
+  display: none;
 }
 
 body.sidebar-collapsed .app-main-content {
   width: 100%;
-  margin-left: 0;
 }
 
 .app-menu-close-btn {
