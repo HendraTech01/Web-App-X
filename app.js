@@ -1,0 +1,33 @@
+async function loadSidebar(slotId = "sidebar-slot") {
+  try {
+    const response = await fetch("menu.html");
+    const slot = document.getElementById(slotId);
+    if (!slot) return;
+
+    if (response.ok) {
+      const htmlContent = await response.text();
+      slot.innerHTML = htmlContent;
+
+      const scriptElement = slot.querySelector("script");
+      if (scriptElement) {
+        const inlineScript = scriptElement.innerHTML;
+        if (inlineScript.trim()) {
+          eval(inlineScript);
+        }
+      }
+    } else {
+      slot.innerHTML = "<p style='padding:1rem;color:red;'>Gagal memuat komponen menu.</p>";
+    }
+  } catch (error) {
+    console.error("Error loading sidebar:", error);
+  }
+}
+
+function toggleMobileMenu() {
+  document.body.classList.toggle("menu-mode-active");
+}
+
+function handleLogout() {
+  localStorage.removeItem("wax_logged_user");
+  window.location.replace("index.html");
+}
