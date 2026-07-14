@@ -24,11 +24,13 @@ async function loadSidebar(slotId = "sidebar-slot") {
 }
 
 function toggleMobileMenu() {
-  const isMobile = window.matchMedia("(max-width: 768px)").matches;
-  if (isMobile) {
-    document.body.classList.toggle("menu-mode-active");
+  const isPortraitMobile = window.matchMedia("(max-width: 768px) and (orientation: portrait)").matches;
+  const body = document.body;
+  if (isPortraitMobile) {
+    body.classList.toggle("menu-mode-active");
   } else {
-    document.body.classList.toggle("sidebar-collapsed");
+    body.classList.remove("menu-mode-active");
+    body.classList.toggle("sidebar-collapsed");
   }
 }
 
