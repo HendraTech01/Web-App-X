@@ -88,45 +88,45 @@
             <div class="section-header">📌 1. Informasi Dokumen & Armada</div>
             <div class="grid-3">
               <div class="app-input-group">
-                <label>Nomor Pengajuan EUPD (#1)</label>
+                <label>Nomor Pengajuan EUPD</label>
                 <input type="text" class="app-input" value="Generate Otomatis Saat Disimpan" disabled style="background:#F1F5F9; font-style:italic; font-size:12px;">
               </div>
               <div class="app-input-group">
-                <label for="Tanggal Dokumen">Tanggal Dokumen (#2)</label>
-                <input type="date" id="Tanggal Dokumen" name="Tanggal Dokumen" class="app-input" required>
+                <label for="Tanggal Dokumen">Tanggal Dokumen</label>
+                <input type="date" id="Tanggal Dokumen" name="Tanggal Dokumen" class="app-input" disabled style="background:#F1F5F9; font-style:italic; font-size:12px;">
               </div>
               <div class="app-input-group">
-                <label for="Pembuat Dokumen">Nama Pembuat (#3) [Manual]</label>
+                <label for="Pembuat Dokumen">Nama Pembuat</label>
                 <input type="text" id="Pembuat Dokumen" name="Pembuat Dokumen" class="app-input" placeholder="Ketik nama pembuat..." required>
               </div>
             </div>
             <div class="grid-3 mt-2">
               <div class="app-input-group">
-                <label for="Warehouse Asal">Warehouse Asal (#4)</label>
+                <label for="Warehouse Asal">Warehouse Asal</label>
                 <div class="autocomplete-wrapper">
-                  <input type="text" id="Warehouse Asal" name="Warehouse Asal" class="app-input" placeholder="Ketik WH (cth: Bitung)..." required oninput="filterAutocomplete(this, masterWH, 'nama')">
+                  <input type="text" id="Warehouse Asal" name="Warehouse Asal" class="app-input" placeholder="Ketik (cth: Balikpapan)..." required oninput="filterAutocomplete(this, masterWH, 'nama')">
                   <div class="autocomplete-list"></div>
                 </div>
               </div>
               <div class="app-input-group">
-                <label for="No Kendaraan">No Kendaraan (#6)</label>
+                <label for="No Kendaraan">No Kendaraan</label>
                 <div class="autocomplete-wrapper">
                   <input type="text" id="No Kendaraan" name="No Kendaraan" class="app-input" placeholder="Ketik Nopol (cth: KT)..." required oninput="filterAutocomplete(this, masterKendaraan, 'nopol', selectKendaraanCallback)">
                   <div class="autocomplete-list"></div>
                 </div>
               </div>
               <div class="app-input-group">
-                <label for="Jenis Kendaraan">Jenis Kendaraan (#7)</label>
+                <label for="Jenis Kendaraan">Jenis Kendaraan</label>
                 <input type="text" id="Jenis Kendaraan" name="Jenis Kendaraan" class="app-input" readonly style="background:#F1F5F9;" placeholder="Terisi otomatis...">
               </div>
             </div>
           </div>
 
           <div class="form-section-card">
-            <div class="section-header">📌 2. Tim Perjalanan (Driver & Karyawan)</div>
+            <div class="section-header">📌 2. Tim Perjalanan (Driver & Karyawan Lainnya)</div>
             <div class="grid-2">
               <div>
-                <label style="font-weight:600; font-size:var(--font-sm); display:block; margin-bottom:0.35rem;">Nama Driver (#5) [Bisa Lebih dari 1]</label>
+                <label style="font-weight:600; font-size:var(--font-sm); display:block; margin-bottom:0.35rem;">Nama Driver</label>
                 <div id="driver-container">
                   <div class="autocomplete-wrapper mb-2 driver-row">
                     <input type="text" class="app-input driver-input" placeholder="Ketik nama driver..." required oninput="filterAutocomplete(this, masterDriver, 'nama', updateJumlahKaryawan)">
@@ -136,7 +136,7 @@
                 <button type="button" class="btn-add-row" onclick="addDriverRow()">+ Tambah Driver</button>
               </div>
               <div class="app-input-group">
-                <label for="Jumlah Karyawan">Jumlah Karyawan (#12) [Auto-Count]</label>
+                <label for="Jumlah Karyawan">Jumlah Driver</label>
                 <input type="number" id="Jumlah Karyawan" name="Jumlah Karyawan" class="app-input" value="1" readonly style="background:#F1F5F9; font-weight:700; color:var(--color-primary);">
               </div>
             </div>
@@ -146,49 +146,49 @@
             <div class="section-header">📌 3. Tujuan & Jadwal Perjalanan</div>
             <div class="grid-3 mb-2">
               <div class="app-input-group">
-                <label for="Jadwal Berangkat">Jadwal Berangkat (#8)</label>
+                <label for="Jadwal Berangkat">Jadwal Berangkat</label>
                 <input type="date" id="Jadwal Berangkat" name="Jadwal Berangkat" class="app-input" required onchange="hitungSelisihHari()">
               </div>
               <div class="app-input-group">
-                <label for="Jadwal Sampai">Jadwal Pulang (#8)</label>
+                <label for="Jadwal Sampai">Jadwal Pulang</label>
                 <input type="date" id="Jadwal Sampai" name="Jadwal Sampai" class="app-input" required onchange="hitungSelisihHari()">
               </div>
               <div class="app-input-group">
-                <label for="Jumlah Hari">Jumlah Hari Perjalanan (#13)</label>
+                <label for="Jumlah Hari">Jumlah Hari Perjalanan</label>
                 <input type="number" id="Jumlah Hari" name="Jumlah Hari" class="app-input" value="1" readonly style="background:#F1F5F9; font-weight:700;">
               </div>
             </div>
             
-            <label style="font-weight:600; font-size:var(--font-sm); display:block; margin-top:1rem; margin-bottom:0.35rem;">Paket Pemesan, Tujuan, & Alamat (#9, #10, #11) [Kesatuan]</label>
+            <label style="font-weight:600; font-size:var(--font-sm); display:block; margin-top:1rem; margin-bottom:0.35rem;">Pemesan Pengiriman, Nama Tujuan, & Alamat</label>
             <div id="tujuan-container">
               <div class="dynamic-row tujuan-bundle">
                 <div class="grid-3">
                   <div class="autocomplete-wrapper">
-                    <input type="text" class="app-input input-pemesan" placeholder="Pemesan (#9)..." required oninput="filterAutocomplete(this, masterPemesan, 'nama')">
+                    <input type="text" class="app-input input-pemesan" placeholder="Pemesan Pengiriman ..." required oninput="filterAutocomplete(this, masterPemesan, 'nama')">
                     <div class="autocomplete-list"></div>
                   </div>
                   <div class="autocomplete-wrapper">
-                    <input type="text" class="app-input input-tujuan" placeholder="Nama Tujuan (#10)..." required oninput="filterAutocomplete(this, masterTujuan, 'nama')">
+                    <input type="text" class="app-input input-tujuan" placeholder="Nama Tujuan ..." required oninput="filterAutocomplete(this, masterTujuan, 'nama')">
                     <div class="autocomplete-list"></div>
                   </div>
                   <div>
-                    <input type="text" class="app-input input-alamat" placeholder="Alamat Manual (#11)..." required>
+                    <input type="text" class="app-input input-alamat" placeholder="Alamat ..." required>
                   </div>
                 </div>
               </div>
             </div>
-            <button type="button" class="btn-add-row" onclick="addTujuanRow()">+ Tambah Tujuan/Pemesan</button>
+            <button type="button" class="btn-add-row" onclick="addTujuanRow()">+ Tambah Pemesan Pengiriman, Nama Tujuan, & Alamat</button>
           </div>
 
           <div class="form-section-card">
             <div class="section-header">📌 4. Biaya Uang Makan</div>
             <div class="grid-2">
               <div class="app-input-group">
-                <label for="Uang Makan Per Hari">Uang Makan Per Hari / Orang (#14) [Ketik Angka Bulat]</label>
+                <label for="Uang Makan Per Hari">Uang Makan Per Hari Per Orang</label>
                 <input type="text" id="Uang Makan Per Hari" class="app-input" placeholder="Cth: 50000" required oninput="cleanNumberInput(this); calculateAll();" onblur="formatDecimalDisplay(this)">
               </div>
               <div class="app-input-group">
-                <label for="Total Uang Makan">Total Uang Makan (#15) [Auto-Calc]</label>
+                <label for="Total Uang Makan">Total Uang Makan (Jumlah Driver x Durasi Perjalanan x Uang Makan Per Hari)</label>
                 <input type="text" id="Total Uang Makan" name="Total Uang Makan" class="app-input" readonly style="background:#F1F5F9; font-weight:700;">
               </div>
             </div>
@@ -200,7 +200,7 @@
               <div class="dynamic-row bbm-bundle" data-tipe="berangkat">
                 <span style="font-size:12px; font-weight:700; color:#1E40AF; display:block; margin-bottom:0.5rem;">🚀 BBM Rute Berangkat (#16, #17, #18)</span>
                 <div class="grid-4">
-                  <input type="text" class="app-input bbm-jenis" placeholder="Jenis BBM (Pertalite/Solar)...">
+                  <input type="text" class="app-input bbm-jenis" placeholder="Jenis BBM (Pertalite/Solar/Lainnya)...">
                   <input type="number" class="app-input bbm-jarak" placeholder="Jarak (KM)...">
                   <input type="number" step="any" class="app-input bbm-liter" placeholder="Jumlah (Liter)..." oninput="calcBBMRow(this)">
                   <input type="text" class="app-input bbm-harga" placeholder="Harga/Liter (Rp)..." oninput="cleanNumberInput(this); calcBBMRow(this);" onblur="formatDecimalDisplay(this)">
@@ -228,11 +228,11 @@
             <div class="section-header">📌 6. Biaya Penginapan</div>
             <div class="grid-3">
               <div class="app-input-group">
-                <label for="Jumlah Hari Menginap">Hari Menginap (#19) [Auto/Edit]</label>
+                <label for="Jumlah Hari Menginap">Jumlah Hari Menginap</label>
                 <input type="number" id="Jumlah Hari Menginap" name="Jumlah Hari Menginap" class="app-input" value="0" oninput="calculateAll()">
               </div>
               <div class="app-input-group">
-                <label for="Biaya Penginapan Per Hari">Biaya / Hari / Driver (#19)</label>
+                <label for="Biaya Penginapan Per Hari">Biaya Penginapan Per Hari per Driver</label>
                 <input type="text" id="Biaya Penginapan Per Hari" class="app-input" placeholder="Cth: 250000" oninput="cleanNumberInput(this); calculateAll();" onblur="formatDecimalDisplay(this)">
               </div>
               <div class="app-input-group">
@@ -244,7 +244,7 @@
 
           <div class="form-section-card">
             <div class="section-header">📌 7. Biaya Lain-lain & Grand Total</div>
-            <label style="font-weight:600; font-size:var(--font-sm); display:block; margin-bottom:0.35rem;">Rincian Biaya Lain-lain (#21) [Kesatuan]</label>
+            <label style="font-weight:600; font-size:var(--font-sm); display:block; margin-bottom:0.35rem;">Rincian Biaya Lain-lain</label>
             <div id="biaya-container">
               <div class="dynamic-row biaya-bundle">
                 <div class="grid-3">
@@ -259,7 +259,7 @@
             <button type="button" class="btn-add-row" onclick="addBiayaRow()">+ Tambah Biaya Lain</button>
 
             <div class="grand-total-box">
-              <div class="grand-total-label">TOTAL BIAYA KESELURUHAN (#22)</div>
+              <div class="grand-total-label">TOTAL BIAYA KESELURUHAN</div>
               <div class="grand-total-value" id="grand-total-display">Rp 0,00</div>
               <input type="hidden" id="Total Biaya Keseluruhan" name="Total Biaya Keseluruhan" value="0">
             </div>
