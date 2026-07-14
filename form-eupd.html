@@ -41,7 +41,7 @@
     .grand-total-value { font-size: 1.8rem; font-weight: 800; margin-top: 0.2rem; }
     
     /* Proteksi Responsif Mobile */
-    @media (max-width: 768px) {
+    @media (max-width: 768px) and (orientation: portrait) {
       .app-sidebar-container { display: none; }
       body.menu-mode-active .app-sidebar-container { display: flex !important; width: 100vw !important; height: 100vh !important; position: fixed; top: 0; left: 0; z-index: 9999; }
       body.menu-mode-active .app-main-content { display: none !important; }
