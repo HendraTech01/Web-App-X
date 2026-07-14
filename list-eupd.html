@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Daftar EUPD - Web App X</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    body { padding: 0 !important; align-items: stretch !important; justify-content: flex-start !important; background-color: #F8FAFC !important; }
+    .app-layout-wrapper { display: flex; width: 100%; min-height: 100vh; }
+    .app-sidebar-container { width: 240px; background-color: var(--color-surface); border-right: 1px solid var(--color-border); display: flex; flex-direction: column; flex-shrink: 0; }
+    .app-main-content { flex-grow: 1; display: flex; flex-direction: column; min-width: 0; }
+    .app-mobile-header { background-color: var(--color-surface); border-bottom: 1px solid var(--color-border); padding: 0.75rem 1rem; display: none; align-items: center; justify-content: space-between; }
+    .app-hamburger-btn { background: none; border: none; cursor: pointer; color: var(--color-text-primary); padding: 0.25rem; }
+    .app-content-body { padding: 1.5rem; overflow-y: auto; flex-grow: 1; }
+    
+    /* Header & Tombol Aksi */
+    .page-header-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+    .btn-create-new { width: auto; margin-top: 0; padding: 0.65rem 1.25rem; background-color: var(--color-primary); color: white; text-decoration: none; border-radius: var(--radius-sm); font-weight: 600; font-size: var(--font-base); display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 10px rgba(56, 130, 246, 0.2); transition: all 0.2s; }
+    .btn-create-new:hover { background-color: var(--color-primary-hover); transform: translateY(-1px); }
+    
+    /* Tabel / Daftar Card */
+    .table-container { background: white; border-radius: var(--radius-md); border: 1px solid var(--color-border); overflow-x: auto; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03); }
+    .eupd-table { width: 100%; border-collapse: collapse; text-align: left; font-size: var(--font-base); }
+    .eupd-table th { background-color: var(--color-background); padding: 0.85rem 1rem; font-weight: 600; color: var(--color-text-primary); border-bottom: 1px solid var(--color-border); white-space: nowrap; }
+    .eupd-table td { padding: 0.85rem 1rem; border-bottom: 1px solid var(--color-border); color: var(--color-text-primary); white-space: nowrap; }
+    .eupd-table tr:last-child td { border-bottom: none; }
+    .eupd-table tr:hover td { background-color: #F8FAFC; }
+    .badge-no { font-weight: 700; color: var(--color-primary); }
+    
+    @media (max-width: 768px) and (orientation: portrait), (max-width: 576px) {
+      .app-mobile-header { display: flex; }
+      .app-sidebar-container { display: none; }
+      body.menu-mode-active .app-sidebar-container { display: flex !important; width: 100vw !important; height: 100vh !important; position: fixed; top: 0; left: 0; z-index: 9999; }
+      body.menu-mode-active .app-main-content { display: none !important; }
+      body.menu-mode-active .app-menu-close-btn { display: flex; position: absolute; right: 1rem; top: 1.5rem; background: none; border: none; color: var(--color-text-secondary); cursor: pointer; }
+      .page-header-bar { flex-direction: column; align-items: stretch; }
+      .btn-create-new { justify-content: center; width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <script>if (!localStorage.getItem("wax_logged_user")) window.location.replace("login.html");</script>
+
+  <div class="app-layout-wrapper">
+    <div id="sidebar-slot" class="app-sidebar-container"></div>
+
+    <div class="app-main-content">
+      <header class="app-mobile-header">
+        <div class="app-title" style="font-size: 1rem; margin: 0;">Web App X</div>
+        <button type="button" class="app-hamburger-btn" onclick="document.body.classList.toggle('menu-mode-active')">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+      </header>
+
+      <main class="app-content-body">
+        <div class="page-header-bar">
+          <div>
+            <div class="app-title" style="text-align: left; font-size: 1.4rem;">Daftar Pengajuan EUPD</div>
+            <p style="font-size: var(--font-sm); color: var(--color-text-secondary); margin-top: 0.2rem;">Riwayat dokumen penugasan EUPD yang tersimpan di Google Sheets.</p>
+          </div>
+          <a href="form-eupd.html" class="btn-create-new">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Buat Pengajuan EUPD Baru
+          </a>
+        </div>
+
+        <div id="list-alert" class="app-alert"></div>
+
+        <div class="table-container">
+          <table class="eupd-table">
+            <thead>
+              <tr>
+                <th>No. Pengajuan EUPD</th>
+                <th>Tanggal Dokumen</th>
+                <th>Pembuat</th>
+                <th>Warehouse Asal</th>
+                <th>Kendaraan</th>
+                <th>Total Biaya</th>
+              </tr>
+            </thead>
+            <tbody id="table-body">
+              <tr><td colspan="6" class="text-center" style="padding: 2rem;">Memuat data dari Google Sheets...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // GANTI URL DI BAWAH INI DENGAN URL WEB APP GAS ANDA
+    const GAS_URL = "https://script.google.com/macros/s/MASUKKAN_URL_WEB_APP_ANDA_DISINI/exec";
+
+    async function loadSidebar() {
+      try {
+        const res = await fetch("menu.html");
+        if (res.ok) {
+          document.getElementById("sidebar-slot").innerHTML = await res.text();
+          const script = document.getElementById("sidebar-slot").querySelector("script");
+          if (script) eval(script.innerHTML);
+        }
+      } catch (err) { console.error("Error sidebar:", err); }
+    }
+
+    async function loadListEUPD() {
+      const tbody = document.getElementById("table-body");
+      try {
+        const res = await fetch(`${GAS_URL}?action=getData&sheet=ListEUPD`);
+        const result = await res.json();
+        
+        if (result.status === "success") {
+          const data = result.data;
+          if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 2rem; color: #64748B;">Belum ada data pengajuan EUPD.</td></tr>';
+            return;
+          }
+          
+          // Gunakan Set untuk memisahkan No EUPD yang unik (karena ada baris duplikat/flattening)
+          const uniqueEUPD = {};
+          data.forEach(row => {
+            const no = row["Nomor Pengajuan EUPD"];
+            if (no && !uniqueEUPD[no]) {
+              uniqueEUPD[no] = row;
+            }
+          });
+
+          tbody.innerHTML = "";
+          Object.values(uniqueEUPD).reverse().forEach(row => {
+            let tgl = row["Tanggal Dokumen"] || "-";
+            if (tgl !== "-" && String(tgl).includes("T")) tgl = String(tgl).split("T")[0]; // Format tanggal pendek
+            
+            let total = row["Total Biaya Keseluruhan"] ? `Rp ${Number(row["Total Biaya Keseluruhan"]).toLocaleString('id-ID')}` : "-";
+
+            tbody.innerHTML += `
+              <tr>
+                <td class="badge-no">${row["Nomor Pengajuan EUPD"]}</td>
+                <td>${tgl}</td>
+                <td>${row["Pembuat Dokumen"] || "-"}</td>
+                <td>${row["Warehouse Asal"] || "-"}</td>
+                <td>${row["No Kendaraan"] || "-"}</td>
+                <td style="font-weight: 600;">${total}</td>
+              </tr>
+            `;
+          });
+        }
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 2rem; color: red;">Gagal mengambil data dari server.</td></tr>';
+        console.error(err);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadSidebar();
+      loadListEUPD();
+    });
+  </script>
+</body>
+</html>
