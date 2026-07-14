@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Daftar EUPD - Web App X</title>
   <link rel="stylesheet" href="style.css">
+  <script src="app.js"></script>
   <style>
     body { padding: 0 !important; align-items: stretch !important; justify-content: flex-start !important; background-color: #F8FAFC !important; }
     .app-layout-wrapper { display: flex; width: 100%; min-height: 100vh; }
@@ -91,26 +92,6 @@
   <script>
     // GANTI URL DI BAWAH INI DENGAN URL WEB APP GAS ANDA
     const GAS_URL = "https://script.google.com/macros/s/AKfycbwf5oEpUkMp65-aTQ77PIj6CEhQV64yXjBqJMiBrkacXed5AbRYimF_Cb9qTa5mczLa/exec";
-
-    async function loadSidebar() {
-      try {
-        const res = await fetch("menu.html");
-        if (res.ok) {
-          document.getElementById("sidebar-slot").innerHTML = await res.text();
-          const script = document.getElementById("sidebar-slot").querySelector("script");
-          if (script) eval(script.innerHTML);
-        }
-      } catch (err) { console.error("Error sidebar:", err); }
-    }
-
-    function toggleMobileMenu() {
-      document.body.classList.toggle('menu-mode-active');
-    }
-
-    function handleLogout() {
-      localStorage.removeItem('wax_logged_user');
-      window.location.replace('index.html');
-    }
 
     async function loadListEUPD() {
       const tbody = document.getElementById("table-body");
