@@ -102,11 +102,17 @@
             </div>
             <div class="grid-3 mt-2">
               <div class="app-input-group">
-                <label for="Warehouse Asal">Warehouse Asal</label>
+                <label for="Warehouse Asal">Nama Warehouse</label>
                 <div class="autocomplete-wrapper">
                   <input type="text" id="Warehouse Asal" name="Warehouse Asal" class="app-input" placeholder="Ketik (cth: Balikpapan)..." required oninput="filterAutocomplete(this, masterWH, 'nama')">
                   <div class="autocomplete-list"></div>
                 </div>
+              </div>
+              <div class="app-input-group">
+                <label for="Target Sheet">Unit / Sheet Tujuan</label>
+                <select id="Target Sheet" name="Target Sheet" class="app-input" required>
+                  <option value="" disabled selected>Pilih sheet tujuan EUPD</option>
+                </select>
               </div>
               <div class="app-input-group">
                 <label for="No Kendaraan">No Kendaraan</label>
@@ -330,12 +336,19 @@
         document.getElementById("Jadwal Sampai").value = now;
         
         // Isi default pembuat dari user login jika kosong
+        const currentUser = getCurrentUser();
+        if (currentUser) {
+          const pembuatEl = document.getElementById("Pembuat Dokumen");
+          if (!pembuatEl.value) pembuatEl.value = currentUser;
+        }
+
         // Fetch Master Dropdown dari GAS
         fetchMaster("ListWH", data => masterWH = data.map(d => ({ nama: d.Nama || d.nama })));
         fetchMaster("ListKendaraan", data => masterKendaraan = data.map(d => ({ nopol: d["Nomor Polisi Kendaraan"] || d.nopol, jenis: d["Jenis Kendaraan"] || d.jenis || "" })));
         fetchMaster("ListTeamSupplyChain", data => masterDriver = data.map(d => ({ nama: d.Nama || d.nama })));
         fetchMaster("ListPemesan", data => masterPemesan = data.map(d => ({ nama: d.Nama || d.nama })));
         fetchMaster("ListTujuan", data => masterTujuan = data.map(d => ({ nama: d.Nama || d.nama })));
+        await renderTargetSheetOptions();
       } catch (err) { console.error("Init Error:", err); }
     }
 
@@ -345,6 +358,57 @@
         const json = await res.json();
         if (json.status === "success") callback(json.data);
       } catch (err) { console.error("Gagal fetch " + sheetName, err); }
+    }
+
+    function getCurrentUser() {
+      return localStorage.getItem("wax_logged_user") || "";
+    }
+
+    async function fetchUserSheetAccess() {
+      const user = getCurrentUser();
+      if (!user) return [];
+
+      try {
+        const response = await fetch(`${GAS_URL}?action=getMenuAccess&username=${encodeURIComponent(user)}`);
+        const json = await response.json();
+        if (json.status !== "success") return [];
+        return Array.isArray(json.data) ? json.data : [];
+      } catch (err) {
+        console.error("Gagal memuat akses sheet user:", err);
+        return [];
+      }
+    }
+
+    function fillTargetSheetSelect(accessItems) {
+      const targetSelect = document.getElementById("Target Sheet");
+      targetSelect.innerHTML = '<option value="" disabled selected>Pilih sheet tujuan EUPD</option>';
+
+      const unique = [];
+      accessItems.forEach(item => {
+        const sheet = String(item["Hak Akses Menu"] || item["hak akses menu"] || "").trim();
+        const label = String(item["Nama Warehouse"] || item["nama warehouse"] || item["Warehouse"] || item["warehouse"] || sheet).trim();
+        if (!sheet || unique.some(entry => entry.sheet === sheet)) return;
+        unique.push({ sheet, label });
+      });
+
+      unique.forEach(entry => {
+        const option = document.createElement("option");
+        option.value = entry.sheet;
+        option.text = `${entry.label} (${entry.sheet.replace(/^ListEUPD/, '')})`;
+        targetSelect.appendChild(option);
+      });
+
+      if (unique.length === 0) {
+        const alertBox = document.getElementById("form-alert");
+        alertBox.className = "app-alert app-alert-error";
+        alertBox.innerText = "Anda belum memiliki akses sheet EUPD yang valid. Hubungi admin jika ini seharusnya tersedia.";
+        alertBox.style.display = "block";
+      }
+    }
+
+    async function renderTargetSheetOptions() {
+      const accessItems = await fetchUserSheetAccess();
+      fillTargetSheetSelect(accessItems);
     }
 
     // 2. SISTEM AUTOCOMPLETE TYPEAHEAD
@@ -673,6 +737,7 @@
         "Tanggal Dokumen": formatDateForSheet(document.getElementById("Tanggal Dokumen").value),
         "Pembuat Dokumen": document.getElementById("Pembuat Dokumen").value,
         "Warehouse Asal": document.getElementById("Warehouse Asal").value,
+        "Target Sheet": document.getElementById("Target Sheet").value,
         "No Kendaraan": document.getElementById("No Kendaraan").value,
         "Jenis Kendaraan": document.getElementById("Jenis Kendaraan").value,
         "Jadwal Berangkat": formatDateForSheet(document.getElementById("Jadwal Berangkat").value),
@@ -697,7 +762,8 @@
         
         if (result.status === "success") {
           alert(`🎉 SUKSES! Pengajuan EUPD Berhasil Disimpan.\nNomor Dokumen Anda: ${result.noEUPD}`);
-          window.location.replace("list-eupd.html");
+          const targetSheet = document.getElementById("Target Sheet").value;
+          window.location.replace(`list-eupd.html?sheet=${encodeURIComponent(targetSheet)}`);
         } else {
           const alertBox = document.getElementById("form-alert");
           alertBox.className = "app-alert app-alert-error";
