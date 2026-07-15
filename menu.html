@@ -65,7 +65,41 @@
     });
   }
 
+  const GAS_URL = window.GAS_URL || "https://script.google.com/macros/s/AKfycbwf5oEpUkMp65-aTQ77PIj6CEhQV64yXjBqJMiBrkacXed5AbRYimF_Cb9qTa5mczLa/exec";
+
+  function setMenuUsername() {
+    const username = localStorage.getItem("wax_logged_user") || "Pengguna";
+    const usernameEl = document.getElementById("menu-username");
+    if (usernameEl) {
+      usernameEl.innerText = username;
+    }
+  }
+
+  async function updateListEUPDMenuLink() {
+    const username = localStorage.getItem("wax_logged_user");
+    if (!username) return;
+    try {
+      const res = await fetch(`${GAS_URL}?action=getMenuAccess&username=${encodeURIComponent(username)}`);
+      const json = await res.json();
+      if (json.status !== "success" || !Array.isArray(json.data)) return;
+      const listLink = document.querySelector('.app-sidebar-nav a[href="list-eupd.html"]');
+      if (!listLink) return;
+      if (json.data.length === 1) {
+        const sheet = String(json.data[0]["Hak Akses Menu"] || json.data[0]["hak akses menu"] || "").trim();
+        if (sheet) {
+          listLink.href = `list-eupd.html?sheet=${encodeURIComponent(sheet)}`;
+        }
+      } else {
+        listLink.href = "list-eupd.html";
+      }
+    } catch (err) {
+      console.error("Gagal memuat akses menu:", err);
+    }
+  }
+
   (function() {
+    setMenuUsername();
     updateActiveLinks();
+    updateListEUPDMenuLink();
   })();
 </script>

@@ -317,6 +317,46 @@
       if (initialBiaya) registerDynamicRow("biaya", initialBiaya);
     }
 
+    let currentTargetSheet = "";
+
+    function normalizeString(value) {
+      return String(value || "").trim();
+    }
+
+    function getQuerySheetName() {
+      return new URLSearchParams(window.location.search).get("sheet") || "";
+    }
+
+    function getFormTargetSheet() {
+      return currentTargetSheet || normalizeString(getQuerySheetName());
+    }
+
+    function setFormTargetSheet(sheetName) {
+      currentTargetSheet = normalizeString(sheetName);
+    }
+
+    function findAccessItemBySheet(sheetName, accessItems) {
+      const normalizedSheet = normalizeString(sheetName);
+      return accessItems.find(item => normalizeString(item["Hak Akses Menu"] || item["hak akses menu"]) === normalizedSheet);
+    }
+
+    function findSingleAccessItemForUser(userName, accessItems) {
+      const normalizedUser = normalizeString(userName).toLowerCase();
+      const matchedItems = accessItems.filter(item => normalizeString(item["Username"] || item["username"]).toLowerCase() === normalizedUser);
+      return matchedItems.length === 1 ? matchedItems[0] : null;
+    }
+
+    function fillWarehouseFromAccessItem(item) {
+      const warehouseInput = document.getElementById("Warehouse Asal");
+      if (!item || !warehouseInput) return;
+      const namaWarehouse = normalizeString(item["Nama Warehouse"] || item["nama warehouse"] || item["Warehouse"] || item["warehouse"]);
+      if (namaWarehouse) {
+        warehouseInput.value = namaWarehouse;
+        warehouseInput.readOnly = true;
+        warehouseInput.style.background = "#F1F5F9";
+      }
+    }
+
     // 1. MEMUAT SIDEBAR & MASTER DATA SHEET
     async function initForm() {
       try {
@@ -328,42 +368,64 @@
         document.getElementById("Tanggal Dokumen").value = now;
         document.getElementById("Jadwal Berangkat").value = now;
         document.getElementById("Jadwal Sampai").value = now;
-        
+
         // Isi default pembuat dari user login jika kosong
         const currentUser = getCurrentUser();
         if (currentUser) {
           const pembuatEl = document.getElementById("Pembuat Dokumen");
-          if (!pembuatEl.value) pembuatEl.value = "";
+          if (!pembuatEl.value) pembuatEl.value = currentUser;
         }
 
         const selectedSheet = getQuerySheetName();
-        const warehouseInput = document.getElementById("Warehouse Asal");
-        function fillWarehouseFromUser(userName) {
-          if (!userName) return;
-          const normalizedUser = String(userName).trim().toLowerCase();
-          const match = masterWH.find(item => String(item.nama || "").trim().toLowerCase() === normalizedUser);
-          if (match) {
-            warehouseInput.value = match.nama;
-            warehouseInput.readOnly = true;
-            warehouseInput.style.background = "#F1F5F9";
-          }
+        setFormTargetSheet(selectedSheet);
+
+        let hakAksesMenuData = [];
+        function showFormAccessError(message) {
+          const alertBox = document.getElementById("form-alert");
+          alertBox.className = "app-alert app-alert-error";
+          alertBox.innerText = message;
+          alertBox.style.display = "block";
         }
 
-        if (selectedSheet) {
-          const sheetLabel = selectedSheet.replace(/^ListEUPD/i, "").trim();
-          if (sheetLabel) {
-            warehouseInput.value = sheetLabel;
-            warehouseInput.readOnly = true;
-            warehouseInput.style.background = "#F1F5F9";
-          }
-        }
+        fetchMaster("HakAksesMenu", data => {
+          hakAksesMenuData = data;
 
-        // Fetch Master Dropdown dari GAS
+          const accessItems = data.filter(item => normalizeString(item["Username"] || item["username"]).toLowerCase() === normalizeString(currentUser).toLowerCase());
+
+          if (currentTargetSheet) {
+            const sheetItem = findAccessItemBySheet(currentTargetSheet, hakAksesMenuData);
+            if (sheetItem) {
+              fillWarehouseFromAccessItem(sheetItem);
+            } else {
+              showFormAccessError("Sheet yang dipilih tidak tersedia untuk Anda. Silakan pilih ulang dari halaman daftar EUPD.");
+            }
+            return;
+          }
+
+          if (accessItems.length === 1) {
+            const singleItem = accessItems[0];
+            const sheetName = normalizeString(singleItem["Hak Akses Menu"] || singleItem["hak akses menu"]);
+            if (sheetName) {
+              setFormTargetSheet(sheetName);
+              fillWarehouseFromAccessItem(singleItem);
+            }
+            return;
+          }
+
+          if (accessItems.length > 1) {
+            window.location.replace("list-eupd.html");
+            return;
+          }
+
+          if (!currentUser) {
+            showFormAccessError("Anda belum login. Silakan masuk kembali.");
+          } else {
+            showFormAccessError("Anda tidak memiliki akses warehouse EUPD. Hubungi admin.");
+          }
+        });
+
         fetchMaster("ListWH", data => {
           masterWH = data.map(d => ({ nama: d.Nama || d.nama }));
-          if (!selectedSheet && currentUser) {
-            fillWarehouseFromUser(currentUser);
-          }
         });
         fetchMaster("ListKendaraan", data => masterKendaraan = data.map(d => ({ nopol: d["Nomor Polisi Kendaraan"] || d.nopol, jenis: d["Jenis Kendaraan"] || d.jenis || "" })));
         fetchMaster("ListTeamSupplyChain", data => masterDriver = data.map(d => ({ nama: d.Nama || d.nama })));
@@ -378,10 +440,6 @@
         const json = await res.json();
         if (json.status === "success") callback(json.data);
       } catch (err) { console.error("Gagal fetch " + sheetName, err); }
-    }
-
-    function getQuerySheetName() {
-      return new URLSearchParams(window.location.search).get("sheet") || "";
     }
 
     function getCurrentUser() {
@@ -403,36 +461,6 @@
       }
     }
 
-    function fillTargetSheetSelect(accessItems) {
-      const targetSelect = document.getElementById("Target Sheet");
-      targetSelect.innerHTML = '<option value="" disabled selected>Pilih sheet tujuan EUPD</option>';
-
-      const unique = [];
-      accessItems.forEach(item => {
-        const sheet = String(item["Hak Akses Menu"] || item["hak akses menu"] || "").trim();
-        const label = String(item["Nama Warehouse"] || item["nama warehouse"] || item["Warehouse"] || item["warehouse"] || sheet).trim();
-        if (!sheet || unique.some(entry => entry.sheet === sheet)) return;
-        unique.push({ sheet, label });
-      });
-
-      unique.forEach(entry => {
-        const option = document.createElement("option");
-        option.value = entry.sheet;
-        option.text = `${entry.label} (${entry.sheet.replace(/^ListEUPD/, '')})`;
-        targetSelect.appendChild(option);
-      });
-
-      if (unique.length === 0) {
-        const alertBox = document.getElementById("form-alert");
-        alertBox.className = "app-alert app-alert-error";
-        alertBox.innerText = "Anda belum memiliki akses sheet EUPD yang valid. Hubungi admin jika ini seharusnya tersedia.";
-        alertBox.style.display = "block";
-      }
-    }
-
-    async function renderTargetSheetOptions() {
-      // no-op: target sheet now dipilih di list-eupd sebelum masuk form
-    }
 
     // 2. SISTEM AUTOCOMPLETE TYPEAHEAD
     function filterAutocomplete(inputEl, masterArray, keyName, onSelectCallback = null) {
@@ -760,7 +788,7 @@
         "Tanggal Dokumen": formatDateForSheet(document.getElementById("Tanggal Dokumen").value),
         "Pembuat Dokumen": document.getElementById("Pembuat Dokumen").value,
         "Warehouse Asal": document.getElementById("Warehouse Asal").value,
-        "Target Sheet": getQuerySheetName(),
+        "Target Sheet": getFormTargetSheet(),
         "No Kendaraan": document.getElementById("No Kendaraan").value,
         "Jenis Kendaraan": document.getElementById("Jenis Kendaraan").value,
         "Jadwal Berangkat": formatDateForSheet(document.getElementById("Jadwal Berangkat").value),

@@ -128,7 +128,10 @@
       return String(first).trim();
     }
 
-    function getSheetLabel(sheetName) {
+    function getSheetLabel(sheetName, accessItem = null) {
+      if (accessItem) {
+        return String(accessItem["Nama Warehouse"] || accessItem["nama warehouse"] || accessItem["Warehouse"] || accessItem["warehouse"] || "").trim() || sheetName.replace(/^ListEUPD/i, "").trim() || sheetName;
+      }
       if (!sheetName) return "Daftar EUPD";
       return sheetName.replace(/^ListEUPD/i, "").trim() || sheetName;
     }
@@ -211,7 +214,7 @@
 
       document.getElementById("warehouse-selector").style.display = "none";
       document.querySelector(".table-container").style.display = "block";
-      headerLabel.innerText = `Daftar EUPD: ${getSheetLabel(currentSheet)}`;
+      headerLabel.innerText = `Daftar EUPD: ${getSheetLabel(currentSheet, matched)}`;
 
       try {
         const res = await fetch(`${GAS_URL}?action=getData&sheet=${encodeURIComponent(currentSheet)}`);
