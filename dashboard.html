@@ -19,8 +19,10 @@
   <div class="app-layout-wrapper">
     
     <div id="sidebar-slot" class="app-sidebar-container">
-      <div class="app-sidebar-inner" style="display:flex;justify-content:center;align-items:center;height:100%;padding:1.5rem;color:var(--color-text-secondary);">
-        Memuat menu...
+      <div class="app-sidebar-inner">
+        <nav id="sidebar-menu" class="sidebar-menu" style="padding:1rem;">
+          <div style="color:var(--color-text-secondary);">Memuat menu...</div>
+        </nav>
       </div>
     </div>
 
@@ -43,17 +45,11 @@
           Selamat datang kembali di pusat kendali operasional internal sistem.
         </p>
 
-        <div class="menu-grid">
-          
-          <a href="list-eupd.html" class="app-card menu-choice-card">
-            <div class="app-title menu-card-title">
-              Form Pengajuan EUPD
-            </div>
-            <p class="menu-card-description">
-              Akses cepat pengisian lembar penugasan, master data armada kendaraan, dan input rincian biaya langsung ke Google Sheets.
-            </p>
+        <div class="menu-grid" id="main-menu-grid">
+          <a href="eupd.html" class="app-card menu-choice-card">
+            <div class="app-title menu-card-title">Form Pengajuan EUPD</div>
+            <p class="menu-card-description">Akses cepat pengisian lembar penugasan, master data armada kendaraan, dan input rincian biaya langsung ke Google Sheets.</p>
           </a>
-
         </div>
       </main>
 
@@ -64,6 +60,85 @@
     // Eksekusi pemanggilan komponen menu otomatis ketika halaman siap dibuka
     document.addEventListener("DOMContentLoaded", loadSidebar);
     loadSidebar();
+    
+    // RENDER SIDEBAR MENU & ACCESS CHECK
+    function getCurrentUser() {
+      try {
+        const raw = localStorage.getItem('wax_logged_user');
+        if (!raw) return null;
+        if (typeof raw === 'string') return JSON.parse(raw);
+        return raw;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    const MENU_ITEMS = [
+      {id: 'bpn', label: 'List EUPD BPN', sheet: 'BPN'},
+      {id: 'kdi', label: 'List EUPD KDI', sheet: 'KDI'},
+      {id: 'btg', label: 'List EUPD BTG', sheet: 'BTG'},
+      {id: 'plu', label: 'List EUPD PLU', sheet: 'PLU'},
+      {id: 'spt', label: 'List EUPD SPT', sheet: 'SPT'},
+      {id: 'bjm', label: 'List EUPD BJM', sheet: 'BJM'},
+      {id: 'mlk', label: 'List EUPD MLK', sheet: 'MLK'}
+    ];
+
+    function userHasAccess(user, sheetName) {
+      if (!user) return false;
+      // Accept either array of access rights or object with roles
+      if (Array.isArray(user.access)) return user.access.includes(sheetName);
+      if (Array.isArray(user.rights)) return user.rights.includes(sheetName);
+      // fallback: full access flag
+      if (user.isAdmin || user.admin) return true;
+      return false;
+    }
+
+    function buildMenuItem(item, allowed) {
+      const a = document.createElement('a');
+      a.className = 'app-sidebar-link';
+      a.href = allowed ? `list-eupd.html?sheet=${encodeURIComponent(item.sheet)}` : '#';
+      a.dataset.sheet = item.sheet;
+      a.dataset.id = item.id;
+      a.style.display = 'block';
+      a.style.padding = '0.6rem 0.4rem';
+      a.style.color = allowed ? 'var(--color-text)' : 'var(--color-text-secondary)';
+      a.style.textDecoration = 'none';
+      a.innerText = item.label + (allowed ? '' : ' (tidak ada akses)');
+      if (allowed) {
+        a.addEventListener('click', function (ev) {
+          // Store chosen sheet to sessionStorage so eupd form can read it immediately
+          sessionStorage.setItem('selectedEupdSheet', item.sheet);
+          // allow navigation to list-eupd.html with sheet param
+        });
+      } else {
+        a.addEventListener('click', function (ev) {
+          ev.preventDefault();
+          alert('Anda tidak memiliki hak akses ke menu ini.');
+        });
+      }
+      return a;
+    }
+
+    function renderSidebar() {
+      const slot = document.getElementById('sidebar-menu');
+      if (!slot) return;
+      slot.innerHTML = '';
+      const user = getCurrentUser();
+      const title = document.createElement('div');
+      title.style.marginBottom = '0.5rem';
+      title.style.fontWeight = '600';
+      title.innerText = 'Menu List EUPD';
+      slot.appendChild(title);
+
+      MENU_ITEMS.forEach(it => {
+        const allowed = userHasAccess(user, it.sheet);
+        const el = buildMenuItem(it, allowed);
+        slot.appendChild(el);
+      });
+    }
+
+    // Re-render sidebar after loadSidebar
+    setTimeout(renderSidebar, 50);
   </script>
 </body>
 </html>

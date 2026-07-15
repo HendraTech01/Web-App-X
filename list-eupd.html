@@ -179,8 +179,12 @@
     async function loadListEUPD() {
       const tbody = document.getElementById("table-body");
       const headerLabel = document.getElementById("sheet-label");
-      const accessItems = await fetchUserSheetAccess();
       const sheetName = getQuerySheetName();
+      // If sheet is provided via query param (clicked from menu), skip fetching access list to avoid extra loading.
+      let accessItems = [];
+      if (!sheetName) {
+        accessItems = await fetchUserSheetAccess();
+      }
       const currentSheet = sheetName || (accessItems.length === 1 ? (accessItems[0]["Hak Akses Menu"] || accessItems[0]["hak akses menu"] || "") : "");
 
       if (!currentSheet) {
@@ -194,7 +198,7 @@
         return sheet === currentSheet;
       });
 
-      if (!matched) {
+      if (!matched && !sheetName) {
         headerLabel.innerText = "Akses sheet tidak valid.";
         document.getElementById("warehouse-selector").style.display = "none";
         tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 2rem; color: red;">Anda tidak memiliki akses ke sheet yang dipilih.</td></tr>';
