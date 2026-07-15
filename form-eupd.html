@@ -338,6 +338,17 @@
 
         const selectedSheet = getQuerySheetName();
         const warehouseInput = document.getElementById("Warehouse Asal");
+        function fillWarehouseFromUser(userName) {
+          if (!userName) return;
+          const normalizedUser = String(userName).trim().toLowerCase();
+          const match = masterWH.find(item => String(item.nama || "").trim().toLowerCase() === normalizedUser);
+          if (match) {
+            warehouseInput.value = match.nama;
+            warehouseInput.readOnly = true;
+            warehouseInput.style.background = "#F1F5F9";
+          }
+        }
+
         if (selectedSheet) {
           const sheetLabel = selectedSheet.replace(/^ListEUPD/i, "").trim();
           if (sheetLabel) {
@@ -348,7 +359,12 @@
         }
 
         // Fetch Master Dropdown dari GAS
-        fetchMaster("ListWH", data => masterWH = data.map(d => ({ nama: d.Nama || d.nama })));
+        fetchMaster("ListWH", data => {
+          masterWH = data.map(d => ({ nama: d.Nama || d.nama }));
+          if (!selectedSheet && currentUser) {
+            fillWarehouseFromUser(currentUser);
+          }
+        });
         fetchMaster("ListKendaraan", data => masterKendaraan = data.map(d => ({ nopol: d["Nomor Polisi Kendaraan"] || d.nopol, jenis: d["Jenis Kendaraan"] || d.jenis || "" })));
         fetchMaster("ListTeamSupplyChain", data => masterDriver = data.map(d => ({ nama: d.Nama || d.nama })));
         fetchMaster("ListPemesan", data => masterPemesan = data.map(d => ({ nama: d.Nama || d.nama })));
