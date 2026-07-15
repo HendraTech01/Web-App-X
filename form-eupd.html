@@ -97,7 +97,7 @@
               </div>
               <div class="app-input-group">
                 <label for="Pembuat Dokumen">Nama Pembuat</label>
-                <input type="text" id="Pembuat Dokumen" name="Pembuat Dokumen" class="app-input" placeholder="Ketik nama pembuat..." required>
+                <input type="text" id="Pembuat Dokumen" name="Pembuat Dokumen" class="app-input" placeholder="Ketik nama pembuat...">
               </div>
             </div>
             <div class="grid-3 mt-2">
@@ -107,12 +107,6 @@
                   <input type="text" id="Warehouse Asal" name="Warehouse Asal" class="app-input" placeholder="Ketik (cth: Balikpapan)..." required oninput="filterAutocomplete(this, masterWH, 'nama')">
                   <div class="autocomplete-list"></div>
                 </div>
-              </div>
-              <div class="app-input-group">
-                <label for="Target Sheet">Unit / Sheet Tujuan</label>
-                <select id="Target Sheet" name="Target Sheet" class="app-input" required>
-                  <option value="" disabled selected>Pilih sheet tujuan EUPD</option>
-                </select>
               </div>
               <div class="app-input-group">
                 <label for="No Kendaraan">No Kendaraan</label>
@@ -339,7 +333,18 @@
         const currentUser = getCurrentUser();
         if (currentUser) {
           const pembuatEl = document.getElementById("Pembuat Dokumen");
-          if (!pembuatEl.value) pembuatEl.value = currentUser;
+          if (!pembuatEl.value) pembuatEl.value = "";
+        }
+
+        const selectedSheet = getQuerySheetName();
+        const warehouseInput = document.getElementById("Warehouse Asal");
+        if (selectedSheet) {
+          const sheetLabel = selectedSheet.replace(/^ListEUPD/i, "").trim();
+          if (sheetLabel) {
+            warehouseInput.value = sheetLabel;
+            warehouseInput.readOnly = true;
+            warehouseInput.style.background = "#F1F5F9";
+          }
         }
 
         // Fetch Master Dropdown dari GAS
@@ -348,7 +353,6 @@
         fetchMaster("ListTeamSupplyChain", data => masterDriver = data.map(d => ({ nama: d.Nama || d.nama })));
         fetchMaster("ListPemesan", data => masterPemesan = data.map(d => ({ nama: d.Nama || d.nama })));
         fetchMaster("ListTujuan", data => masterTujuan = data.map(d => ({ nama: d.Nama || d.nama })));
-        await renderTargetSheetOptions();
       } catch (err) { console.error("Init Error:", err); }
     }
 
@@ -358,6 +362,10 @@
         const json = await res.json();
         if (json.status === "success") callback(json.data);
       } catch (err) { console.error("Gagal fetch " + sheetName, err); }
+    }
+
+    function getQuerySheetName() {
+      return new URLSearchParams(window.location.search).get("sheet") || "";
     }
 
     function getCurrentUser() {
@@ -407,8 +415,7 @@
     }
 
     async function renderTargetSheetOptions() {
-      const accessItems = await fetchUserSheetAccess();
-      fillTargetSheetSelect(accessItems);
+      // no-op: target sheet now dipilih di list-eupd sebelum masuk form
     }
 
     // 2. SISTEM AUTOCOMPLETE TYPEAHEAD
@@ -737,7 +744,7 @@
         "Tanggal Dokumen": formatDateForSheet(document.getElementById("Tanggal Dokumen").value),
         "Pembuat Dokumen": document.getElementById("Pembuat Dokumen").value,
         "Warehouse Asal": document.getElementById("Warehouse Asal").value,
-        "Target Sheet": document.getElementById("Target Sheet").value,
+        "Target Sheet": getQuerySheetName(),
         "No Kendaraan": document.getElementById("No Kendaraan").value,
         "Jenis Kendaraan": document.getElementById("Jenis Kendaraan").value,
         "Jadwal Berangkat": formatDateForSheet(document.getElementById("Jadwal Berangkat").value),
@@ -762,7 +769,7 @@
         
         if (result.status === "success") {
           alert(`🎉 SUKSES! Pengajuan EUPD Berhasil Disimpan.\nNomor Dokumen Anda: ${result.noEUPD}`);
-          const targetSheet = document.getElementById("Target Sheet").value;
+          const targetSheet = getQuerySheetName();
           window.location.replace(`list-eupd.html?sheet=${encodeURIComponent(targetSheet)}`);
         } else {
           const alertBox = document.getElementById("form-alert");
