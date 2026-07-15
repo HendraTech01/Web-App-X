@@ -391,6 +391,7 @@
       const div = document.createElement("div");
       div.className = "autocomplete-wrapper mb-2 driver-row";
       div.style.position = "relative";
+      div.dataset.extra = "true";
       div.innerHTML = `
         <input type="text" class="app-input driver-input" placeholder="Ketik nama driver tambahan..." required style="padding-right: 2.5rem;" oninput="filterAutocomplete(this, masterDriver, 'nama', updateJumlahKaryawan)">
         <button type="button" class="btn-remove-row" style="top:0.6rem; right:0.5rem;" onclick="unregisterDynamicRow(this.parentElement); this.parentElement.remove(); updateJumlahKaryawan();">x</button>
@@ -411,6 +412,7 @@
       const container = document.getElementById("tujuan-container");
       const div = document.createElement("div");
       div.className = "dynamic-row tujuan-bundle grid-3";
+      div.dataset.extra = "true";
       div.innerHTML = `
           <button type="button" class="btn-remove-row" onclick="unregisterDynamicRow(this.closest('.tujuan-bundle')); this.closest('.tujuan-bundle').remove();">x</button>
           <div class="autocomplete-wrapper">
@@ -431,6 +433,7 @@
       const container = document.getElementById(tipe === "berangkat" ? "bbm-berangkat-list" : "bbm-pulang-list");
       const div = document.createElement("div");
       div.className = "dynamic-row bbm-bundle";
+      div.dataset.extra = "true";
       div.setAttribute("data-tipe", tipe);
       div.innerHTML = `
         <button type="button" class="btn-remove-row" onclick="unregisterDynamicRow(this.closest('.bbm-bundle')); this.closest('.bbm-bundle').remove(); calculateAll();">x</button>
@@ -459,6 +462,7 @@
       const container = document.getElementById("biaya-container");
       const div = document.createElement("div");
       div.className = "dynamic-row biaya-bundle";
+      div.dataset.extra = "true";
       div.innerHTML = `
         <button type="button" class="btn-remove-row" onclick="unregisterDynamicRow(this.parentElement); this.parentElement.remove(); calculateAll();">x</button>
         <div class="grid-3">
@@ -542,28 +546,9 @@
     }
 
     function getSubmittedExtraRows() {
-      const allRows = Array.from(document.querySelectorAll(
-        '#driver-container .driver-row, #tujuan-container .tujuan-bundle, #bbm-berangkat-list .bbm-bundle, #bbm-pulang-list .bbm-bundle, #biaya-container .biaya-bundle'
-      ));
-      const firstRowSeenByType = {};
-      const extraRows = [];
-
-      allRows.forEach(row => {
-        const type = getRowType(row);
-        if (!type) return;
-
-        const rowData = getRowData(row);
-        if (!rowData) return;
-
-        if (!firstRowSeenByType[type]) {
-          firstRowSeenByType[type] = true;
-          return;
-        }
-
-        extraRows.push(rowData);
-      });
-
-      return extraRows;
+      return Array.from(document.querySelectorAll('[data-extra="true"]'))
+        .map(row => getRowData(row))
+        .filter(Boolean);
     }
 
     function hitungSelisihHari() {
