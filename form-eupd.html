@@ -698,6 +698,8 @@
         });
       });
 
+      const extraRows = getSubmittedExtraRows();
+
       const payload = {
         action: "tambahEUPD",
         "Tanggal Dokumen": formatDateForSheet(document.getElementById("Tanggal Dokumen").value),
