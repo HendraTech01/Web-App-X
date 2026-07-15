@@ -300,10 +300,25 @@
       dynamicRowOrder = dynamicRowOrder.filter(item => item.row !== row);
     }
 
+    function initDynamicRowRegistry() {
+      const initialDriver = document.querySelector("#driver-container .driver-row");
+      const initialTujuan = document.querySelector("#tujuan-container .tujuan-bundle");
+      const initialBBMBerangkat = document.querySelector("#bbm-berangkat-list .bbm-bundle");
+      const initialBBMPulang = document.querySelector("#bbm-pulang-list .bbm-bundle");
+      const initialBiaya = document.querySelector("#biaya-container .biaya-bundle");
+
+      if (initialDriver) registerDynamicRow("driver", initialDriver);
+      if (initialTujuan) registerDynamicRow("tujuan", initialTujuan);
+      if (initialBBMBerangkat) registerDynamicRow("bbm-berangkat", initialBBMBerangkat);
+      if (initialBBMPulang) registerDynamicRow("bbm-pulang", initialBBMPulang);
+      if (initialBiaya) registerDynamicRow("biaya", initialBiaya);
+    }
+
     // 1. MEMUAT SIDEBAR & MASTER DATA SHEET
     async function initForm() {
       try {
         await loadSidebar();
+        initDynamicRowRegistry();
 
         // Set Tanggal Hari Ini & Jadwal Berangkat
         const now = new Date().toISOString().split("T")[0];
@@ -394,7 +409,7 @@
       const div = document.createElement("div");
       div.className = "dynamic-row tujuan-bundle grid-3";
       div.innerHTML = `
-          <button type="button" class="btn-remove-row" onclick="this.closest('.tujuan-bundle').remove();">x</button>
+          <button type="button" class="btn-remove-row" onclick="unregisterDynamicRow(this.closest('.tujuan-bundle')); this.closest('.tujuan-bundle').remove();">x</button>
           <div class="autocomplete-wrapper">
             <input type="text" class="app-input input-pemesan" placeholder="Pemesan Pengiriman ..." required oninput="filterAutocomplete(this, masterPemesan, 'nama')">
             <div class="autocomplete-list"></div>
@@ -478,6 +493,65 @@
       if (!value) return "";
       const [year, month, day] = value.split("-");
       return `${day}/${month}/${year}`;
+    }
+
+    function getRowType(row) {
+      if (row.classList.contains('driver-row')) return 'driver';
+      if (row.classList.contains('tujuan-bundle')) return 'tujuan';
+      if (row.classList.contains('bbm-bundle')) {
+        return row.getAttribute('data-tipe') === 'pulang' ? 'bbm-pulang' : 'bbm-berangkat';
+      }
+      if (row.classList.contains('biaya-bundle')) return 'biaya';
+      return null;
+    }
+
+    function getRowData(row) {
+      const type = getRowType(row);
+      if (!type) return null;
+
+      if (type === 'driver') {
+        const nama = row.querySelector('.driver-input')?.value.trim();
+        return nama ? { type, nama } : null;
+      }
+      if (type === 'tujuan') {
+        const pemesan = row.querySelector('.input-pemesan')?.value.trim();
+        const tujuan = row.querySelector('.input-tujuan')?.value.trim();
+        const alamat = row.querySelector('.input-alamat')?.value.trim();
+        return (pemesan || tujuan || alamat) ? { type, pemesan, tujuan, alamat } : null;
+      }
+      if (type === 'bbm-berangkat' || type === 'bbm-pulang') {
+        const jenis = row.querySelector('.bbm-jenis')?.value.trim();
+        const jarak = row.querySelector('.bbm-jarak')?.value.trim();
+        const liter = row.querySelector('.bbm-liter')?.value.trim();
+        const harga = getRawValue(row.querySelector('.bbm-harga')?.value || '');
+        const total = parseFloat(row.querySelector('.bbm-total-val')?.value) || 0;
+        return (jenis || jarak || liter || harga || total) ? { type, jenis, jarak, liter, harga, total } : null;
+      }
+      if (type === 'biaya') {
+        const nama = row.querySelector('.biaya-nama')?.value.trim();
+        const qty = parseFloat(row.querySelector('.biaya-qty')?.value) || 0;
+        const jumlah = getRawValue(row.querySelector('.biaya-harga')?.value || '');
+        const total = parseFloat(row.querySelector('.biaya-subtotal-val')?.value) || 0;
+        // Abaikan row biaya yang hanya memiliki qty default tanpa isi nama atau harga.
+        return (nama || jumlah || total) ? { type, nama, qty, jumlah, total } : null;
+      }
+      return null;
+    }
+
+    function getSubmittedExtraRows() {
+      const firstFilledRowByType = {};
+
+      return dynamicRowOrder.map((entry) => {
+        const rowData = getRowData(entry.row);
+        if (!rowData) return null;
+
+        if (!firstFilledRowByType[entry.type]) {
+          firstFilledRowByType[entry.type] = true;
+          return null;
+        }
+
+        return rowData;
+      }).filter(item => item !== null);
     }
 
     function hitungSelisihHari() {
@@ -618,42 +692,7 @@
         }
       });
 
-      const extraRows = dynamicRowOrder.map((entry) => {
-        const row = entry.row;
-        if (entry.type === "driver") {
-          const nama = row.querySelector(".driver-input").value.trim();
-          return nama ? { type: "driver", nama } : null;
-        }
-        if (entry.type === "tujuan") {
-          const pemesan = row.querySelector(".input-pemesan").value.trim();
-          const tujuan = row.querySelector(".input-tujuan").value.trim();
-          const alamat = row.querySelector(".input-alamat").value.trim();
-          return (pemesan || tujuan || alamat) ? { type: "tujuan", pemesan, tujuan, alamat } : null;
-        }
-        if (entry.type === "bbm-berangkat" || entry.type === "bbm-pulang") {
-          const jenis = row.querySelector(".bbm-jenis").value.trim();
-          const jarak = row.querySelector(".bbm-jarak").value.trim();
-          const liter = row.querySelector(".bbm-liter").value.trim();
-          const harga = getRawValue(row.querySelector(".bbm-harga").value);
-          const total = parseFloat(row.querySelector(".bbm-total-val").value) || 0;
-          return (jenis || jarak || liter || harga || total) ? {
-            type: entry.type,
-            jenis,
-            jarak,
-            liter,
-            harga,
-            total
-          } : null;
-        }
-        if (entry.type === "biaya") {
-          const nama = row.querySelector(".biaya-nama").value.trim();
-          const qty = parseFloat(row.querySelector(".biaya-qty").value) || 0;
-          const jumlah = getRawValue(row.querySelector(".biaya-harga").value);
-          const total = parseFloat(row.querySelector(".biaya-subtotal-val").value) || 0;
-          return (nama || qty || jumlah || total) ? { type: "biaya", nama, qty, jumlah, total } : null;
-        }
-        return null;
-      }).filter(item => item !== null);
+      const extraRows = getSubmittedExtraRows();
 
       const payload = {
         action: "tambahEUPD",
