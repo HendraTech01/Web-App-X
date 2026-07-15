@@ -57,7 +57,7 @@
       <main class="app-content-body">
         <div class="page-header-bar">
           <div>
-            <div class="app-title" style="text-align: left; font-size: 1.4rem;">Daftar Pengajuan EUPD</div>
+            <div class="app-title" style="text-align: left; font-size: 1.4rem;" id="sheet-label">Daftar Pengajuan EUPD</div>
             <p style="font-size: var(--font-sm); color: var(--color-text-secondary); margin-top: 0.2rem;">Riwayat dokumen penugasan EUPD yang tersimpan di Google Sheets.</p>
           </div>
           <a href="form-eupd.html" class="btn-create-new">
@@ -75,7 +75,7 @@
                 <th>No. Pengajuan EUPD</th>
                 <th>Tanggal Dokumen</th>
                 <th>Pembuat</th>
-                <th>Warehouse Asal</th>
+                <th>Nama Warehouse</th>
                 <th>Kendaraan</th>
                 <th>Total Biaya</th>
               </tr>
@@ -93,20 +93,74 @@
     // GANTI URL DI BAWAH INI DENGAN URL WEB APP GAS ANDA
     const GAS_URL = "https://script.google.com/macros/s/AKfycbwf5oEpUkMp65-aTQ77PIj6CEhQV64yXjBqJMiBrkacXed5AbRYimF_Cb9qTa5mczLa/exec";
 
+    function getQuerySheetName() {
+      return new URLSearchParams(window.location.search).get("sheet") || "";
+    }
+
+    function getCurrentUser() {
+      return localStorage.getItem("wax_logged_user") || "";
+    }
+
+    async function fetchUserSheetAccess() {
+      const user = getCurrentUser();
+      if (!user) return [];
+
+      try {
+        const res = await fetch(`${GAS_URL}?action=getMenuAccess&username=${encodeURIComponent(user)}`);
+        const json = await res.json();
+        if (json.status !== "success" || !Array.isArray(json.data)) return [];
+        return json.data;
+      } catch (err) {
+        console.error("Gagal memuat akses sheet user:", err);
+        return [];
+      }
+    }
+
+    async function resolveSheetName() {
+      const querySheet = getQuerySheetName();
+      if (querySheet) return querySheet;
+
+      const accessItems = await fetchUserSheetAccess();
+      if (accessItems.length === 0) return "";
+      const first = accessItems[0]["Hak Akses Menu"] || accessItems[0]["hak akses menu"] || "";
+      return String(first).trim();
+    }
+
+    function getSheetLabel(sheetName) {
+      if (!sheetName) return "Daftar EUPD";
+      return sheetName.replace(/^ListEUPD/i, "").trim() || sheetName;
+    }
+
     async function loadListEUPD() {
       const tbody = document.getElementById("table-body");
+      const headerLabel = document.getElementById("sheet-label");
+      const sheetName = await resolveSheetName();
+
+      if (!sheetName) {
+        headerLabel.innerText = "Sheet tujuan belum dipilih.";
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 2rem; color: #64748B;">Tidak ada sheet EUPD yang dipilih. Buka menu untuk memilih unit / target sheet.</td></tr>';
+        return;
+      }
+
+      if (!getQuerySheetName()) {
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.set("sheet", sheetName);
+        window.history.replaceState(null, "", newUrl.toString());
+      }
+
+      headerLabel.innerText = `Daftar EUPD: ${getSheetLabel(sheetName)}`;
+
       try {
-        const res = await fetch(`${GAS_URL}?action=getData&sheet=ListEUPD`);
+        const res = await fetch(`${GAS_URL}?action=getData&sheet=${encodeURIComponent(sheetName)}`);
         const result = await res.json();
         
         if (result.status === "success") {
           const data = result.data;
           if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 2rem; color: #64748B;">Belum ada data pengajuan EUPD.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 2rem; color: #64748B;">Belum ada data pengajuan EUPD di sheet tujuan ini.</td></tr>';
             return;
           }
           
-          // Gunakan Set untuk memisahkan No EUPD yang unik (karena ada baris duplikat/flattening)
           const uniqueEUPD = {};
           data.forEach(row => {
             const no = row["Nomor Pengajuan EUPD"];
@@ -118,7 +172,7 @@
           tbody.innerHTML = "";
           Object.values(uniqueEUPD).reverse().forEach(row => {
             let tgl = row["Tanggal Dokumen"] || "-";
-            if (tgl !== "-" && String(tgl).includes("T")) tgl = String(tgl).split("T")[0]; // Format tanggal pendek
+            if (tgl !== "-" && String(tgl).includes("T")) tgl = String(tgl).split("T")[0];
             
             let total = row["Total Biaya Keseluruhan"] ? `Rp ${Number(row["Total Biaya Keseluruhan"]).toLocaleString('id-ID')}` : "-";
 
@@ -133,6 +187,8 @@
               </tr>
             `;
           });
+        } else {
+          tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 2rem; color: red;">' + (result.message || 'Gagal mengambil data dari server.') + '</td></tr>';
         }
       } catch (err) {
         tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 2rem; color: red;">Gagal mengambil data dari server.</td></tr>';
