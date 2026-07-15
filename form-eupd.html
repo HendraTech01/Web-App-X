@@ -555,38 +555,54 @@
       // Kumpulkan Multi Tujuans
       const tujuans = [];
       document.querySelectorAll(".tujuan-bundle").forEach((row, idx) => {
-        tujuans.push({
-          id: idx + 1,
-          pemesan: row.querySelector(".input-pemesan").value.trim(),
-          tujuan: row.querySelector(".input-tujuan").value.trim(),
-          alamat: row.querySelector(".input-alamat").value.trim()
-        });
+        const pemesan = row.querySelector(".input-pemesan").value.trim();
+        const tujuan = row.querySelector(".input-tujuan").value.trim();
+        const alamat = row.querySelector(".input-alamat").value.trim();
+        if (pemesan || tujuan || alamat) {
+          tujuans.push({
+            id: idx + 1,
+            pemesan,
+            tujuan,
+            alamat
+          });
+        }
       });
 
       // Kumpulkan Multi BBMs
       const bbms = [];
       document.querySelectorAll(".bbm-bundle").forEach((row, idx) => {
-        bbms.push({
-          id: idx + 1,
-          tipe: row.getAttribute("data-tipe") || "tambahan",
-          jenis: row.querySelector(".bbm-jenis").value.trim(),
-          jarak: row.querySelector(".bbm-jarak").value.trim(),
-          liter: row.querySelector(".bbm-liter").value.trim(),
-          harga: getRawValue(row.querySelector(".bbm-harga").value),
-          total: parseFloat(row.querySelector(".bbm-total-val").value) || 0
-        });
+        const jenis = row.querySelector(".bbm-jenis").value.trim();
+        const jarak = row.querySelector(".bbm-jarak").value.trim();
+        const liter = row.querySelector(".bbm-liter").value.trim();
+        const harga = getRawValue(row.querySelector(".bbm-harga").value);
+        const total = parseFloat(row.querySelector(".bbm-total-val").value) || 0;
+        if (jenis || jarak || liter || harga || total) {
+          bbms.push({
+            id: idx + 1,
+            tipe: row.getAttribute("data-tipe") || "tambahan",
+            jenis,
+            jarak,
+            liter,
+            harga,
+            total
+          });
+        }
       });
 
       // Kumpulkan Multi Biaya Lain
       const biayas = [];
       document.querySelectorAll(".biaya-bundle").forEach((row, idx) => {
-        if (row.querySelector(".biaya-nama").value.trim()) {
+        const nama = row.querySelector(".biaya-nama").value.trim();
+        const qty = parseFloat(row.querySelector(".biaya-qty").value) || 0;
+        const jumlah = getRawValue(row.querySelector(".biaya-harga").value);
+        const total = parseFloat(row.querySelector(".biaya-subtotal-val").value) || 0;
+        if (nama || qty || jumlah || total) {
           biayas.push({
             id: idx + 1,
-            nama: row.querySelector(".biaya-nama").value.trim(),
-            qty: parseFloat(row.querySelector(".biaya-qty").value) || 0,
-            jumlah: getRawValue(row.querySelector(".biaya-harga").value),
-            total: parseFloat(row.querySelector(".biaya-subtotal-val").value) || 0
+            nama,
+            qty,
+            jumlah,
+            total
           });
         }
       });
