@@ -292,6 +292,8 @@
     let dynamicRowOrder = [];
 
     function registerDynamicRow(type, row) {
+      if (!row || !row.isConnected) return;
+      if (dynamicRowOrder.some(item => item.row === row)) return;
       row.dataset.dynamicType = type;
       dynamicRowOrder.push({ type, row });
     }
@@ -301,6 +303,7 @@
     }
 
     function initDynamicRowRegistry() {
+      dynamicRowOrder = [];
       const initialDriver = document.querySelector("#driver-container .driver-row");
       const initialTujuan = document.querySelector("#tujuan-container .tujuan-bundle");
       const initialBBMBerangkat = document.querySelector("#bbm-berangkat-list .bbm-bundle");
@@ -539,19 +542,28 @@
     }
 
     function getSubmittedExtraRows() {
-      const firstFilledRowByType = {};
+      const allRows = Array.from(document.querySelectorAll(
+        '#driver-container .driver-row, #tujuan-container .tujuan-bundle, #bbm-berangkat-list .bbm-bundle, #bbm-pulang-list .bbm-bundle, #biaya-container .biaya-bundle'
+      ));
+      const firstRowSeenByType = {};
+      const extraRows = [];
 
-      return dynamicRowOrder.map((entry) => {
-        const rowData = getRowData(entry.row);
-        if (!rowData) return null;
+      allRows.forEach(row => {
+        const type = getRowType(row);
+        if (!type) return;
 
-        if (!firstFilledRowByType[entry.type]) {
-          firstFilledRowByType[entry.type] = true;
-          return null;
+        const rowData = getRowData(row);
+        if (!rowData) return;
+
+        if (!firstRowSeenByType[type]) {
+          firstRowSeenByType[type] = true;
+          return;
         }
 
-        return rowData;
-      }).filter(item => item !== null);
+        extraRows.push(rowData);
+      });
+
+      return extraRows;
     }
 
     function hitungSelisihHari() {
