@@ -545,12 +545,6 @@
       return null;
     }
 
-    function getSubmittedExtraRows() {
-      return Array.from(document.querySelectorAll('[data-extra="true"]'))
-        .map(row => getRowData(row))
-        .filter(Boolean);
-    }
-
     function hitungSelisihHari() {
       const tgl1 = new Date(document.getElementById("Jadwal Berangkat").value);
       const tgl2 = new Date(document.getElementById("Jadwal Sampai").value);
@@ -631,28 +625,24 @@
       btn.disabled = true;
       btn.innerText = "⏳ Menyimpan Data & Menerbitkan Nomor EUPD...";
 
-      // Kumpulkan Multi Drivers (preserve row order)
+      // Kumpulkan Multi Drivers: pertahankan placeholder baris sesuai urutan DOM
       const drivers = [];
-      document.querySelectorAll(".driver-input").forEach((el, idx) => {
+      document.querySelectorAll(".driver-input").forEach(el => {
         drivers.push(el.value.trim());
       });
 
-      // Kumpulkan Multi Tujuans (preserve row order)
+      // Kumpulkan Multi Tujuans: pertahankan placeholder baris sesuai urutan DOM
       const tujuans = [];
-      document.querySelectorAll(".tujuan-bundle").forEach((row, idx) => {
+      document.querySelectorAll(".tujuan-bundle").forEach(row => {
         const pemesan = row.querySelector(".input-pemesan").value.trim();
         const tujuan = row.querySelector(".input-tujuan").value.trim();
         const alamat = row.querySelector(".input-alamat").value.trim();
-        tujuans.push({
-          pemesan,
-          tujuan,
-          alamat
-        });
+        tujuans.push({ pemesan, tujuan, alamat });
       });
 
-      // Kumpulkan Multi BBMs (preserve row order)
+      // Kumpulkan Multi BBMs: pertahankan placeholder baris sesuai urutan DOM
       const bbms = [];
-      document.querySelectorAll(".bbm-bundle").forEach((row, idx) => {
+      document.querySelectorAll(".bbm-bundle").forEach(row => {
         const jenis = row.querySelector(".bbm-jenis").value.trim();
         const jarak = row.querySelector(".bbm-jarak").value.trim();
         const liter = row.querySelector(".bbm-liter").value.trim();
@@ -668,22 +658,15 @@
         });
       });
 
-      // Kumpulkan Multi Biaya Lain (preserve row order)
+      // Kumpulkan Multi Biaya Lain: pertahankan placeholder baris sesuai urutan DOM
       const biayas = [];
-      document.querySelectorAll(".biaya-bundle").forEach((row, idx) => {
+      document.querySelectorAll(".biaya-bundle").forEach(row => {
         const nama = row.querySelector(".biaya-nama").value.trim();
         const qty = parseFloat(row.querySelector(".biaya-qty").value) || 0;
         const jumlah = getRawValue(row.querySelector(".biaya-harga").value);
         const total = parseFloat(row.querySelector(".biaya-subtotal-val").value) || 0;
-        biayas.push({
-          nama,
-          qty,
-          jumlah,
-          total
-        });
+        biayas.push({ nama, qty, jumlah, total });
       });
-
-      const extraRows = getSubmittedExtraRows();
 
       const payload = {
         action: "tambahEUPD",
@@ -705,8 +688,7 @@
         drivers: drivers,
         tujuans: tujuans,
         bbms: bbms,
-        biayas: biayas,
-        extraRows: extraRows
+        biayas: biayas
       };
 
       try {
