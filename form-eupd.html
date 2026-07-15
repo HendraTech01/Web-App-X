@@ -289,6 +289,16 @@
     const GAS_URL = "https://script.google.com/macros/s/AKfycbwf5oEpUkMp65-aTQ77PIj6CEhQV64yXjBqJMiBrkacXed5AbRYimF_Cb9qTa5mczLa/exec";
 
     let masterWH = [], masterKendaraan = [], masterDriver = [], masterPemesan = [], masterTujuan = [];
+    let dynamicRowOrder = [];
+
+    function registerDynamicRow(type, row) {
+      row.dataset.dynamicType = type;
+      dynamicRowOrder.push({ type, row });
+    }
+
+    function unregisterDynamicRow(row) {
+      dynamicRowOrder = dynamicRowOrder.filter(item => item.row !== row);
+    }
 
     // 1. MEMUAT SIDEBAR & MASTER DATA SHEET
     async function initForm() {
@@ -365,10 +375,11 @@
       div.style.position = "relative";
       div.innerHTML = `
         <input type="text" class="app-input driver-input" placeholder="Ketik nama driver tambahan..." required style="padding-right: 2.5rem;" oninput="filterAutocomplete(this, masterDriver, 'nama', updateJumlahKaryawan)">
-        <button type="button" class="btn-remove-row" style="top:0.6rem; right:0.5rem;" onclick="this.parentElement.remove(); updateJumlahKaryawan();">x</button>
+        <button type="button" class="btn-remove-row" style="top:0.6rem; right:0.5rem;" onclick="unregisterDynamicRow(this.parentElement); this.parentElement.remove(); updateJumlahKaryawan();">x</button>
         <div class="autocomplete-list"></div>
       `;
       container.appendChild(div);
+      registerDynamicRow("driver", div);
       updateJumlahKaryawan();
     }
 
@@ -395,6 +406,7 @@
           <div><input type="text" class="app-input input-alamat" placeholder="Alamat ..." required></div>
       `;
       container.appendChild(div);
+      registerDynamicRow("tujuan", div);
     }
 
     function createBBMRow(tipe) {
@@ -403,7 +415,7 @@
       div.className = "dynamic-row bbm-bundle";
       div.setAttribute("data-tipe", tipe);
       div.innerHTML = `
-        <button type="button" class="btn-remove-row" onclick="this.closest('.bbm-bundle').remove(); calculateAll();">x</button>
+        <button type="button" class="btn-remove-row" onclick="unregisterDynamicRow(this.closest('.bbm-bundle')); this.closest('.bbm-bundle').remove(); calculateAll();">x</button>
         <div class="grid-4">
           <input type="text" class="app-input bbm-jenis" placeholder="Jenis BBM (Pertalite/Solar/Lainnya)...">
           <input type="number" class="app-input bbm-jarak" placeholder="Jarak (KM)...">
@@ -414,6 +426,7 @@
         <input type="hidden" class="bbm-total-val" value="0">
       `;
       container.appendChild(div);
+      registerDynamicRow(tipe === "berangkat" ? "bbm-berangkat" : "bbm-pulang", div);
     }
 
     function addBBMBerangkatRow() {
@@ -429,9 +442,9 @@
       const div = document.createElement("div");
       div.className = "dynamic-row biaya-bundle";
       div.innerHTML = `
-        <button type="button" class="btn-remove-row" onclick="this.parentElement.remove(); calculateAll();">x</button>
+        <button type="button" class="btn-remove-row" onclick="unregisterDynamicRow(this.parentElement); this.parentElement.remove(); calculateAll();">x</button>
         <div class="grid-3">
-          <input type="text" class="app-input biaya-nama" placeholder="Nama Biaya...">
+          <input type="text" class="app-input biaya-nama" placeholder="Nama Biaya (cth: Buruh, Tol)...">
           <input type="number" class="app-input biaya-qty" placeholder="Kuantiti..." value="1" oninput="calcBiayaRow(this)">
           <input type="text" class="app-input biaya-harga" placeholder="Harga Satuan (Rp)..." oninput="cleanNumberInput(this); calcBiayaRow(this);" onblur="formatDecimalDisplay(this)">
         </div>
@@ -439,6 +452,7 @@
         <input type="hidden" class="biaya-subtotal-val" value="0">
       `;
       container.appendChild(div);
+      registerDynamicRow("biaya", div);
     }
 
     // 4. FORMAT DESIMAL & KALKULASI OTOMATIS
@@ -549,7 +563,7 @@
       // Kumpulkan Multi Drivers
       const drivers = [];
       document.querySelectorAll(".driver-input").forEach((el, idx) => {
-        if (el.value.trim()) drivers.push({ id: idx + 1, nama: el.value.trim() });
+        if (el.value.trim()) drivers.push(el.value.trim());
       });
 
       // Kumpulkan Multi Tujuans
@@ -560,7 +574,6 @@
         const alamat = row.querySelector(".input-alamat").value.trim();
         if (pemesan || tujuan || alamat) {
           tujuans.push({
-            id: idx + 1,
             pemesan,
             tujuan,
             alamat
@@ -578,7 +591,6 @@
         const total = parseFloat(row.querySelector(".bbm-total-val").value) || 0;
         if (jenis || jarak || liter || harga || total) {
           bbms.push({
-            id: idx + 1,
             tipe: row.getAttribute("data-tipe") || "tambahan",
             jenis,
             jarak,
@@ -598,7 +610,6 @@
         const total = parseFloat(row.querySelector(".biaya-subtotal-val").value) || 0;
         if (nama || qty || jumlah || total) {
           biayas.push({
-            id: idx + 1,
             nama,
             qty,
             jumlah,
@@ -606,6 +617,43 @@
           });
         }
       });
+
+      const extraRows = dynamicRowOrder.map((entry) => {
+        const row = entry.row;
+        if (entry.type === "driver") {
+          const nama = row.querySelector(".driver-input").value.trim();
+          return nama ? { type: "driver", nama } : null;
+        }
+        if (entry.type === "tujuan") {
+          const pemesan = row.querySelector(".input-pemesan").value.trim();
+          const tujuan = row.querySelector(".input-tujuan").value.trim();
+          const alamat = row.querySelector(".input-alamat").value.trim();
+          return (pemesan || tujuan || alamat) ? { type: "tujuan", pemesan, tujuan, alamat } : null;
+        }
+        if (entry.type === "bbm-berangkat" || entry.type === "bbm-pulang") {
+          const jenis = row.querySelector(".bbm-jenis").value.trim();
+          const jarak = row.querySelector(".bbm-jarak").value.trim();
+          const liter = row.querySelector(".bbm-liter").value.trim();
+          const harga = getRawValue(row.querySelector(".bbm-harga").value);
+          const total = parseFloat(row.querySelector(".bbm-total-val").value) || 0;
+          return (jenis || jarak || liter || harga || total) ? {
+            type: entry.type,
+            jenis,
+            jarak,
+            liter,
+            harga,
+            total
+          } : null;
+        }
+        if (entry.type === "biaya") {
+          const nama = row.querySelector(".biaya-nama").value.trim();
+          const qty = parseFloat(row.querySelector(".biaya-qty").value) || 0;
+          const jumlah = getRawValue(row.querySelector(".biaya-harga").value);
+          const total = parseFloat(row.querySelector(".biaya-subtotal-val").value) || 0;
+          return (nama || qty || jumlah || total) ? { type: "biaya", nama, qty, jumlah, total } : null;
+        }
+        return null;
+      }).filter(item => item !== null);
 
       const payload = {
         action: "tambahEUPD",
@@ -627,7 +675,8 @@
         drivers: drivers,
         tujuans: tujuans,
         bbms: bbms,
-        biayas: biayas
+        biayas: biayas,
+        extraRows: extraRows
       };
 
       try {
