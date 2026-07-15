@@ -26,7 +26,7 @@
       <span>Dashboard Utama</span>
     </a>
 
-    <a href="form-eupd.html" class="app-nav-item">
+    <a href="list-eupd.html" class="app-nav-item">
       <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
         <polyline points="14 2 14 8 20 8"></polyline>
@@ -34,10 +34,8 @@
         <line x1="16" y1="17" x2="8" y2="17"></line>
         <polyline points="10 9 9 9 8 9"></polyline>
       </svg>
-      <span>Form EUPD</span>
+      <span>List EUPD</span>
     </a>
-
-    <div id="menu-access-links"></div>
   </nav>
 
   <div class="app-sidebar-footer">
@@ -53,81 +51,21 @@
 </div>
 
 <script>
-  const GAS_URL = "https://script.google.com/macros/s/AKfycbwf5oEpUkMp65-aTQ77PIj6CEhQV64yXjBqJMiBrkacXed5AbRYimF_Cb9qTa5mczLa/exec";
-
   function getCurrentPage() {
     return window.location.pathname.split("/").pop().toLowerCase();
   }
 
-  function getCurrentSheetQuery() {
-    return new URLSearchParams(window.location.search).get("sheet") || "";
-  }
-
   function updateActiveLinks() {
     const currentPage = getCurrentPage();
-    const currentSheet = getCurrentSheetQuery();
 
     document.querySelectorAll(".app-sidebar-nav .app-nav-item").forEach((link) => {
       const href = link.getAttribute("href") || "";
       const linkPage = href.split("/").pop().split("?")[0].toLowerCase();
-
-      link.classList.remove("app-nav-item-active");
-      if (linkPage === currentPage) {
-        if (currentPage === "list-eupd.html") {
-          if (href.includes(`sheet=${encodeURIComponent(currentSheet)}`)) {
-            link.classList.add("app-nav-item-active");
-          }
-        } else {
-          link.classList.add("app-nav-item-active");
-        }
-      }
+      link.classList.toggle("app-nav-item-active", linkPage === currentPage);
     });
   }
 
-  async function renderAccessMenuItems() {
-    const user = localStorage.getItem("wax_logged_user") || "Pengguna";
-    document.getElementById("menu-username").innerText = user;
-
-    if (!user || user === "Pengguna") return;
-
-    try {
-      const response = await fetch(`${GAS_URL}?action=getMenuAccess&username=${encodeURIComponent(user)}`);
-      const json = await response.json();
-      if (json.status !== "success" || !Array.isArray(json.data)) return;
-
-      const container = document.getElementById("menu-access-links");
-      const unique = [];
-      json.data.forEach(item => {
-        const sheet = item["Hak Akses Menu"] || item["hak akses menu"] || "";
-        const warehouse = item["Nama Warehouse"] || item["nama warehouse"] || item["Warehouse"] || item["warehouse"] || sheet;
-        if (!sheet || unique.some(existing => existing.sheet === sheet)) return;
-        unique.push({ sheet, warehouse });
-      });
-
-      unique.forEach(item => {
-        const link = document.createElement("a");
-        link.href = `list-eupd.html?sheet=${encodeURIComponent(item.sheet)}`;
-        link.className = "app-nav-item";
-        link.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-            <polyline points="14 2 14 8 20 8"></polyline>
-            <line x1="16" y1="13" x2="8" y2="13"></line>
-            <line x1="16" y1="17" x2="8" y2="17"></line>
-            <polyline points="10 9 9 9 8 9"></polyline>
-          </svg>
-          <span>${item.warehouse}</span>
-        `;
-        container.appendChild(link);
-      });
-
-      updateActiveLinks();
-    } catch (error) {
-      console.error("Gagal memuat menu hak akses:", error);
-    }
-  }
-
   (function() {
-    renderAccessMenuItems();
+    updateActiveLinks();
   })();
 </script>
