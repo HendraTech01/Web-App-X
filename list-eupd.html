@@ -68,6 +68,8 @@
 
         <div id="list-alert" class="app-alert"></div>
 
+        <div id="warehouse-selector" class="app-section-card" style="margin-bottom:1.5rem; display:none;"></div>
+
         <div class="table-container">
           <table class="eupd-table">
             <thead>
@@ -131,24 +133,80 @@
       return sheetName.replace(/^ListEUPD/i, "").trim() || sheetName;
     }
 
-    async function loadListEUPD() {
-      const tbody = document.getElementById("table-body");
-      const headerLabel = document.getElementById("sheet-label");
-      const sheetName = await resolveSheetName();
+    function createWarehouseCard(item) {
+      const sheet = item["Hak Akses Menu"] || item["hak akses menu"] || "";
+      const warehouse = item["Nama Warehouse"] || item["nama warehouse"] || item["Warehouse"] || item["warehouse"] || sheet;
+      const card = document.createElement("div");
+      card.style = "border:1px solid var(--color-border); border-radius:12px; padding:1rem; margin-bottom:1rem; background:#FFFFFF; box-shadow:0 4px 12px rgba(15,23,42,0.04);";
+      card.innerHTML = `
+        <div style="font-weight:700; margin-bottom:0.45rem;">${warehouse}</div>
+        <div style="font-size:0.95rem; color:var(--color-text-secondary); margin-bottom:0.85rem;">Sheet: ${sheet}</div>
+        <button type="button" class="app-btn" style="padding:0.65rem 1rem; font-size:0.95rem;" onclick="selectWarehouse('${encodeURIComponent(sheet)}')">Pilih ${warehouse}</button>
+      `;
+      return card;
+    }
 
-      if (!sheetName) {
-        headerLabel.innerText = "Sheet tujuan belum dipilih.";
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 2rem; color: #64748B;">Tidak ada sheet EUPD yang dipilih. Buka menu untuk memilih unit / target sheet.</td></tr>';
+    function showWarehouseSelection(items) {
+      const selector = document.getElementById("warehouse-selector");
+      selector.innerHTML = "";
+      selector.style.display = "block";
+      document.querySelector(".table-container").style.display = "none";
+
+      if (items.length === 0) {
+        selector.innerHTML = '<div class="app-alert app-alert-error">Anda tidak memiliki akses ke list warehouse EUPD. Hubungi admin.</div>';
         return;
       }
 
-      if (!getQuerySheetName()) {
+      if (items.length === 1) {
+        selectWarehouse(encodeURIComponent(items[0]["Hak Akses Menu"] || items[0]["hak akses menu"] || ""));
+        return;
+      }
+
+      selector.innerHTML = '<div style="font-size:1rem; font-weight:700; margin-bottom:1rem;">Pilih warehouse terlebih dahulu untuk melihat daftar EUPD</div>';
+      items.forEach(item => selector.appendChild(createWarehouseCard(item)));
+    }
+
+    function selectWarehouse(encodedSheet) {
+      const sheetName = decodeURIComponent(encodedSheet);
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.set("sheet", sheetName);
+      window.location.href = newUrl.toString();
+    }
+
+    async function loadListEUPD() {
+      const tbody = document.getElementById("table-body");
+      const headerLabel = document.getElementById("sheet-label");
+      const accessItems = await fetchUserSheetAccess();
+      const sheetName = getQuerySheetName();
+      const currentSheet = sheetName || (accessItems.length === 1 ? (accessItems[0]["Hak Akses Menu"] || accessItems[0]["hak akses menu"] || "") : "");
+
+      if (!currentSheet) {
+        headerLabel.innerText = "Pilih Warehouse EUPD";
+        showWarehouseSelection(accessItems);
+        return;
+      }
+
+      const matched = accessItems.find(item => {
+        const sheet = item["Hak Akses Menu"] || item["hak akses menu"] || "";
+        return sheet === currentSheet;
+      });
+
+      if (!matched) {
+        headerLabel.innerText = "Akses sheet tidak valid.";
+        document.getElementById("warehouse-selector").style.display = "none";
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 2rem; color: red;">Anda tidak memiliki akses ke sheet yang dipilih.</td></tr>';
+        return;
+      }
+
+      if (!sheetName) {
         const newUrl = new URL(window.location.href);
-        newUrl.searchParams.set("sheet", sheetName);
+        newUrl.searchParams.set("sheet", currentSheet);
         window.history.replaceState(null, "", newUrl.toString());
       }
 
-      headerLabel.innerText = `Daftar EUPD: ${getSheetLabel(sheetName)}`;
+      document.getElementById("warehouse-selector").style.display = "none";
+      document.querySelector(".table-container").style.display = "block";
+      headerLabel.innerText = `Daftar EUPD: ${getSheetLabel(currentSheet)}`;
 
       try {
         const res = await fetch(`${GAS_URL}?action=getData&sheet=${encodeURIComponent(sheetName)}`);
