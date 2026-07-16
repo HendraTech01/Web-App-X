@@ -324,7 +324,13 @@
     }
 
     function getQuerySheetName() {
-      return new URLSearchParams(window.location.search).get("sheet") || "";
+      const params = new URLSearchParams(window.location.search);
+      return params.get("sheetName") || params.get("sheet") || "";
+    }
+    
+    function getQueryReturnPage() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("returnPage") || getQuerySheetName();
     }
 
     function getFormTargetSheet() {
@@ -400,9 +406,10 @@
               showFormAccessError("Sheet yang dipilih tidak tersedia untuk Anda. Silakan pilih ulang dari halaman daftar EUPD.");
             }
             
-            const backLink = document.querySelector('a[href="list-eupd.html"]');
+            const returnPage = getQueryReturnPage() || currentTargetSheet;
+            const backLink = document.querySelector('a[href*="list-eupd.html"]');
             if (backLink) {
-              backLink.href = `list-eupd.html?sheet=${encodeURIComponent(currentTargetSheet)}`;
+              backLink.href = `list-eupd.html?sheetName=${encodeURIComponent(returnPage)}&returnPage=${encodeURIComponent(returnPage)}`;
             }
             return;
           }
@@ -818,8 +825,8 @@
         
         if (result.status === "success") {
           alert(`🎉 SUKSES! Pengajuan EUPD Berhasil Disimpan.\nNomor Dokumen Anda: ${result.noEUPD}`);
-          const targetSheet = getQuerySheetName();
-          window.location.replace(`list-eupd.html?sheet=${encodeURIComponent(targetSheet)}`);
+          const returnPage = getQueryReturnPage();
+          window.location.replace(`list-eupd.html?sheetName=${encodeURIComponent(returnPage)}&returnPage=${encodeURIComponent(returnPage)}`);
         } else {
           const alertBox = document.getElementById("form-alert");
           alertBox.className = "app-alert app-alert-error";

@@ -96,7 +96,13 @@
     const GAS_URL = "https://script.google.com/macros/s/AKfycbwf5oEpUkMp65-aTQ77PIj6CEhQV64yXjBqJMiBrkacXed5AbRYimF_Cb9qTa5mczLa/exec";
 
     function getQuerySheetName() {
-      return new URLSearchParams(window.location.search).get("sheet") || "";
+      const params = new URLSearchParams(window.location.search);
+      return params.get("sheetName") || params.get("sheet") || "";
+    }
+    
+    function getQueryReturnPage() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("returnPage") || getQuerySheetName();
     }
 
     function getCurrentUser() {
@@ -172,7 +178,9 @@
     function selectWarehouse(encodedSheet) {
       const sheetName = decodeURIComponent(encodedSheet);
       const newUrl = new URL(window.location.href);
-      newUrl.searchParams.set("sheet", sheetName);
+      newUrl.searchParams.set("sheetName", sheetName);
+      newUrl.searchParams.set("returnPage", sheetName);
+      newUrl.searchParams.delete("sheet");
       window.location.href = newUrl.toString();
     }
 
@@ -203,13 +211,16 @@
 
       if (!sheetName) {
         const newUrl = new URL(window.location.href);
-        newUrl.searchParams.set("sheet", currentSheet);
+        newUrl.searchParams.set("sheetName", currentSheet);
+        newUrl.searchParams.set("returnPage", currentSheet);
+        newUrl.searchParams.delete("sheet");
         window.history.replaceState(null, "", newUrl.toString());
       }
 
       const createButton = document.getElementById("btn-create-new");
       if (createButton) {
-        createButton.href = `form-eupd.html?sheet=${encodeURIComponent(currentSheet)}`;
+        const returnPage = getQueryReturnPage() || currentSheet;
+        createButton.href = `form-eupd.html?sheetName=${encodeURIComponent(currentSheet)}&returnPage=${encodeURIComponent(returnPage)}`;
       }
 
       document.getElementById("warehouse-selector").style.display = "none";
