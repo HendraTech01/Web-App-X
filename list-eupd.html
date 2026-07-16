@@ -77,7 +77,7 @@
                 <th>No. Pengajuan EUPD</th>
                 <th>Tanggal Dokumen</th>
                 <th>Pembuat</th>
-                <th>Nama Warehouse</th>
+                <th>Nama Tujuan</th>
                 <th>Kendaraan</th>
                 <th>Total Biaya</th>
               </tr>
@@ -222,7 +222,7 @@
             <td class="badge-no">${row["Nomor Pengajuan EUPD"]}</td>
             <td>${tgl}</td>
             <td>${row["Pembuat Dokumen"] || "-"}</td>
-            <td>${row["Warehouse Asal"] || "-"}</td>
+            <td>${row["Nama Tujuan"] || "-"}</td>
             <td>${row["No Kendaraan"] || "-"}</td>
             <td style="font-weight: 600;">${total}</td>
           </tr>
