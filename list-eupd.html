@@ -80,10 +80,12 @@
                 <th>Nama Tujuan</th>
                 <th>Kendaraan</th>
                 <th>Total Biaya</th>
+                <th>Status</th>
+                <th>Aksi</th>
               </tr>
             </thead>
             <tbody id="table-body">
-              <tr><td colspan="6" class="text-center" style="padding: 2rem;">Memuat data dari Google Sheets...</td></tr>
+              <tr><td colspan="8" class="text-center" style="padding: 2rem;">Memuat data dari Google Sheets...</td></tr>
             </tbody>
           </table>
         </div>
@@ -132,6 +134,45 @@
         console.error("Gagal memuat akses sheet user:", err);
         return [];
       }
+    }
+
+    async function fetchUserFeatureAccess() {
+      const user = getCurrentUser();
+      if (!user) return [];
+
+      const storedData = localStorage.getItem("wax_feature_access_data");
+      if (storedData) {
+        try {
+          return JSON.parse(storedData);
+        } catch(e) {
+          console.error("Gagal parse cache fitur akses", e);
+        }
+      }
+
+      try {
+        const res = await fetch(`${GAS_URL}?action=getData&sheet=FiturListEUPD`);
+        const json = await res.json();
+        if (json.status !== "success" || !Array.isArray(json.data)) return [];
+
+        const userFeatures = json.data.filter(item => {
+          const username = String(item["Username"] || item["username"] || "").trim();
+          return username.toLowerCase() === user.toLowerCase();
+        });
+
+        localStorage.setItem("wax_feature_access_data", JSON.stringify(userFeatures));
+        return userFeatures;
+      } catch (err) {
+        console.error("Gagal memuat akses fitur user:", err);
+        return [];
+      }
+    }
+
+    function hasFeaturePermission(featureName) {
+      const featureAccess = JSON.parse(localStorage.getItem("wax_feature_access_data") || "[]");
+      return featureAccess.some(item => {
+        const feature = String(item["Fitur List EUPD"] || item["fitur list eupd"] || "").trim();
+        return feature.toLowerCase() === featureName.toLowerCase();
+      });
     }
 
     async function resolveSheetName() {
@@ -198,7 +239,7 @@
     function renderEUPDTable(data) {
       const tbody = document.getElementById("table-body");
       if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 2rem; color: #64748B;">Belum ada data pengajuan EUPD di sheet tujuan ini.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center" style="padding: 2rem; color: #64748B;">Belum ada data pengajuan EUPD di sheet tujuan ini.</td></tr>';
         return;
       }
 
@@ -210,12 +251,42 @@
         }
       });
 
-      tbody.innerHTML = "";
+        tbody.innerHTML = "";
       Object.values(uniqueEUPD).reverse().forEach(row => {
         let tgl = row["Tanggal Dokumen"] || "-";
         if (tgl !== "-" && String(tgl).includes("T")) tgl = String(tgl).split("T")[0];
 
         let total = row["Total Biaya Keseluruhan"] ? `Rp ${Number(row["Total Biaya Keseluruhan"]).toLocaleString('id-ID')}` : "-";
+
+        const status = row["Status"] || "Draft";
+        let statusBadge = "";
+        if (status === "Draft") {
+          statusBadge = '<span style="background: #FEF3C7; color: #92400E; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 12px; font-weight: 600;">Draft</span>';
+        } else if (status === "Locked") {
+          statusBadge = '<span style="background: #FEE2E2; color: #991B1B; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 12px; font-weight: 600;">Locked</span>';
+        } else if (status === "Unlocked") {
+          statusBadge = '<span style="background: #D1FAE5; color: #065F46; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 12px; font-weight: 600;">Unlocked</span>';
+        } else {
+          statusBadge = `<span style="background: #F1F5F9; color: #475569; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 12px; font-weight: 600;">${status}</span>`;
+        }
+
+        const canEdit = hasFeaturePermission("Edit");
+        const canLock = hasFeaturePermission("Lock");
+        const canUnlock = hasFeaturePermission("Unlock");
+
+        let actionButtons = "";
+        if (canEdit) {
+          actionButtons += `<button type="button" class="app-btn" style="padding: 0.35rem 0.75rem; font-size: 12px;" onclick="handleEditEUPD('${row["Nomor Pengajuan EUPD"]}')">Edit</button>`;
+        }
+        if (canLock && status !== "Locked") {
+          actionButtons += `<button type="button" class="app-btn" style="padding: 0.35rem 0.75rem; font-size: 12px; background: #FEE2E2; color: #991B1B;" onclick="handleLockEUPD('${row["Nomor Pengajuan EUPD"]}')">Lock</button>`;
+        }
+        if (canUnlock && status === "Locked") {
+          actionButtons += `<button type="button" class="app-btn" style="padding: 0.35rem 0.75rem; font-size: 12px; background: #D1FAE5; color: #065F46;" onclick="handleUnlockEUPD('${row["Nomor Pengajuan EUPD"]}')">Unlock</button>`;
+        }
+        if (!actionButtons) {
+          actionButtons = "<span style='color: #94A3B8; font-size: 12px;'>-</span>";
+        }
 
         tbody.innerHTML += `
           <tr>
@@ -225,9 +296,52 @@
             <td>${row["Nama Tujuan"] || "-"}</td>
             <td>${row["No Kendaraan"] || "-"}</td>
             <td style="font-weight: 600;">${total}</td>
+            <td>${statusBadge}</td>
+            <td>${actionButtons}</td>
           </tr>
         `;
       });
+    }
+
+    // Handler functions for Edit/Lock/Unlock actions
+    async function handleEditEUPD(noEUPD) {
+      const sheetName = getQuerySheetName();
+      window.location.href = `form-eupd.html?sheetName=${encodeURIComponent(sheetName)}&returnPage=${encodeURIComponent(sheetName)}&editNo=${encodeURIComponent(noEUPD)}`;
+    }
+
+    async function handleLockEUPD(noEUPD) {
+      if (!confirm("Apakah Anda yakin ingin mengunci dokumen EUPD ini? Dokumen yang terkunci tidak dapat diedit.")) return;
+      await updateEUPDStatus(noEUPD, "Locked");
+    }
+
+    async function handleUnlockEUPD(noEUPD) {
+      if (!confirm("Apakah Anda yakin ingin membuka kunci dokumen EUPD ini?")) return;
+      await updateEUPDStatus(noEUPD, "Unlocked");
+    }
+
+    async function updateEUPDStatus(noEUPD, newStatus) {
+      const sheetName = getQuerySheetName();
+      try {
+        const res = await fetch(GAS_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "updateEUPDStatus",
+            TargetSheet: sheetName,
+            NoEUPD: noEUPD,
+            NewStatus: newStatus
+          })
+        });
+        const result = await res.json();
+        if (result.status === "success") {
+          alert(`Status berhasil diubah menjadi ${newStatus}`);
+          await fetchAndRenderSheet(sheetName);
+        } else {
+          alert("Gagal mengubah status: " + (result.message || "Unknown error"));
+        }
+      } catch (err) {
+        alert("Gagal terhubung ke server.");
+        console.error(err);
+      }
     }
 
     // Fetch data sheet dan render ke tabel
@@ -240,10 +354,10 @@
         if (result.status === "success") {
           renderEUPDTable(result.data);
         } else {
-          tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 2rem; color: red;">' + (result.message || 'Gagal mengambil data dari server.') + '</td></tr>';
+          tbody.innerHTML = '<tr><td colspan="8" class="text-center" style="padding: 2rem; color: red;">' + (result.message || 'Gagal mengambil data dari server.') + '</td></tr>';
         }
       } catch (err) {
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 2rem; color: red;">Gagal mengambil data dari server.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center" style="padding: 2rem; color: red;">Gagal mengambil data dari server.</td></tr>';
         console.error(err);
       }
     }
@@ -269,6 +383,9 @@
       const headerLabel = document.getElementById("sheet-label");
       const sheetName = getQuerySheetName();
       const returnPage = getQueryReturnPage();
+
+      // Load feature access permissions
+      await fetchUserFeatureAccess();
 
       // FAST PATH: sheetName sudah tersedia dari URL (klik menu sidebar)
       // Langsung setup UI dan fetch data sheet tanpa menunggu fetchUserSheetAccess
