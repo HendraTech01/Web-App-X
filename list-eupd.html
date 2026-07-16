@@ -184,86 +184,51 @@
       window.location.href = newUrl.toString();
     }
 
-    async function loadListEUPD() {
+    // Render data tabel EUPD dari array data
+    function renderEUPDTable(data) {
       const tbody = document.getElementById("table-body");
-      const headerLabel = document.getElementById("sheet-label");
-      const sheetName = getQuerySheetName();
-      const accessItems = await fetchUserSheetAccess(); // Always fetch to get proper warehouse names and verify access
-      const currentSheet = sheetName || (accessItems.length === 1 ? (accessItems[0]["Hak Akses Menu"] || accessItems[0]["hak akses menu"] || "") : "");
-
-      if (!currentSheet) {
-        headerLabel.innerText = "Pilih Warehouse EUPD";
-        showWarehouseSelection(accessItems);
+      if (data.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 2rem; color: #64748B;">Belum ada data pengajuan EUPD di sheet tujuan ini.</td></tr>';
         return;
       }
 
-      const matched = accessItems.find(item => {
-        const sheet = item["Hak Akses Menu"] || item["hak akses menu"] || "";
-        return sheet === currentSheet;
+      const uniqueEUPD = {};
+      data.forEach(row => {
+        const no = row["Nomor Pengajuan EUPD"];
+        if (no && !uniqueEUPD[no]) {
+          uniqueEUPD[no] = row;
+        }
       });
 
-      if (!matched && !sheetName) {
-        headerLabel.innerText = "Akses sheet tidak valid.";
-        document.getElementById("warehouse-selector").style.display = "none";
-        tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 2rem; color: red;">Anda tidak memiliki akses ke sheet yang dipilih.</td></tr>';
-        return;
-      }
+      tbody.innerHTML = "";
+      Object.values(uniqueEUPD).reverse().forEach(row => {
+        let tgl = row["Tanggal Dokumen"] || "-";
+        if (tgl !== "-" && String(tgl).includes("T")) tgl = String(tgl).split("T")[0];
 
-      if (!sheetName) {
-        const newUrl = new URL(window.location.href);
-        newUrl.searchParams.set("sheetName", currentSheet);
-        newUrl.searchParams.set("returnPage", currentSheet);
-        newUrl.searchParams.delete("sheet");
-        window.history.replaceState(null, "", newUrl.toString());
-      }
+        let total = row["Total Biaya Keseluruhan"] ? `Rp ${Number(row["Total Biaya Keseluruhan"]).toLocaleString('id-ID')}` : "-";
 
-      const createButton = document.getElementById("btn-create-new");
-      if (createButton) {
-        const returnPage = getQueryReturnPage() || currentSheet;
-        createButton.href = `form-eupd.html?sheetName=${encodeURIComponent(currentSheet)}&returnPage=${encodeURIComponent(returnPage)}`;
-      }
+        tbody.innerHTML += `
+          <tr>
+            <td class="badge-no">${row["Nomor Pengajuan EUPD"]}</td>
+            <td>${tgl}</td>
+            <td>${row["Pembuat Dokumen"] || "-"}</td>
+            <td>${row["Warehouse Asal"] || "-"}</td>
+            <td>${row["No Kendaraan"] || "-"}</td>
+            <td style="font-weight: 600;">${total}</td>
+          </tr>
+        `;
+      });
+    }
 
-      document.getElementById("warehouse-selector").style.display = "none";
-      document.querySelector(".table-container").style.display = "block";
-      headerLabel.innerText = `Daftar EUPD: ${getSheetLabel(currentSheet, matched)}`;
-
+    // Fetch data sheet dan render ke tabel
+    async function fetchAndRenderSheet(sheetName) {
+      const tbody = document.getElementById("table-body");
       try {
-        const res = await fetch(`${GAS_URL}?action=getData&sheet=${encodeURIComponent(currentSheet)}`);
+        const res = await fetch(`${GAS_URL}?action=getData&sheet=${encodeURIComponent(sheetName)}`);
         const result = await res.json();
-        
+
         if (result.status === "success") {
-          const data = result.data;
-          if (data.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 2rem; color: #64748B;">Belum ada data pengajuan EUPD di sheet tujuan ini.</td></tr>';
-            return;
-          }
-          
-          const uniqueEUPD = {};
-          data.forEach(row => {
-            const no = row["Nomor Pengajuan EUPD"];
-            if (no && !uniqueEUPD[no]) {
-              uniqueEUPD[no] = row;
-            }
-          });
-
-          tbody.innerHTML = "";
-          Object.values(uniqueEUPD).reverse().forEach(row => {
-            let tgl = row["Tanggal Dokumen"] || "-";
-            if (tgl !== "-" && String(tgl).includes("T")) tgl = String(tgl).split("T")[0];
-            
-            let total = row["Total Biaya Keseluruhan"] ? `Rp ${Number(row["Total Biaya Keseluruhan"]).toLocaleString('id-ID')}` : "-";
-
-            tbody.innerHTML += `
-              <tr>
-                <td class="badge-no">${row["Nomor Pengajuan EUPD"]}</td>
-                <td>${tgl}</td>
-                <td>${row["Pembuat Dokumen"] || "-"}</td>
-                <td>${row["Warehouse Asal"] || "-"}</td>
-                <td>${row["No Kendaraan"] || "-"}</td>
-                <td style="font-weight: 600;">${total}</td>
-              </tr>
-            `;
-          });
+          renderEUPDTable(result.data);
         } else {
           tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 2rem; color: red;">' + (result.message || 'Gagal mengambil data dari server.') + '</td></tr>';
         }
@@ -271,6 +236,56 @@
         tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 2rem; color: red;">Gagal mengambil data dari server.</td></tr>';
         console.error(err);
       }
+    }
+
+    // Setup UI elements (header, button) berdasarkan sheet yang sudah ditentukan
+    function setupPageForSheet(currentSheet, returnPage) {
+      const headerLabel = document.getElementById("sheet-label");
+      headerLabel.innerText = `Daftar EUPD: ${getSheetLabel(currentSheet)}`;
+
+      const createButton = document.getElementById("btn-create-new");
+      if (createButton) {
+        const rp = returnPage || currentSheet;
+        createButton.href = `form-eupd.html?sheetName=${encodeURIComponent(currentSheet)}&returnPage=${encodeURIComponent(rp)}`;
+      }
+
+      document.getElementById("warehouse-selector").style.display = "none";
+      document.querySelector(".table-container").style.display = "block";
+    }
+
+    async function loadListEUPD() {
+      const tbody = document.getElementById("table-body");
+      const headerLabel = document.getElementById("sheet-label");
+      const sheetName = getQuerySheetName();
+      const returnPage = getQueryReturnPage();
+
+      // FAST PATH: sheetName sudah tersedia dari URL (klik menu sidebar)
+      // Langsung setup UI dan fetch data sheet tanpa menunggu fetchUserSheetAccess
+      if (sheetName) {
+        setupPageForSheet(sheetName, returnPage);
+        await fetchAndRenderSheet(sheetName);
+        return;
+      }
+
+      // SLOW PATH: tidak ada sheetName di URL, perlu cek hak akses user dulu
+      const accessItems = await fetchUserSheetAccess();
+      const currentSheet = (accessItems.length === 1 ? (accessItems[0]["Hak Akses Menu"] || accessItems[0]["hak akses menu"] || "") : "");
+
+      if (!currentSheet) {
+        headerLabel.innerText = "Pilih Warehouse EUPD";
+        showWarehouseSelection(accessItems);
+        return;
+      }
+
+      // User hanya punya 1 akses, langsung gunakan sheet tersebut
+      const newUrl = new URL(window.location.href);
+      newUrl.searchParams.set("sheetName", currentSheet);
+      newUrl.searchParams.set("returnPage", currentSheet);
+      newUrl.searchParams.delete("sheet");
+      window.history.replaceState(null, "", newUrl.toString());
+
+      setupPageForSheet(currentSheet, currentSheet);
+      await fetchAndRenderSheet(currentSheet);
     }
 
     document.addEventListener("DOMContentLoaded", () => {
