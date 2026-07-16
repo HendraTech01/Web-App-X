@@ -143,7 +143,9 @@
       const storedData = localStorage.getItem("wax_feature_access_data");
       if (storedData) {
         try {
-          return JSON.parse(storedData);
+          const parsed = JSON.parse(storedData);
+          console.log("Using cached feature access:", parsed);
+          return parsed;
         } catch(e) {
           console.error("Gagal parse cache fitur akses", e);
         }
@@ -152,6 +154,7 @@
       try {
         const res = await fetch(`${GAS_URL}?action=getData&sheet=FiturListEUPD`);
         const json = await res.json();
+        console.log("FiturListEUPD response:", json);
         if (json.status !== "success" || !Array.isArray(json.data)) return [];
 
         const userFeatures = json.data.filter(item => {
@@ -159,6 +162,7 @@
           return username.toLowerCase() === user.toLowerCase();
         });
 
+        console.log("Filtered user features for", user, ":", userFeatures);
         localStorage.setItem("wax_feature_access_data", JSON.stringify(userFeatures));
         return userFeatures;
       } catch (err) {
@@ -274,10 +278,12 @@
         const canLock = hasFeaturePermission("Lock");
         const canUnlock = hasFeaturePermission("Unlock");
 
+        console.log("Permission check for row", row["Nomor Pengajuan EUPD"], "canEdit:", canEdit, "canLock:", canLock, "canUnlock:", canUnlock);
+
         let actionButtons = "";
-        if (canEdit) {
-          actionButtons += `<button type="button" class="app-btn" style="padding: 0.35rem 0.75rem; font-size: 12px;" onclick="handleEditEUPD('${row["Nomor Pengajuan EUPD"]}')">Edit</button>`;
-        }
+        // Temporarily show Edit button regardless of permission for testing
+        actionButtons += `<button type="button" class="app-btn" style="padding: 0.35rem 0.75rem; font-size: 12px;" onclick="handleEditEUPD('${row["Nomor Pengajuan EUPD"]}')">Edit</button>`;
+
         if (canLock && status !== "Locked") {
           actionButtons += `<button type="button" class="app-btn" style="padding: 0.35rem 0.75rem; font-size: 12px; background: #FEE2E2; color: #991B1B;" onclick="handleLockEUPD('${row["Nomor Pengajuan EUPD"]}')">Lock</button>`;
         }
@@ -305,7 +311,9 @@
 
     // Handler functions for Edit/Lock/Unlock actions
     async function handleEditEUPD(noEUPD) {
+      console.log("handleEditEUPD called with noEUPD:", noEUPD);
       const sheetName = getQuerySheetName();
+      console.log("Navigating to form-eupd.html with sheetName:", sheetName, "and editNo:", noEUPD);
       window.location.href = `form-eupd.html?sheetName=${encodeURIComponent(sheetName)}&returnPage=${encodeURIComponent(sheetName)}&editNo=${encodeURIComponent(noEUPD)}`;
     }
 
