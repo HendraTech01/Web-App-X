@@ -385,6 +385,15 @@
         const selectedSheet = getQuerySheetName();
         setFormTargetSheet(selectedSheet);
 
+        // Jika sheetName sudah ada dari URL, langsung set back link sekarang (sebelum API call)
+        if (selectedSheet) {
+          const returnPage = getQueryReturnPage() || selectedSheet;
+          const backLink = document.querySelector('a[href*="list-eupd.html"]');
+          if (backLink) {
+            backLink.href = `list-eupd.html?sheetName=${encodeURIComponent(returnPage)}&returnPage=${encodeURIComponent(returnPage)}`;
+          }
+        }
+
         let hakAksesMenuData = [];
         function showFormAccessError(message) {
           const alertBox = document.getElementById("form-alert");
@@ -398,22 +407,18 @@
 
           const accessItems = data.filter(item => normalizeString(item["Username"] || item["username"]).toLowerCase() === normalizeString(currentUser).toLowerCase());
 
+          // FAST PATH: sheetName sudah ditentukan dari URL (context-aware navigation)
+          // Target sheet sudah di-set di atas, tinggal cari warehouse-nya saja
           if (currentTargetSheet) {
             const sheetItem = findAccessItemBySheet(currentTargetSheet, hakAksesMenuData);
             if (sheetItem) {
               fillWarehouseFromAccessItem(sheetItem);
-            } else {
-              showFormAccessError("Sheet yang dipilih tidak tersedia untuk Anda. Silakan pilih ulang dari halaman daftar EUPD.");
             }
-            
-            const returnPage = getQueryReturnPage() || currentTargetSheet;
-            const backLink = document.querySelector('a[href*="list-eupd.html"]');
-            if (backLink) {
-              backLink.href = `list-eupd.html?sheetName=${encodeURIComponent(returnPage)}&returnPage=${encodeURIComponent(returnPage)}`;
-            }
+            // Tidak perlu error atau return - biarkan master data lainnya tetap di-load
             return;
           }
 
+          // SLOW PATH: tidak ada sheetName dari URL, cari dari hak akses user
           if (accessItems.length === 1) {
             const singleItem = accessItems[0];
             const sheetName = normalizeString(singleItem["Hak Akses Menu"] || singleItem["hak akses menu"]);
