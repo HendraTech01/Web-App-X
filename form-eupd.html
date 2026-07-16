@@ -89,11 +89,11 @@
             <div class="grid-3">
               <div class="app-input-group">
                 <label>Nomor Pengajuan EUPD</label>
-                <input type="text" class="app-input" value="Generate Otomatis Saat Disimpan" disabled style="background:#F1F5F9; font-style:italic; font-size:12px;">
+                <input type="text" id="NoEUPD" class="app-input" value="Generate Otomatis Saat Disimpan" disabled style="background:#F1F5F9; font-style:italic; font-size:12px;">
               </div>
               <div class="app-input-group">
                 <label for="Tanggal Dokumen">Tanggal Dokumen</label>
-                <input type="date" id="Tanggal Dokumen" name="Tanggal Dokumen" class="app-input" disabled style="background:#F1F5F9;">
+                <input type="date" id="Tanggal Dokumen" name="Tanggal Dokumen" class="app-input">
               </div>
               <div class="app-input-group">
                 <label for="Pembuat Dokumen">Nama Pembuat</label>
@@ -378,11 +378,16 @@
         await loadSidebar();
         initDynamicRowRegistry();
 
-        // Set Tanggal Hari Ini & Jadwal Berangkat
+        // Set Tanggal Dokumen selalu ke hari ini (create dan edit)
         const now = new Date().toISOString().split("T")[0];
         document.getElementById("Tanggal Dokumen").value = now;
-        document.getElementById("Jadwal Berangkat").value = now;
-        document.getElementById("Jadwal Sampai").value = now;
+
+        // Set Jadwal Berangkat & Sampai hanya jika mode create
+        const editNo = getQueryEditNo();
+        if (!editNo) {
+          document.getElementById("Jadwal Berangkat").value = now;
+          document.getElementById("Jadwal Sampai").value = now;
+        }
 
         // Isi default pembuat dari user login jika kosong
         const currentUser = getCurrentUser();
@@ -404,7 +409,6 @@
         }
 
         // Jika mode edit, fetch dan populate data EUPD yang ada
-        const editNo = getQueryEditNo();
         if (editNo && selectedSheet) {
           const eupdData = await fetchEUPDData(editNo, selectedSheet);
           if (eupdData) {
@@ -511,27 +515,49 @@
       }
     }
 
+    function parseDateToInput(dateValue) {
+      if (!dateValue) return "";
+      const dateStr = String(dateValue);
+
+      // If already in YYYY-MM-DD format
+      if (dateStr.match(/^\d{4}-\d{2}-\d{2}$/)) {
+        return dateStr;
+      }
+
+      // If in DD/MM/YYYY format
+      if (dateStr.includes("/")) {
+        const parts = dateStr.split("/");
+        if (parts.length === 3) {
+          const [day, month, year] = parts;
+          return `${year}-${month}-${day}`;
+        }
+      }
+
+      // If it's a Date object or ISO string
+      const date = new Date(dateStr);
+      if (!isNaN(date.getTime())) {
+        return date.toISOString().split("T")[0];
+      }
+
+      return "";
+    }
+
     function populateForm(data) {
       if (!data || data.length === 0) return;
       const row = data[0]; // Ambil baris pertama (data utama)
 
-      // Static fields
-      if (row["Tanggal Dokumen"]) {
-        const [day, month, year] = row["Tanggal Dokumen"].split("/");
-        document.getElementById("Tanggal Dokumen").value = `${year}-${month}-${day}`;
+      // No EUPD
+      if (row["Nomor Pengajuan EUPD"]) {
+        document.getElementById("NoEUPD").value = row["Nomor Pengajuan EUPD"];
       }
+
+      // Static fields (skip Tanggal Dokumen - it's set to today's date in initForm)
       if (row["Pembuat Dokumen"]) document.getElementById("Pembuat Dokumen").value = row["Pembuat Dokumen"];
       if (row["Warehouse Asal"]) document.getElementById("Warehouse Asal").value = row["Warehouse Asal"];
       if (row["No Kendaraan"]) document.getElementById("No Kendaraan").value = row["No Kendaraan"];
       if (row["Jenis Kendaraan"]) document.getElementById("Jenis Kendaraan").value = row["Jenis Kendaraan"];
-      if (row["Jadwal Berangkat"]) {
-        const [day, month, year] = row["Jadwal Berangkat"].split("/");
-        document.getElementById("Jadwal Berangkat").value = `${year}-${month}-${day}`;
-      }
-      if (row["Jadwal Sampai"]) {
-        const [day, month, year] = row["Jadwal Sampai"].split("/");
-        document.getElementById("Jadwal Sampai").value = `${year}-${month}-${day}`;
-      }
+      document.getElementById("Jadwal Berangkat").value = parseDateToInput(row["Jadwal Berangkat"]);
+      document.getElementById("Jadwal Sampai").value = parseDateToInput(row["Jadwal Sampai"]);
       if (row["Jumlah Karyawan"]) document.getElementById("Jumlah Karyawan").value = row["Jumlah Karyawan"];
       if (row["Jumlah Hari"]) document.getElementById("Jumlah Hari").value = row["Jumlah Hari"];
       if (row["Uang Makan Per Hari"]) document.getElementById("Uang Makan Per Hari").value = row["Uang Makan Per Hari"];
