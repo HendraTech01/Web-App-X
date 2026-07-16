@@ -137,6 +137,17 @@
         const result = await response.json();
 
         if (result.status === "success") {
+          btn.innerText = "Memuat Hak Akses...";
+          try {
+            const accessRes = await fetch(`${GAS_URL}?action=getMenuAccess&username=${encodeURIComponent(result.user)}`);
+            const accessJson = await accessRes.json();
+            if (accessJson.status === "success" && Array.isArray(accessJson.data)) {
+               localStorage.setItem("wax_menu_access_data", JSON.stringify(accessJson.data));
+            }
+          } catch(e) {
+             console.error("Gagal memuat akses saat login", e);
+          }
+
           showAlert("Login berhasil! Mengalihkan...", "success");
           
           // Simpan sesi user di browser

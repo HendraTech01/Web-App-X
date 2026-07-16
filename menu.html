@@ -157,7 +157,7 @@
     }
   }
 
-  async function filterMenuByAccess() {
+  function filterMenuByAccess() {
     const user = localStorage.getItem("wax_logged_user");
     if (!user) return;
     
@@ -167,30 +167,41 @@
       link.style.display = "none";
     });
 
-    try {
-      const res = await fetch(`${GAS_URL}?action=getMenuAccess&username=${encodeURIComponent(user)}`);
-      const json = await res.json();
-      
-      if (json.status === "success" && Array.isArray(json.data)) {
-        const accessList = json.data.map(item => String(item["Hak Akses Menu"] || item["hak akses menu"]).trim());
-        
-        sheetLinks.forEach(link => {
-          const hrefSearch = link.getAttribute("href").split("?")[1] || "";
-          const linkSheet = new URLSearchParams(hrefSearch).get("sheetName") || "";
-          
-          if (accessList.includes(linkSheet)) {
-            link.style.display = ""; // Show if they have access
-          }
-        });
+    function applyAccess(data) {
+      const accessList = data.map(item => String(item["Hak Akses Menu"] || item["hak akses menu"]).trim());
+      sheetLinks.forEach(link => {
+        const hrefSearch = link.getAttribute("href").split("?")[1] || "";
+        const linkSheet = new URLSearchParams(hrefSearch).get("sheetName") || "";
+        if (accessList.includes(linkSheet)) {
+          link.style.display = ""; // Show if they have access
+        }
+      });
+    }
+
+    const storedAccess = localStorage.getItem("wax_menu_access_data");
+    if (storedAccess) {
+      try {
+        applyAccess(JSON.parse(storedAccess));
+      } catch (err) {
+        console.error("Gagal parse akses menu:", err);
       }
-    } catch (err) {
-      console.error("Gagal memuat akses menu:", err);
+    } else {
+      // Fallback jika tidak ada di localStorage (misal sesi lama)
+      fetch(`${GAS_URL}?action=getMenuAccess&username=${encodeURIComponent(user)}`)
+        .then(res => res.json())
+        .then(json => {
+          if (json.status === "success" && Array.isArray(json.data)) {
+            localStorage.setItem("wax_menu_access_data", JSON.stringify(json.data));
+            applyAccess(json.data);
+          }
+        })
+        .catch(err => console.error("Gagal memuat akses menu:", err));
     }
   }
 
-  (async function() {
+  (function() {
     setMenuUsername();
     updateActiveLinks();
-    await filterMenuByAccess();
+    filterMenuByAccess();
   })();
 </script>

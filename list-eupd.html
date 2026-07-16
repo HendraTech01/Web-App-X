@@ -113,10 +113,20 @@
       const user = getCurrentUser();
       if (!user) return [];
 
+      const storedData = localStorage.getItem("wax_menu_access_data");
+      if (storedData) {
+        try {
+          return JSON.parse(storedData);
+        } catch(e) {
+          console.error("Gagal parse cache akses", e);
+        }
+      }
+
       try {
         const res = await fetch(`${GAS_URL}?action=getMenuAccess&username=${encodeURIComponent(user)}`);
         const json = await res.json();
         if (json.status !== "success" || !Array.isArray(json.data)) return [];
+        localStorage.setItem("wax_menu_access_data", JSON.stringify(json.data));
         return json.data;
       } catch (err) {
         console.error("Gagal memuat akses sheet user:", err);
