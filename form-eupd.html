@@ -393,11 +393,16 @@
           const accessItems = data.filter(item => normalizeString(item["Username"] || item["username"]).toLowerCase() === normalizeString(currentUser).toLowerCase());
 
           if (currentTargetSheet) {
-            const sheetItem = findAccessItemBySheet(currentTargetSheet, hakAksesMenuData);
+            const sheetItem = findAccessItemBySheet(currentTargetSheet, accessItems);
             if (sheetItem) {
               fillWarehouseFromAccessItem(sheetItem);
             } else {
               showFormAccessError("Sheet yang dipilih tidak tersedia untuk Anda. Silakan pilih ulang dari halaman daftar EUPD.");
+            }
+            
+            const backLink = document.querySelector('a[href="list-eupd.html"]');
+            if (backLink) {
+              backLink.href = `list-eupd.html?sheet=${encodeURIComponent(currentTargetSheet)}`;
             }
             return;
           }

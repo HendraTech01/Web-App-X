@@ -126,12 +126,24 @@
   }
 
   function updateActiveLinks() {
-    const currentPage = getCurrentPage();
+    const currentPath = window.location.pathname.split("/").pop().toLowerCase() || "index.html";
+    const currentSheet = new URLSearchParams(window.location.search).get("sheet") || "";
 
     document.querySelectorAll(".app-sidebar-nav .app-nav-item").forEach((link) => {
       const href = link.getAttribute("href") || "";
-      const linkPage = href.split("/").pop().split("?")[0].toLowerCase();
-      link.classList.toggle("app-nav-item-active", linkPage === currentPage);
+      const [hrefPath, hrefSearch] = href.split("?");
+      const linkPage = (hrefPath.split("/").pop() || "index.html").toLowerCase();
+      const linkSheet = hrefSearch ? new URLSearchParams(hrefSearch).get("sheet") : "";
+
+      let isActive = false;
+      if (linkPage === currentPath) {
+        if (linkPage === "list-eupd.html") {
+          isActive = (linkSheet === currentSheet);
+        } else {
+          isActive = true;
+        }
+      }
+      link.classList.toggle("app-nav-item-active", isActive);
     });
   }
 
