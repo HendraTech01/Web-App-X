@@ -194,7 +194,7 @@
         return sheet === currentSheet;
       });
 
-      if (!matched && currentSheet) {
+      if (!matched && !sheetName) {
         headerLabel.innerText = "Akses sheet tidak valid.";
         document.getElementById("warehouse-selector").style.display = "none";
         tbody.innerHTML = '<tr><td colspan="6" class="text-center" style="padding: 2rem; color: red;">Anda tidak memiliki akses ke sheet yang dipilih.</td></tr>';

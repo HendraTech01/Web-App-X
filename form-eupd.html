@@ -393,7 +393,7 @@
           const accessItems = data.filter(item => normalizeString(item["Username"] || item["username"]).toLowerCase() === normalizeString(currentUser).toLowerCase());
 
           if (currentTargetSheet) {
-            const sheetItem = findAccessItemBySheet(currentTargetSheet, accessItems);
+            const sheetItem = findAccessItemBySheet(currentTargetSheet, hakAksesMenuData);
             if (sheetItem) {
               fillWarehouseFromAccessItem(sheetItem);
             } else {
