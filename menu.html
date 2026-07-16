@@ -127,17 +127,17 @@
 
   function updateActiveLinks() {
     const currentPath = window.location.pathname.split("/").pop().toLowerCase() || "index.html";
-    const currentSheet = new URLSearchParams(window.location.search).get("sheet") || "";
+    const currentSheet = new URLSearchParams(window.location.search).get("sheetName") || new URLSearchParams(window.location.search).get("sheet") || "";
 
     document.querySelectorAll(".app-sidebar-nav .app-nav-item").forEach((link) => {
       const href = link.getAttribute("href") || "";
       const [hrefPath, hrefSearch] = href.split("?");
       const linkPage = (hrefPath.split("/").pop() || "index.html").toLowerCase();
-      const linkSheet = hrefSearch ? new URLSearchParams(hrefSearch).get("sheet") : "";
+      const linkSheet = hrefSearch ? (new URLSearchParams(hrefSearch).get("sheetName") || new URLSearchParams(hrefSearch).get("sheet")) : "";
 
       let isActive = false;
       if (linkPage === currentPath) {
-        if (linkPage === "list-eupd.html") {
+        if (linkPage === "list-eupd.html" || linkPage === "form-eupd.html") {
           isActive = (linkSheet === currentSheet);
         } else {
           isActive = true;
@@ -157,8 +157,40 @@
     }
   }
 
-  (function() {
+  async function filterMenuByAccess() {
+    const user = localStorage.getItem("wax_logged_user");
+    if (!user) return;
+    
+    // Hide all sheet links initially
+    const sheetLinks = document.querySelectorAll(".app-sidebar-nav .app-nav-item[href*='sheetName=']");
+    sheetLinks.forEach(link => {
+      link.style.display = "none";
+    });
+
+    try {
+      const res = await fetch(`${GAS_URL}?action=getMenuAccess&username=${encodeURIComponent(user)}`);
+      const json = await res.json();
+      
+      if (json.status === "success" && Array.isArray(json.data)) {
+        const accessList = json.data.map(item => String(item["Hak Akses Menu"] || item["hak akses menu"]).trim());
+        
+        sheetLinks.forEach(link => {
+          const hrefSearch = link.getAttribute("href").split("?")[1] || "";
+          const linkSheet = new URLSearchParams(hrefSearch).get("sheetName") || "";
+          
+          if (accessList.includes(linkSheet)) {
+            link.style.display = ""; // Show if they have access
+          }
+        });
+      }
+    } catch (err) {
+      console.error("Gagal memuat akses menu:", err);
+    }
+  }
+
+  (async function() {
     setMenuUsername();
     updateActiveLinks();
+    await filterMenuByAccess();
   })();
 </script>
