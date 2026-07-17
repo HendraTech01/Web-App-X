@@ -910,11 +910,18 @@
 
     // 4. FORMAT DESIMAL & KALKULASI OTOMATIS
     function cleanNumberInput(inputEl) {
+      // Don't clean if the field has Indonesian decimal formatting (contains comma)
+      if (inputEl.value.includes(',')) {
+        return;
+      }
       inputEl.value = inputEl.value.replace(/[^0-9]/g, ""); // Hanya izinkan angka bulat saat diketik
     }
 
     function formatDecimalDisplay(inputEl) {
-      const val = parseFloat(inputEl.value.replace(/\./g, "").replace(/,/g, "")) || 0;
+      // Handle Indonesian format: remove dots (thousands), replace comma with dot (decimal)
+      const withoutDots = inputEl.value.replace(/\./g, "");
+      const withDotDecimal = withoutDots.replace(/,/g, ".");
+      const val = parseFloat(withDotDecimal) || 0;
       if (val > 0) {
         inputEl.value = val.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       } else {
@@ -923,9 +930,14 @@
     }
 
     function removeDecimalFormat(inputEl) {
-      const val = parseFloat(inputEl.value.replace(/\./g, "").replace(/,/g, "")) || 0;
+      // Remove Indonesian format: 10.000,00 -> 10000
+      // First remove dots (thousands separator)
+      const withoutDots = inputEl.value.replace(/\./g, "");
+      // Then replace comma (decimal separator) with dot
+      const withDotDecimal = withoutDots.replace(/,/g, ".");
+      const val = parseFloat(withDotDecimal) || 0;
       if (val > 0) {
-        inputEl.value = val.toString();
+        inputEl.value = Math.floor(val).toString();
       } else {
         inputEl.value = "";
       }
