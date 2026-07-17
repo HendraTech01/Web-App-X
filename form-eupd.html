@@ -507,7 +507,6 @@
       try {
         const res = await fetch(`${GAS_URL}?action=getEUPDData&noEUPD=${encodeURIComponent(noEUPD)}&sheet=${encodeURIComponent(sheetName)}`);
         const json = await res.json();
-        console.log("fetchEUPDData response:", json);
         if (json.status === "success") return json.data;
         return null;
       } catch (err) {
@@ -544,12 +543,10 @@
     }
 
     function populateForm(data) {
-      console.log("populateForm called with data:", data);
       if (!data || data.length === 0) return;
 
       // Ambil baris pertama untuk static fields
       const firstRow = data[0];
-      console.log("First row:", firstRow);
 
       // No EUPD
       if (firstRow["Nomor Pengajuan EUPD"]) {
@@ -622,7 +619,7 @@
         // BBM Berangkat - ensure we have enough rows
         let berangkatBundles = document.querySelectorAll(".bbm-bundle[data-tipe='berangkat']");
         while (berangkatBundles.length <= index) {
-          addBBMRow("berangkat");
+          addBBMBerangkatRow();
           berangkatBundles = document.querySelectorAll(".bbm-bundle[data-tipe='berangkat']");
         }
         const berangkatBundle = berangkatBundles[index];
@@ -634,7 +631,7 @@
         // BBM Pulang - ensure we have enough rows
         let pulangBundles = document.querySelectorAll(".bbm-bundle[data-tipe='pulang']");
         while (pulangBundles.length <= index) {
-          addBBMRow("pulang");
+          addBBMPulangRow();
           pulangBundles = document.querySelectorAll(".bbm-bundle[data-tipe='pulang']");
         }
         const pulangBundle = pulangBundles[index];
