@@ -275,7 +275,7 @@
         const canUnlock = hasFeaturePermission("Unlock");
 
         let actionButtons = "";
-        if (canEdit) {
+        if (canEdit && status !== "Locked") {
           actionButtons += `<button type="button" class="app-btn" style="padding: 0.35rem 0.75rem; font-size: 12px;" onclick="handleEditEUPD('${row["Nomor Pengajuan EUPD"]}')">Edit</button>`;
         }
         if (canLock && status !== "Locked") {
