@@ -93,7 +93,7 @@
               </div>
               <div class="app-input-group">
                 <label for="Tanggal Dokumen">Tanggal Dokumen</label>
-                <input type="date" id="Tanggal Dokumen" name="Tanggal Dokumen" class="app-input">
+                <input type="date" id="Tanggal Dokumen" name="Tanggal Dokumen" class="app-input" readonly style="background:#F1F5F9; font-weight:600; pointer-events:none;">
               </div>
               <div class="app-input-group">
                 <label for="Pembuat Dokumen">Nama Pembuat</label>
@@ -373,15 +373,28 @@
       }
     }
 
+    function getTodayDateString() {
+      const d = new Date();
+      const year = d.getFullYear();
+      const month = String(d.getMonth() + 1).padStart(2, "0");
+      const day = String(d.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    function setTanggalDokumenHariIni() {
+      const el = document.getElementById("Tanggal Dokumen");
+      if (el) el.value = getTodayDateString();
+    }
+
     // 1. MEMUAT SIDEBAR & MASTER DATA SHEET
     async function initForm() {
       try {
         await loadSidebar();
         initDynamicRowRegistry();
 
-        // Set Tanggal Dokumen selalu ke hari ini (create dan edit)
-        const now = new Date().toISOString().split("T")[0];
-        document.getElementById("Tanggal Dokumen").value = now;
+        // Tanggal Dokumen selalu hari ini (create & edit), tidak bisa diubah manual
+        setTanggalDokumenHariIni();
+        const now = getTodayDateString();
 
         // Set Jadwal Berangkat & Sampai hanya jika mode create
         const editNo = getQueryEditNo();
@@ -1034,6 +1047,9 @@
 
       const editNo = getQueryEditNo();
       const isEdit = isEditMode();
+
+      // Saat simpan/update, tanggal dokumen selalu di-set ke hari ini
+      setTanggalDokumenHariIni();
 
       const payload = {
         action: isEdit ? "updateEUPD" : "tambahEUPD",
