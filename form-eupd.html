@@ -197,7 +197,7 @@
             <div id="bbm-container">
               <div class="bbm-section">
                 <div class="bbm-section-header" style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem; margin-bottom:0.75rem;">
-                  <span style="font-size:12px; font-weight:700; color:#1E40AF;">🚀 BBM Rute Berangkat (#16, #17, #18)</span>
+                  <span style="font-size:12px; font-weight:700; color:#1E40AF;">🚀 BBM Rute Berangkat</span>
                 </div>
                 <div id="bbm-berangkat-list">
                   <div class="dynamic-row bbm-bundle" data-tipe="berangkat">
@@ -217,7 +217,7 @@
 
               <div class="bbm-section" style="margin-top:1.25rem;">
                 <div class="bbm-section-header" style="display:flex; align-items:center; justify-content:space-between; gap:0.75rem; margin-bottom:0.75rem;">
-                  <span style="font-size:12px; font-weight:700; color:#065F46;">🏁 BBM Rute Pulang (#16, #17, #18)</span>
+                  <span style="font-size:12px; font-weight:700; color:#065F46;">🏁 BBM Rute Pulang</span>
                 </div>
                 <div id="bbm-pulang-list">
                   <div class="dynamic-row bbm-bundle" data-tipe="pulang">
@@ -995,6 +995,37 @@
       document.getElementById("Total Biaya Keseluruhan").value = grandTotal;
     }
 
+    function getSubmitButtonLabel() {
+      return isEditMode() ? "💾 Update Pengajuan EUPD" : "💾 Simpan & Terbitkan Pengajuan EUPD";
+    }
+
+    function switchToEditMode(noEUPD) {
+      if (!noEUPD) return;
+
+      document.getElementById("NoEUPD").value = noEUPD;
+
+      const formTitle = document.querySelector(".app-content-body > .app-title");
+      if (formTitle) formTitle.innerText = "Edit Pengajuan EUPD";
+
+      const params = new URLSearchParams(window.location.search);
+      params.set("editNo", noEUPD);
+
+      const sheetName = getFormTargetSheet();
+      if (sheetName) params.set("sheetName", sheetName);
+
+      const returnPage = getQueryReturnPage();
+      if (returnPage) params.set("returnPage", returnPage);
+
+      history.replaceState(null, "", `${window.location.pathname}?${params.toString()}`);
+    }
+
+    function showFormAlert(type, message) {
+      const alertBox = document.getElementById("form-alert");
+      alertBox.className = `app-alert app-alert-${type}`;
+      alertBox.innerText = message;
+      alertBox.style.display = "block";
+    }
+
     // 5. SUBMIT FORM KE BACKEND GAS
     async function handleSimpanEUPD(event) {
       event.preventDefault();
@@ -1086,21 +1117,24 @@
         const result = await res.json();
         
         if (result.status === "success") {
-          alert(`🎉 SUKSES! Pengajuan EUPD Berhasil Disimpan.\nNomor Dokumen Anda: ${result.noEUPD}`);
-          const returnPage = getQueryReturnPage();
-          window.location.replace(`list-eupd.html?sheetName=${encodeURIComponent(returnPage)}&returnPage=${encodeURIComponent(returnPage)}`);
+          if (!isEdit && result.noEUPD) {
+            switchToEditMode(result.noEUPD);
+          }
+
+          showFormAlert(
+            "success",
+            `Pengajuan EUPD berhasil ${isEdit ? "diperbarui" : "disimpan"}. Nomor Dokumen: ${result.noEUPD || editNo}`
+          );
+          window.scrollTo({ top: 0, behavior: "smooth" });
         } else {
-          const alertBox = document.getElementById("form-alert");
-          alertBox.className = "app-alert app-alert-error";
-          alertBox.innerText = result.message || "Gagal menyimpan data.";
-          alertBox.style.display = "block";
+          showFormAlert("error", result.message || "Gagal menyimpan data.");
         }
       } catch (err) {
-        alert("Gagal terhubung ke Google Sheets. Pastikan koneksi aktif.");
+        showFormAlert("error", "Gagal terhubung ke Google Sheets. Pastikan koneksi aktif.");
         console.error(err);
       } finally {
         btn.disabled = false;
-        btn.innerText = "💾 Simpan & Terbitkan Pengajuan EUPD";
+        btn.innerText = getSubmitButtonLabel();
       }
     }
 
