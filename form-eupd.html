@@ -593,96 +593,63 @@
       // Populate all dynamic rows based on data pattern
       // Pattern: each row contains driver[index], tujuan[index], bbmBerangkat[index], bbmPulang[index], biaya[index]
       data.forEach((row, index) => {
-        // Driver
-        if (row["Nama Driver"]) {
-          const driverInputs = document.querySelectorAll(".driver-input");
-          if (index < driverInputs.length) {
-            driverInputs[index].value = row["Nama Driver"];
-          } else if (index === driverInputs.length) {
-            addDriverRow();
-            const newInputs = document.querySelectorAll(".driver-input");
-            newInputs[newInputs.length - 1].value = row["Nama Driver"];
-          }
+        // Driver - ensure we have enough rows
+        let driverInputs = document.querySelectorAll(".driver-input");
+        while (driverInputs.length <= index) {
+          addDriverRow();
+          driverInputs = document.querySelectorAll(".driver-input");
         }
+        if (row["Nama Driver"]) driverInputs[index].value = row["Nama Driver"];
 
-        // Tujuan
-        if (row["Pemesan"] || row["Nama Tujuan"] || row["Alamat"]) {
-          const pemesanInputs = document.querySelectorAll(".input-pemesan");
-          const tujuanInputs = document.querySelectorAll(".input-tujuan");
-          const alamatInputs = document.querySelectorAll(".input-alamat");
+        // Tujuan - ensure we have enough rows
+        let pemesanInputs = document.querySelectorAll(".input-pemesan");
+        let tujuanInputs = document.querySelectorAll(".input-tujuan");
+        let alamatInputs = document.querySelectorAll(".input-alamat");
 
-          if (index < pemesanInputs.length) {
-            if (row["Pemesan"]) pemesanInputs[index].value = row["Pemesan"];
-            if (row["Nama Tujuan"]) tujuanInputs[index].value = row["Nama Tujuan"];
-            if (row["Alamat"]) alamatInputs[index].value = row["Alamat"];
-          } else if (index === pemesanInputs.length) {
-            addTujuanRow();
-            const newPemesan = document.querySelectorAll(".input-pemesan");
-            const newTujuan = document.querySelectorAll(".input-tujuan");
-            const newAlamat = document.querySelectorAll(".input-alamat");
-            if (row["Pemesan"]) newPemesan[newPemesan.length - 1].value = row["Pemesan"];
-            if (row["Nama Tujuan"]) newTujuan[newTujuan.length - 1].value = row["Nama Tujuan"];
-            if (row["Alamat"]) newAlamat[newAlamat.length - 1].value = row["Alamat"];
-          }
+        while (pemesanInputs.length <= index) {
+          addTujuanRow();
+          pemesanInputs = document.querySelectorAll(".input-pemesan");
+          tujuanInputs = document.querySelectorAll(".input-tujuan");
+          alamatInputs = document.querySelectorAll(".input-alamat");
         }
+        if (row["Pemesan"]) pemesanInputs[index].value = row["Pemesan"];
+        if (row["Nama Tujuan"]) tujuanInputs[index].value = row["Nama Tujuan"];
+        if (row["Alamat"]) alamatInputs[index].value = row["Alamat"];
 
-        // BBM Berangkat
-        if (row["Jenis BBM Berangkat"] || row["Jarak Berangkat"] || row["Jumlah Liter BBM Berangkat"]) {
-          const berangkatBundles = document.querySelectorAll(".bbm-bundle[data-tipe='berangkat']");
-          if (index < berangkatBundles.length) {
-            const bundle = berangkatBundles[index];
-            if (row["Jenis BBM Berangkat"]) bundle.querySelector(".bbm-jenis").value = row["Jenis BBM Berangkat"];
-            if (row["Jarak Berangkat"]) bundle.querySelector(".bbm-jarak").value = row["Jarak Berangkat"];
-            if (row["Jumlah Liter BBM Berangkat"]) bundle.querySelector(".bbm-liter").value = row["Jumlah Liter BBM Berangkat"];
-            if (row["Harga BBM Berangkat Per Liter"]) bundle.querySelector(".bbm-harga").value = row["Harga BBM Berangkat Per Liter"];
-          } else if (index === berangkatBundles.length) {
-            addBBMRow("berangkat");
-            const newBundles = document.querySelectorAll(".bbm-bundle[data-tipe='berangkat']");
-            const bundle = newBundles[newBundles.length - 1];
-            if (row["Jenis BBM Berangkat"]) bundle.querySelector(".bbm-jenis").value = row["Jenis BBM Berangkat"];
-            if (row["Jarak Berangkat"]) bundle.querySelector(".bbm-jarak").value = row["Jarak Berangkat"];
-            if (row["Jumlah Liter BBM Berangkat"]) bundle.querySelector(".bbm-liter").value = row["Jumlah Liter BBM Berangkat"];
-            if (row["Harga BBM Berangkat Per Liter"]) bundle.querySelector(".bbm-harga").value = row["Harga BBM Berangkat Per Liter"];
-          }
+        // BBM Berangkat - ensure we have enough rows
+        let berangkatBundles = document.querySelectorAll(".bbm-bundle[data-tipe='berangkat']");
+        while (berangkatBundles.length <= index) {
+          addBBMRow("berangkat");
+          berangkatBundles = document.querySelectorAll(".bbm-bundle[data-tipe='berangkat']");
         }
+        const berangkatBundle = berangkatBundles[index];
+        if (row["Jenis BBM Berangkat"]) berangkatBundle.querySelector(".bbm-jenis").value = row["Jenis BBM Berangkat"];
+        if (row["Jarak Berangkat"]) berangkatBundle.querySelector(".bbm-jarak").value = row["Jarak Berangkat"];
+        if (row["Jumlah Liter BBM Berangkat"]) berangkatBundle.querySelector(".bbm-liter").value = row["Jumlah Liter BBM Berangkat"];
+        if (row["Harga BBM Berangkat Per Liter"]) berangkatBundle.querySelector(".bbm-harga").value = row["Harga BBM Berangkat Per Liter"];
 
-        // BBM Pulang
-        if (row["Jenis BBM Pulang"] || row["Jarak Pulang"] || row["Jumlah Liter BBM Pulang"]) {
-          const pulangBundles = document.querySelectorAll(".bbm-bundle[data-tipe='pulang']");
-          if (index < pulangBundles.length) {
-            const bundle = pulangBundles[index];
-            if (row["Jenis BBM Pulang"]) bundle.querySelector(".bbm-jenis").value = row["Jenis BBM Pulang"];
-            if (row["Jarak Pulang"]) bundle.querySelector(".bbm-jarak").value = row["Jarak Pulang"];
-            if (row["Jumlah Liter BBM Pulang"]) bundle.querySelector(".bbm-liter").value = row["Jumlah Liter BBM Pulang"];
-            if (row["Harga BBM Pulang Per Liter"]) bundle.querySelector(".bbm-harga").value = row["Harga BBM Pulang Per Liter"];
-          } else if (index === pulangBundles.length) {
-            addBBMRow("pulang");
-            const newBundles = document.querySelectorAll(".bbm-bundle[data-tipe='pulang']");
-            const bundle = newBundles[newBundles.length - 1];
-            if (row["Jenis BBM Pulang"]) bundle.querySelector(".bbm-jenis").value = row["Jenis BBM Pulang"];
-            if (row["Jarak Pulang"]) bundle.querySelector(".bbm-jarak").value = row["Jarak Pulang"];
-            if (row["Jumlah Liter BBM Pulang"]) bundle.querySelector(".bbm-liter").value = row["Jumlah Liter BBM Pulang"];
-            if (row["Harga BBM Pulang Per Liter"]) bundle.querySelector(".bbm-harga").value = row["Harga BBM Pulang Per Liter"];
-          }
+        // BBM Pulang - ensure we have enough rows
+        let pulangBundles = document.querySelectorAll(".bbm-bundle[data-tipe='pulang']");
+        while (pulangBundles.length <= index) {
+          addBBMRow("pulang");
+          pulangBundles = document.querySelectorAll(".bbm-bundle[data-tipe='pulang']");
         }
+        const pulangBundle = pulangBundles[index];
+        if (row["Jenis BBM Pulang"]) pulangBundle.querySelector(".bbm-jenis").value = row["Jenis BBM Pulang"];
+        if (row["Jarak Pulang"]) pulangBundle.querySelector(".bbm-jarak").value = row["Jarak Pulang"];
+        if (row["Jumlah Liter BBM Pulang"]) pulangBundle.querySelector(".bbm-liter").value = row["Jumlah Liter BBM Pulang"];
+        if (row["Harga BBM Pulang Per Liter"]) pulangBundle.querySelector(".bbm-harga").value = row["Harga BBM Pulang Per Liter"];
 
-        // Biaya Lain
-        if (row["Biaya Lain-Lain"] || row["Kuantiti Lain-Lain"] || row["Jumlah Lain-Lain"]) {
-          const biayaBundles = document.querySelectorAll(".biaya-bundle");
-          if (index < biayaBundles.length) {
-            const bundle = biayaBundles[index];
-            if (row["Biaya Lain-Lain"]) bundle.querySelector(".biaya-nama").value = row["Biaya Lain-Lain"];
-            if (row["Kuantiti Lain-Lain"]) bundle.querySelector(".biaya-qty").value = row["Kuantiti Lain-Lain"];
-            if (row["Jumlah Lain-Lain"]) bundle.querySelector(".biaya-harga").value = row["Jumlah Lain-Lain"];
-          } else if (index === biayaBundles.length) {
-            addBiayaRow();
-            const newBundles = document.querySelectorAll(".biaya-bundle");
-            const bundle = newBundles[newBundles.length - 1];
-            if (row["Biaya Lain-Lain"]) bundle.querySelector(".biaya-nama").value = row["Biaya Lain-Lain"];
-            if (row["Kuantiti Lain-Lain"]) bundle.querySelector(".biaya-qty").value = row["Kuantiti Lain-Lain"];
-            if (row["Jumlah Lain-Lain"]) bundle.querySelector(".biaya-harga").value = row["Jumlah Lain-Lain"];
-          }
+        // Biaya Lain - ensure we have enough rows
+        let biayaBundles = document.querySelectorAll(".biaya-bundle");
+        while (biayaBundles.length <= index) {
+          addBiayaRow();
+          biayaBundles = document.querySelectorAll(".biaya-bundle");
         }
+        const biayaBundle = biayaBundles[index];
+        if (row["Biaya Lain-Lain"]) biayaBundle.querySelector(".biaya-nama").value = row["Biaya Lain-Lain"];
+        if (row["Kuantiti Lain-Lain"]) biayaBundle.querySelector(".biaya-qty").value = row["Kuantiti Lain-Lain"];
+        if (row["Jumlah Lain-Lain"]) biayaBundle.querySelector(".biaya-harga").value = row["Jumlah Lain-Lain"];
       });
 
       // Recalculate totals
