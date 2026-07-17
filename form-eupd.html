@@ -162,15 +162,22 @@
             <label style="font-weight:600; font-size:var(--font-sm); display:block; margin-top:1rem; margin-bottom:0.35rem;">Pemesan Pengiriman, Nama Tujuan, & Alamat</label>
             <div id="tujuan-container">
               <div class="dynamic-row tujuan-bundle grid-3">
-                <div class="autocomplete-wrapper">
-                  <input type="text" class="app-input input-pemesan" placeholder="Pemesan Pengiriman ..." required oninput="filterAutocomplete(this, masterPemesan, 'nama')">
-                  <div class="autocomplete-list"></div>
-                </div>
-                <div class="autocomplete-wrapper">
-                  <input type="text" class="app-input input-tujuan" placeholder="Nama Tujuan ..." required oninput="filterAutocomplete(this, masterTujuan, 'nama')">
-                  <div class="autocomplete-list"></div>
+                <div>
+                  <label style="font-size:11px; font-weight:500; color:#64748B; margin-bottom:0.25rem; display:block;">Pemesan Pengiriman</label>
+                  <div class="autocomplete-wrapper">
+                    <input type="text" class="app-input input-pemesan" placeholder="Pemesan Pengiriman ..." required oninput="filterAutocomplete(this, masterPemesan, 'nama')">
+                    <div class="autocomplete-list"></div>
+                  </div>
                 </div>
                 <div>
+                  <label style="font-size:11px; font-weight:500; color:#64748B; margin-bottom:0.25rem; display:block;">Nama Tujuan</label>
+                  <div class="autocomplete-wrapper">
+                    <input type="text" class="app-input input-tujuan" placeholder="Nama Tujuan ..." required oninput="filterAutocomplete(this, masterTujuan, 'nama')">
+                    <div class="autocomplete-list"></div>
+                  </div>
+                </div>
+                <div>
+                  <label style="font-size:11px; font-weight:500; color:#64748B; margin-bottom:0.25rem; display:block;">Alamat</label>
                   <input type="text" class="app-input input-alamat" placeholder="Alamat ..." required>
                 </div>
               </div>
@@ -183,7 +190,7 @@
             <div class="grid-2">
               <div class="app-input-group">
                 <label for="Uang Makan Per Hari">Uang Makan Per Hari Per Orang</label>
-                <input type="text" id="Uang Makan Per Hari" class="app-input" placeholder="Cth: 50000" required oninput="cleanNumberInput(this); calculateAll();" onblur="formatDecimalDisplay(this)">
+                <input type="text" id="Uang Makan Per Hari" class="app-input" placeholder="Cth: 50000" required oninput="cleanNumberInput(this); calculateAll();" onblur="formatDecimalDisplay(this)" onfocus="removeDecimalFormat(this)">
               </div>
               <div class="app-input-group">
                 <label for="Total Uang Makan">Total Uang Makan (Jumlah Driver x Durasi Perjalanan x Uang Makan Per Hari)</label>
@@ -202,10 +209,22 @@
                 <div id="bbm-berangkat-list">
                   <div class="dynamic-row bbm-bundle" data-tipe="berangkat">
                     <div class="grid-4">
-                      <input type="text" class="app-input bbm-jenis" placeholder="Jenis BBM (Pertalite/Solar/Lainnya)...">
-                      <input type="number" class="app-input bbm-jarak" placeholder="Jarak (KM)...">
-                      <input type="number" step="any" class="app-input bbm-liter" placeholder="Jumlah (Liter)..." oninput="calcBBMRow(this)">
-                      <input type="text" class="app-input bbm-harga" placeholder="Harga/Liter (Rp)..." oninput="cleanNumberInput(this); calcBBMRow(this);" onblur="formatDecimalDisplay(this)">
+                      <div>
+                        <label style="font-size:11px; font-weight:500; color:#64748B; margin-bottom:0.25rem; display:block;">Jenis BBM</label>
+                        <input type="text" class="app-input bbm-jenis" placeholder="Jenis BBM (Pertalite/Solar/Lainnya)...">
+                      </div>
+                      <div>
+                        <label style="font-size:11px; font-weight:500; color:#64748B; margin-bottom:0.25rem; display:block;">Jarak (KM)</label>
+                        <input type="number" class="app-input bbm-jarak" placeholder="Jarak (KM)...">
+                      </div>
+                      <div>
+                        <label style="font-size:11px; font-weight:500; color:#64748B; margin-bottom:0.25rem; display:block;">Jumlah (Liter)</label>
+                        <input type="number" step="any" class="app-input bbm-liter" placeholder="Jumlah (Liter)..." oninput="calcBBMRow(this)">
+                      </div>
+                      <div>
+                        <label style="font-size:11px; font-weight:500; color:#64748B; margin-bottom:0.25rem; display:block;">Harga/Liter (Rp)</label>
+                        <input type="text" class="app-input bbm-harga" placeholder="Harga/Liter (Rp)..." oninput="cleanNumberInput(this); calcBBMRow(this);" onblur="formatDecimalDisplay(this)" onfocus="removeDecimalFormat(this)">
+                      </div>
                     </div>
                     <div class="mt-2 text-right bbt-grand-total" style="font-size:14px; font-weight:700;">Total BBM Berangkat: Rp <span class="bbm-total-display">0,00</span></div>
                     <input type="hidden" class="bbm-total-val" value="0">
@@ -222,10 +241,22 @@
                 <div id="bbm-pulang-list">
                   <div class="dynamic-row bbm-bundle" data-tipe="pulang">
                     <div class="grid-4">
-                      <input type="text" class="app-input bbm-jenis" placeholder="Jenis BBM (Pertalite/Solar/Lainnya)...">
-                      <input type="number" class="app-input bbm-jarak" placeholder="Jarak (KM)...">
-                      <input type="number" step="any" class="app-input bbm-liter" placeholder="Jumlah (Liter)..." oninput="calcBBMRow(this)">
-                      <input type="text" class="app-input bbm-harga" placeholder="Harga/Liter (Rp)..." oninput="cleanNumberInput(this); calcBBMRow(this);" onblur="formatDecimalDisplay(this)">
+                      <div>
+                        <label style="font-size:11px; font-weight:500; color:#64748B; margin-bottom:0.25rem; display:block;">Jenis BBM</label>
+                        <input type="text" class="app-input bbm-jenis" placeholder="Jenis BBM (Pertalite/Solar/Lainnya)...">
+                      </div>
+                      <div>
+                        <label style="font-size:11px; font-weight:500; color:#64748B; margin-bottom:0.25rem; display:block;">Jarak (KM)</label>
+                        <input type="number" class="app-input bbm-jarak" placeholder="Jarak (KM)...">
+                      </div>
+                      <div>
+                        <label style="font-size:11px; font-weight:500; color:#64748B; margin-bottom:0.25rem; display:block;">Jumlah (Liter)</label>
+                        <input type="number" step="any" class="app-input bbm-liter" placeholder="Jumlah (Liter)..." oninput="calcBBMRow(this)">
+                      </div>
+                      <div>
+                        <label style="font-size:11px; font-weight:500; color:#64748B; margin-bottom:0.25rem; display:block;">Harga/Liter (Rp)</label>
+                        <input type="text" class="app-input bbm-harga" placeholder="Harga/Liter (Rp)..." oninput="cleanNumberInput(this); calcBBMRow(this);" onblur="formatDecimalDisplay(this)" onfocus="removeDecimalFormat(this)">
+                      </div>
                     </div>
                     <div class="mt-2 text-right bbt-grand-total" style="font-size:14px; font-weight:700;">Total BBM Pulang: Rp <span class="bbm-total-display">0,00</span></div>
                     <input type="hidden" class="bbm-total-val" value="0">
@@ -246,7 +277,7 @@
               </div>
               <div class="app-input-group">
                 <label for="Biaya Penginapan Per Hari">Biaya Penginapan Per Hari per Driver</label>
-                <input type="text" id="Biaya Penginapan Per Hari" class="app-input" placeholder="Cth: 250000" oninput="cleanNumberInput(this); calculateAll();" onblur="formatDecimalDisplay(this)">
+                <input type="text" id="Biaya Penginapan Per Hari" class="app-input" placeholder="Cth: 250000" oninput="cleanNumberInput(this); calculateAll();" onblur="formatDecimalDisplay(this)" onfocus="removeDecimalFormat(this)">
               </div>
               <div class="app-input-group">
                 <label for="Total Biaya Penginapan">Total Penginapan</label>
@@ -261,9 +292,18 @@
             <div id="biaya-container">
               <div class="dynamic-row biaya-bundle">
                 <div class="grid-3">
-                  <input type="text" class="app-input biaya-nama" placeholder="Nama Biaya (cth: Buruh, Tol)...">
-                  <input type="number" class="app-input biaya-qty" placeholder="Kuantiti..." value="1" oninput="calcBiayaRow(this)">
-                  <input type="text" class="app-input biaya-harga" placeholder="Harga Satuan (Rp)..." oninput="cleanNumberInput(this); calcBiayaRow(this);" onblur="formatDecimalDisplay(this)">
+                  <div>
+                    <label style="font-size:11px; font-weight:500; color:#64748B; margin-bottom:0.25rem; display:block;">Nama Biaya</label>
+                    <input type="text" class="app-input biaya-nama" placeholder="Nama Biaya (cth: Buruh, Tol)...">
+                  </div>
+                  <div>
+                    <label style="font-size:11px; font-weight:500; color:#64748B; margin-bottom:0.25rem; display:block;">Kuantiti</label>
+                    <input type="number" class="app-input biaya-qty" placeholder="Kuantiti..." value="1" oninput="calcBiayaRow(this)">
+                  </div>
+                  <div>
+                    <label style="font-size:11px; font-weight:500; color:#64748B; margin-bottom:0.25rem; display:block;">Harga Satuan (Rp)</label>
+                    <input type="text" class="app-input biaya-harga" placeholder="Harga Satuan (Rp)..." oninput="cleanNumberInput(this); calcBiayaRow(this);" onblur="formatDecimalDisplay(this)" onfocus="removeDecimalFormat(this)">
+                  </div>
                 </div>
                 <div class="mt-2 text-right" style="font-size:13px; font-weight:600;">Subtotal: Rp <span class="biaya-subtotal-display">0,00</span></div>
                 <input type="hidden" class="biaya-subtotal-val" value="0">
@@ -776,15 +816,24 @@
       div.dataset.extra = "true";
       div.innerHTML = `
           <button type="button" class="btn-remove-row" onclick="unregisterDynamicRow(this.closest('.tujuan-bundle')); this.closest('.tujuan-bundle').remove();">x</button>
-          <div class="autocomplete-wrapper">
-            <input type="text" class="app-input input-pemesan" placeholder="Pemesan Pengiriman ..." required oninput="filterAutocomplete(this, masterPemesan, 'nama')">
-            <div class="autocomplete-list"></div>
+          <div>
+            <label style="font-size:11px; font-weight:500; color:#64748B; margin-bottom:0.25rem; display:block;">Pemesan Pengiriman</label>
+            <div class="autocomplete-wrapper">
+              <input type="text" class="app-input input-pemesan" placeholder="Pemesan Pengiriman ..." required oninput="filterAutocomplete(this, masterPemesan, 'nama')">
+              <div class="autocomplete-list"></div>
+            </div>
           </div>
-          <div class="autocomplete-wrapper">
-            <input type="text" class="app-input input-tujuan" placeholder="Nama Tujuan ..." required oninput="filterAutocomplete(this, masterTujuan, 'nama')">
-            <div class="autocomplete-list"></div>
+          <div>
+            <label style="font-size:11px; font-weight:500; color:#64748B; margin-bottom:0.25rem; display:block;">Nama Tujuan</label>
+            <div class="autocomplete-wrapper">
+              <input type="text" class="app-input input-tujuan" placeholder="Nama Tujuan ..." required oninput="filterAutocomplete(this, masterTujuan, 'nama')">
+              <div class="autocomplete-list"></div>
+            </div>
           </div>
-          <div><input type="text" class="app-input input-alamat" placeholder="Alamat ..." required></div>
+          <div>
+            <label style="font-size:11px; font-weight:500; color:#64748B; margin-bottom:0.25rem; display:block;">Alamat</label>
+            <input type="text" class="app-input input-alamat" placeholder="Alamat ..." required>
+          </div>
       `;
       container.appendChild(div);
       registerDynamicRow("tujuan", div);
@@ -799,10 +848,22 @@
       div.innerHTML = `
         <button type="button" class="btn-remove-row" onclick="unregisterDynamicRow(this.closest('.bbm-bundle')); this.closest('.bbm-bundle').remove(); calculateAll();">x</button>
         <div class="grid-4">
-          <input type="text" class="app-input bbm-jenis" placeholder="Jenis BBM (Pertalite/Solar/Lainnya)...">
-          <input type="number" class="app-input bbm-jarak" placeholder="Jarak (KM)...">
-          <input type="number" step="any" class="app-input bbm-liter" placeholder="Jumlah (Liter)..." oninput="calcBBMRow(this)">
-          <input type="text" class="app-input bbm-harga" placeholder="Harga/Liter (Rp)..." oninput="cleanNumberInput(this); calcBBMRow(this);" onblur="formatDecimalDisplay(this)">
+          <div>
+            <label style="font-size:11px; font-weight:500; color:#64748B; margin-bottom:0.25rem; display:block;">Jenis BBM</label>
+            <input type="text" class="app-input bbm-jenis" placeholder="Jenis BBM (Pertalite/Solar/Lainnya)...">
+          </div>
+          <div>
+            <label style="font-size:11px; font-weight:500; color:#64748B; margin-bottom:0.25rem; display:block;">Jarak (KM)</label>
+            <input type="number" class="app-input bbm-jarak" placeholder="Jarak (KM)...">
+          </div>
+          <div>
+            <label style="font-size:11px; font-weight:500; color:#64748B; margin-bottom:0.25rem; display:block;">Jumlah (Liter)</label>
+            <input type="number" step="any" class="app-input bbm-liter" placeholder="Jumlah (Liter)..." oninput="calcBBMRow(this)">
+          </div>
+          <div>
+            <label style="font-size:11px; font-weight:500; color:#64748B; margin-bottom:0.25rem; display:block;">Harga/Liter (Rp)</label>
+            <input type="text" class="app-input bbm-harga" placeholder="Harga/Liter (Rp)..." oninput="cleanNumberInput(this); calcBBMRow(this);" onblur="formatDecimalDisplay(this)" onfocus="removeDecimalFormat(this)">
+          </div>
         </div>
         <div class="mt-2 text-right" style="font-size:13px; font-weight:600;">Total BBM ${tipe === "berangkat" ? "Berangkat" : "Pulang"}: Rp <span class="bbm-total-display">0,00</span></div>
         <input type="hidden" class="bbm-total-val" value="0">
@@ -827,9 +888,18 @@
       div.innerHTML = `
         <button type="button" class="btn-remove-row" onclick="unregisterDynamicRow(this.parentElement); this.parentElement.remove(); calculateAll();">x</button>
         <div class="grid-3">
-          <input type="text" class="app-input biaya-nama" placeholder="Nama Biaya (cth: Buruh, Tol)...">
-          <input type="number" class="app-input biaya-qty" placeholder="Kuantiti..." value="1" oninput="calcBiayaRow(this)">
-          <input type="text" class="app-input biaya-harga" placeholder="Harga Satuan (Rp)..." oninput="cleanNumberInput(this); calcBiayaRow(this);" onblur="formatDecimalDisplay(this)">
+          <div>
+            <label style="font-size:11px; font-weight:500; color:#64748B; margin-bottom:0.25rem; display:block;">Nama Biaya</label>
+            <input type="text" class="app-input biaya-nama" placeholder="Nama Biaya (cth: Buruh, Tol)...">
+          </div>
+          <div>
+            <label style="font-size:11px; font-weight:500; color:#64748B; margin-bottom:0.25rem; display:block;">Kuantiti</label>
+            <input type="number" class="app-input biaya-qty" placeholder="Kuantiti..." value="1" oninput="calcBiayaRow(this)">
+          </div>
+          <div>
+            <label style="font-size:11px; font-weight:500; color:#64748B; margin-bottom:0.25rem; display:block;">Harga Satuan (Rp)</label>
+            <input type="text" class="app-input biaya-harga" placeholder="Harga Satuan (Rp)..." oninput="cleanNumberInput(this); calcBiayaRow(this);" onblur="formatDecimalDisplay(this)" onfocus="removeDecimalFormat(this)">
+          </div>
         </div>
         <div class="mt-2 text-right" style="font-size:13px; font-weight:600;">Subtotal: Rp <span class="biaya-subtotal-display">0,00</span></div>
         <input type="hidden" class="biaya-subtotal-val" value="0">
@@ -847,6 +917,15 @@
       const val = parseFloat(inputEl.value.replace(/\./g, "").replace(/,/g, "")) || 0;
       if (val > 0) {
         inputEl.value = val.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      } else {
+        inputEl.value = "";
+      }
+    }
+
+    function removeDecimalFormat(inputEl) {
+      const val = parseFloat(inputEl.value.replace(/\./g, "").replace(/,/g, "")) || 0;
+      if (val > 0) {
+        inputEl.value = val.toString();
       } else {
         inputEl.value = "";
       }
