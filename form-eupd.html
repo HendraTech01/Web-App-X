@@ -562,10 +562,16 @@
       document.getElementById("Jadwal Sampai").value = parseDateToInput(firstRow["Jadwal Sampai"]);
       if (firstRow["Jumlah Karyawan"]) document.getElementById("Jumlah Karyawan").value = firstRow["Jumlah Karyawan"];
       if (firstRow["Jumlah Hari"]) document.getElementById("Jumlah Hari").value = firstRow["Jumlah Hari"];
-      if (firstRow["Uang Makan Per Hari"]) document.getElementById("Uang Makan Per Hari").value = firstRow["Uang Makan Per Hari"];
+      if (firstRow["Uang Makan Per Hari"]) {
+        document.getElementById("Uang Makan Per Hari").value = firstRow["Uang Makan Per Hari"];
+        formatDecimalDisplay(document.getElementById("Uang Makan Per Hari"));
+      }
       if (firstRow["Total Uang Makan"]) document.getElementById("Total Uang Makan").value = firstRow["Total Uang Makan"];
       if (firstRow["Jumlah Hari Menginap"]) document.getElementById("Jumlah Hari Menginap").value = firstRow["Jumlah Hari Menginap"];
-      if (firstRow["Biaya Penginapan Per Hari"]) document.getElementById("Biaya Penginapan Per Hari").value = firstRow["Biaya Penginapan Per Hari"];
+      if (firstRow["Biaya Penginapan Per Hari"]) {
+        document.getElementById("Biaya Penginapan Per Hari").value = firstRow["Biaya Penginapan Per Hari"];
+        formatDecimalDisplay(document.getElementById("Biaya Penginapan Per Hari"));
+      }
       if (firstRow["Total Biaya Penginapan"]) document.getElementById("Total Biaya Penginapan").value = firstRow["Total Biaya Penginapan"];
       if (firstRow["Total Biaya Keseluruhan"]) document.getElementById("Total Biaya Keseluruhan").value = firstRow["Total Biaya Keseluruhan"];
 
@@ -632,7 +638,12 @@
           if (row["Jenis BBM Berangkat"]) berangkatBundle.querySelector(".bbm-jenis").value = row["Jenis BBM Berangkat"];
           if (row["Jarak Berangkat"]) berangkatBundle.querySelector(".bbm-jarak").value = row["Jarak Berangkat"];
           if (row["Jumlah Liter BBM Berangkat"]) berangkatBundle.querySelector(".bbm-liter").value = row["Jumlah Liter BBM Berangkat"];
-          if (row["Harga BBM Berangkat Per Liter"]) berangkatBundle.querySelector(".bbm-harga").value = row["Harga BBM Berangkat Per Liter"];
+          if (row["Harga BBM Berangkat Per Liter"]) {
+            berangkatBundle.querySelector(".bbm-harga").value = row["Harga BBM Berangkat Per Liter"];
+            formatDecimalDisplay(berangkatBundle.querySelector(".bbm-harga"));
+          }
+          // Calculate row total
+          calcBBMRow(berangkatBundle.querySelector(".bbm-liter"));
         }
 
         // BBM Pulang - only add row if has data
@@ -646,7 +657,12 @@
           if (row["Jenis BBM Pulang"]) pulangBundle.querySelector(".bbm-jenis").value = row["Jenis BBM Pulang"];
           if (row["Jarak Pulang"]) pulangBundle.querySelector(".bbm-jarak").value = row["Jarak Pulang"];
           if (row["Jumlah Liter BBM Pulang"]) pulangBundle.querySelector(".bbm-liter").value = row["Jumlah Liter BBM Pulang"];
-          if (row["Harga BBM Pulang Per Liter"]) pulangBundle.querySelector(".bbm-harga").value = row["Harga BBM Pulang Per Liter"];
+          if (row["Harga BBM Pulang Per Liter"]) {
+            pulangBundle.querySelector(".bbm-harga").value = row["Harga BBM Pulang Per Liter"];
+            formatDecimalDisplay(pulangBundle.querySelector(".bbm-harga"));
+          }
+          // Calculate row total
+          calcBBMRow(pulangBundle.querySelector(".bbm-liter"));
         }
 
         // Biaya Lain - only add row if has data
@@ -659,12 +675,19 @@
           const biayaBundle = biayaBundles[index];
           if (row["Biaya Lain-Lain"]) biayaBundle.querySelector(".biaya-nama").value = row["Biaya Lain-Lain"];
           if (row["Kuantiti Lain-Lain"]) biayaBundle.querySelector(".biaya-qty").value = row["Kuantiti Lain-Lain"];
-          if (row["Jumlah Lain-Lain"]) biayaBundle.querySelector(".biaya-harga").value = row["Jumlah Lain-Lain"];
+          if (row["Jumlah Lain-Lain"]) {
+            biayaBundle.querySelector(".biaya-harga").value = row["Jumlah Lain-Lain"];
+            formatDecimalDisplay(biayaBundle.querySelector(".biaya-harga"));
+          }
+          // Calculate row subtotal
+          calcBiayaRow(biayaBundle.querySelector(".biaya-qty"));
         }
       });
 
-      // Recalculate totals
-      calculateAll();
+      // Recalculate totals after all data is populated
+      setTimeout(() => {
+        calculateAll();
+      }, 100);
     }
 
 
