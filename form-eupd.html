@@ -147,11 +147,11 @@
             <div class="grid-3 mb-2">
               <div class="app-input-group">
                 <label for="Jadwal Berangkat">Jadwal Berangkat</label>
-                <input type="date" id="Jadwal Berangkat" name="Jadwal Berangkat" class="app-input" required onchange="hitungSelisihHari()">
+                <input type="date" id="Jadwal Berangkat" name="Jadwal Berangkat" class="app-input" required onchange="resetHariMenginapManualFlag(); hitungSelisihHari()">
               </div>
               <div class="app-input-group">
                 <label for="Jadwal Sampai">Jadwal Pulang</label>
-                <input type="date" id="Jadwal Sampai" name="Jadwal Sampai" class="app-input" required onchange="hitungSelisihHari()">
+                <input type="date" id="Jadwal Sampai" name="Jadwal Sampai" class="app-input" required onchange="resetHariMenginapManualFlag(); hitungSelisihHari()">
               </div>
               <div class="app-input-group">
                 <label for="Jumlah Hari">Jumlah Hari Perjalanan</label>
@@ -242,7 +242,7 @@
             <div class="grid-3">
               <div class="app-input-group">
                 <label for="Jumlah Hari Menginap">Jumlah Hari Menginap</label>
-                <input type="number" id="Jumlah Hari Menginap" name="Jumlah Hari Menginap" class="app-input" value="0" oninput="calculateAll()">
+                <input type="number" id="Jumlah Hari Menginap" name="Jumlah Hari Menginap" class="app-input" value="0" min="0" oninput="onHariMenginapManualInput()">
               </div>
               <div class="app-input-group">
                 <label for="Biaya Penginapan Per Hari">Biaya Penginapan Per Hari per Driver</label>
@@ -290,6 +290,7 @@
 
     let masterWH = [], masterKendaraan = [], masterDriver = [], masterPemesan = [], masterTujuan = [];
     let dynamicRowOrder = [];
+    let hariMenginapDiubahManual = false;
 
     function registerDynamicRow(type, row) {
       if (!row || !row.isConnected) return;
@@ -389,12 +390,7 @@
           document.getElementById("Jadwal Sampai").value = now;
         }
 
-        // Isi default pembuat dari user login jika kosong
         const currentUser = getCurrentUser();
-        if (currentUser) {
-          const pembuatEl = document.getElementById("Pembuat Dokumen");
-          if (!pembuatEl.value) pembuatEl.value = currentUser;
-        }
 
         const selectedSheet = getQuerySheetName();
         setFormTargetSheet(selectedSheet);
@@ -473,6 +469,11 @@
         fetchMaster("ListTeamSupplyChain", data => masterDriver = data.map(d => ({ nama: d.Nama || d.nama })));
         fetchMaster("ListPemesan", data => masterPemesan = data.map(d => ({ nama: d.Nama || d.nama })));
         fetchMaster("ListTujuan", data => masterTujuan = data.map(d => ({ nama: d.Nama || d.nama })));
+
+        // Hitung jumlah hari perjalanan & menginap dari jadwal (create mode)
+        if (!editNo) {
+          hitungSelisihHari();
+        }
       } catch (err) { console.error("Init Error:", err); }
     }
 
@@ -567,7 +568,10 @@
         formatDecimalDisplay(document.getElementById("Uang Makan Per Hari"));
       }
       if (firstRow["Total Uang Makan"]) document.getElementById("Total Uang Makan").value = firstRow["Total Uang Makan"];
-      if (firstRow["Jumlah Hari Menginap"]) document.getElementById("Jumlah Hari Menginap").value = firstRow["Jumlah Hari Menginap"];
+      if (firstRow["Jumlah Hari Menginap"] !== undefined && firstRow["Jumlah Hari Menginap"] !== "") {
+        document.getElementById("Jumlah Hari Menginap").value = firstRow["Jumlah Hari Menginap"];
+        hariMenginapDiubahManual = true;
+      }
       if (firstRow["Biaya Penginapan Per Hari"]) {
         document.getElementById("Biaya Penginapan Per Hari").value = firstRow["Biaya Penginapan Per Hari"];
         formatDecimalDisplay(document.getElementById("Biaya Penginapan Per Hari"));
@@ -889,20 +893,36 @@
       return null;
     }
 
-    function hitungSelisihHari() {
-      const tgl1 = new Date(document.getElementById("Jadwal Berangkat").value);
-      const tgl2 = new Date(document.getElementById("Jadwal Sampai").value);
-      if (tgl1 && tgl2 && !isNaN(tgl1) && !isNaN(tgl2)) {
-        const diffTime = Math.abs(tgl2 - tgl1);
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1; // Termasuk hari keberangkatan
-        document.getElementById("Jumlah Hari").value = diffDays > 0 ? diffDays : 1;
+    function parseLocalDate(dateStr) {
+      if (!dateStr) return null;
+      const [year, month, day] = dateStr.split("-").map(Number);
+      if (!year || !month || !day) return null;
+      return new Date(year, month - 1, day);
+    }
 
-        const inapEl = document.getElementById("Jumlah Hari Menginap");
-        if (inapEl.value === "0" || inapEl.value === "") {
-          inapEl.value = Math.max(diffDays - 1, 0);
-        }
+    function hitungSelisihHari() {
+      const tglBerangkat = parseLocalDate(document.getElementById("Jadwal Berangkat").value);
+      const tglPulang = parseLocalDate(document.getElementById("Jadwal Sampai").value);
+      if (!tglBerangkat || !tglPulang || isNaN(tglBerangkat) || isNaN(tglPulang)) return;
+
+      const diffTime = Math.abs(tglPulang - tglBerangkat);
+      const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24)) + 1; // Termasuk hari keberangkatan
+      document.getElementById("Jumlah Hari").value = diffDays > 0 ? diffDays : 1;
+
+      if (!hariMenginapDiubahManual) {
+        document.getElementById("Jumlah Hari Menginap").value = Math.max(diffDays - 1, 0);
       }
+
       calculateAll();
+    }
+
+    function onHariMenginapManualInput() {
+      hariMenginapDiubahManual = true;
+      calculateAll();
+    }
+
+    function resetHariMenginapManualFlag() {
+      hariMenginapDiubahManual = false;
     }
 
     function calcBBMRow(el) {
