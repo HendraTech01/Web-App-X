@@ -272,6 +272,7 @@
 
         const canEdit = hasFeaturePermission("Edit");
         const canLock = hasFeaturePermission("Lock");
+        const canUnlock = hasFeaturePermission("Unlock");
 
         let actionButtons = "";
         if (canEdit && status !== "Locked") {
@@ -280,7 +281,9 @@
         if (canLock && status !== "Locked") {
           actionButtons += `<button type="button" class="app-btn" style="padding: 0.35rem 0.75rem; font-size: 12px; background: #FEE2E2; color: #991B1B;" onclick="handleLockEUPD('${row["Nomor Pengajuan EUPD"]}')">Lock</button>`;
         }
-        // Unlock button removed - only Master user can unlock via direct sheet access
+        if (canUnlock && status === "Locked") {
+          actionButtons += `<button type="button" class="app-btn" style="padding: 0.35rem 0.75rem; font-size: 12px; background: #D1FAE5; color: #065F46;" onclick="handleUnlockEUPD('${row["Nomor Pengajuan EUPD"]}')">Unlock</button>`;
+        }
         if (!actionButtons) {
           actionButtons = "<span style='color: #94A3B8; font-size: 12px;'>-</span>";
         }
@@ -311,8 +314,10 @@
       await updateEUPDStatus(noEUPD, "Locked");
     }
 
-    // Unlock function removed - Unlock button no longer available in UI
-    // Only Master user can unlock via direct Google Sheet access
+    async function handleUnlockEUPD(noEUPD) {
+      if (!confirm("Apakah Anda yakin ingin membuka kunci dokumen EUPD ini?")) return;
+      await updateEUPDStatus(noEUPD, "Unlocked");
+    }
 
     async function updateEUPDStatus(noEUPD, newStatus) {
       const sheetName = getQuerySheetName();
