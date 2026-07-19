@@ -67,7 +67,7 @@
 
     <main class="app-content-body">
         
-        <div style="margin-bottom: 1.25rem;">
+        <div style="margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
           <a href="list-eupd.html" style="display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; color: var(--color-text-secondary); font-size: var(--font-sm); font-weight: 600; padding: 0.4rem 0.75rem; background: #FFFFFF; border: 1px solid var(--color-border); border-radius: var(--radius-sm); transition: all 0.2s;">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <line x1="19" y1="12" x2="5" y2="12"></line>
@@ -75,6 +75,14 @@
             </svg>
             Kembali ke Daftar EUPD
           </a>
+          <button type="button" onclick="handlePrintEUPD()" style="display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; color: white; font-size: var(--font-sm); font-weight: 600; padding: 0.4rem 0.75rem; background: #3B82F6; border: none; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 6 2 18 2 18 9"></polyline>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+              <rect x="6" y="14" width="12" height="8"></rect>
+            </svg>
+            Cetak Dokumen
+          </button>
         </div>
 
         <div class="app-title" style="text-align: left; font-size: 1.4rem;">Form Pengajuan EUPD</div>
@@ -319,7 +327,6 @@
           </div>
 
           <button type="submit" id="btn-simpan-eupd" class="app-btn" style="padding: 1rem; font-size: 1.1rem;">💾 Simpan & Terbitkan Pengajuan EUPD</button>
-          <button type="button" id="btn-print-eupd" class="app-btn" style="padding: 1rem; font-size: 1.1rem; background: #3B82F6; color: white; margin-top: 0.5rem;" onclick="handlePrintEUPD()">🖨️ Cetak Dokumen EUPD</button>
         </form>
       </main>
     </div>
