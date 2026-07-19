@@ -172,8 +172,8 @@
     <div class="print-header">
       <img src="" alt="Header Logo" id="header-logo" style="display: none;">
       <div class="print-title">Estimasi Perjalanan Dinas</div>
-      <div style="font-size: 14px; font-weight: 600; color: #374151; margin-top: 5px;" id="print-no-eupd">-</div>
-      <div style="font-size: 12px; color: #6b7280; margin-top: 2px;" id="print-tanggal">-</div>
+      <div style="text-align: center; font-size: 16px; font-weight: 600; margin-top: 10px;" id="print-no-eupd">-</div>
+      <div style="text-align: center; font-size: 14px; margin-top: 5px;" id="print-tanggal">-</div>
     </div>
 
     <div class="print-section">
@@ -187,16 +187,25 @@
         <div class="print-value" id="print-driver">-</div>
       </div>
       <div class="print-row">
+        <div class="print-label">Tanggal Berangkat:</div>
+        <div class="print-value" id="print-tgl-berangkat">-</div>
+      </div>
+      <div class="print-row">
+        <div class="print-label">Tanggal Pulang:</div>
+        <div class="print-value" id="print-tgl-pulang">-</div>
+      </div>
+      <div class="print-row">
         <div class="print-label">Jumlah Hari:</div>
         <div class="print-value" id="print-jml-hari">-</div>
       </div>
     </div>
 
     <div class="print-section">
-      <div class="print-section-title">Tujuan</div>
+      <div class="print-section-title">Pemesan Pengiriman & Tujuan</div>
       <table class="print-table">
         <thead>
           <tr>
+            <th>Pemesan</th>
             <th>Nama Tujuan</th>
             <th>Alamat</th>
           </tr>
@@ -207,10 +216,29 @@
     </div>
 
     <div class="print-section">
+      <div class="print-section-title">Konsumsi BBM</div>
+      <table class="print-table">
+        <thead>
+          <tr>
+            <th>Tipe</th>
+            <th>Jenis BBM</th>
+            <th>Jarak (KM)</th>
+            <th>Liter</th>
+            <th class="text-right">Harga/Liter</th>
+            <th class="text-right">Total</th>
+          </tr>
+        </thead>
+        <tbody id="print-bbm-body">
+        </tbody>
+      </table>
+    </div>
+
+    <div class="print-section">
       <div class="print-section-title">Biaya Lain-lain</div>
       <table class="print-table">
         <thead>
           <tr>
+            <th>Nama Biaya</th>
             <th>Kuantiti</th>
             <th class="text-right">Harga Satuan</th>
             <th class="text-right">Subtotal</th>
@@ -225,6 +253,18 @@
       <div class="print-total-row">
         <div class="print-total-label">Total Uang Makan:</div>
         <div class="print-total-value" id="print-total-uang-makan">-</div>
+      </div>
+      <div class="print-total-row">
+        <div class="print-total-label">Total BBM Berangkat:</div>
+        <div class="print-total-value" id="print-total-bbm-berangkat">-</div>
+      </div>
+      <div class="print-total-row">
+        <div class="print-total-label">Total BBM Pulang:</div>
+        <div class="print-total-value" id="print-total-bbm-pulang">-</div>
+      </div>
+      <div class="print-total-row">
+        <div class="print-total-label">Total Penginapan:</div>
+        <div class="print-total-value" id="print-total-penginapan">-</div>
       </div>
       <div class="print-total-row">
         <div class="print-total-label">Total Biaya Lain:</div>
@@ -270,20 +310,7 @@
     async function loadEUPDData() {
       const sheetName = getQueryParam("sheetName");
       const noEUPD = getQueryParam("noEUPD");
-      const mode = getQueryParam("mode");
 
-      if (mode === "preview") {
-        // Preview mode: load data from localStorage (current form data)
-        const previewData = localStorage.getItem("eupd_preview_data");
-        if (previewData) {
-          populatePrintData(JSON.parse(previewData));
-        } else {
-          alert("Data preview tidak tersedia");
-        }
-        return;
-      }
-
-      // Normal mode: load from saved data
       if (!sheetName || !noEUPD) {
         alert("Parameter sheetName dan noEUPD diperlukan");
         return;
@@ -298,72 +325,119 @@
           return;
         }
 
-        const eupdData = json.data.find(row => row["Nomor Pengajuan EUPD"] === noEUPD);
-        if (!eupdData) {
+        // Get all rows with the same noEUPD (for dynamic rows)
+        const eupdRows = json.data.filter(row => row["Nomor Pengajuan EUPD"] === noEUPD);
+        if (eupdRows.length === 0) {
           alert("Data EUPD tidak ditemukan");
           return;
         }
 
-        populatePrintData(eupdData);
+        populatePrintData(eupdRows);
       } catch (err) {
         console.error("Gagal memuat data:", err);
         alert("Gagal terhubung ke server");
       }
     }
 
-    function populatePrintData(data) {
+    function populatePrintData(rows) {
+      // Get main data from first row
+      const mainData = rows[0];
+
       // Header info
-      document.getElementById("print-no-eupd").textContent = data["Nomor Pengajuan EUPD"] || "-";
-      document.getElementById("print-tanggal").textContent = formatDate(data["Tanggal Dokumen"]);
+      document.getElementById("print-no-eupd").textContent = mainData["Nomor Pengajuan EUPD"] || "-";
+      document.getElementById("print-tanggal").textContent = formatDate(mainData["Tanggal Dokumen"]);
 
       // Armada info
-      document.getElementById("print-no-kendaraan").textContent = data["No Kendaraan"] || "-";
-      // Support multiple drivers (comma-separated)
-      const drivers = data["Nama Driver"] || "-";
-      document.getElementById("print-driver").textContent = drivers;
-      document.getElementById("print-jml-hari").textContent = data["Jumlah Hari"] || "-";
+      document.getElementById("print-no-kendaraan").textContent = mainData["No Kendaraan"] || "-";
 
-      // Tujuan table (support multiple rows)
+      // Collect all unique drivers
+      const drivers = [...new Set(rows.map(r => r["Nama Driver"]).filter(d => d))];
+      document.getElementById("print-driver").textContent = drivers.length > 0 ? drivers.join(", ") : "-";
+
+      document.getElementById("print-tgl-berangkat").textContent = formatDate(mainData["Tanggal Berangkat"]);
+      document.getElementById("print-tgl-pulang").textContent = formatDate(mainData["Tanggal Pulang"]);
+      document.getElementById("print-jml-hari").textContent = mainData["Jumlah Hari"] || "-";
+
+      // Tujuan table - collect all unique tujuan
       const tujuanBody = document.getElementById("print-tujuan-body");
       tujuanBody.innerHTML = "";
-      if (data["Nama Tujuan"] || data["Alamat"]) {
-        // Handle single or multiple destinations
-        const tujuans = Array.isArray(data.tujuans) ? data.tujuans : [{ nama: data["Nama Tujuan"], alamat: data["Alamat"] }];
-        tujuans.forEach(tujuan => {
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${tujuan.nama || data["Nama Tujuan"] || "-"}</td>
-            <td>${tujuan.alamat || data["Alamat"] || "-"}</td>
-          `;
-          tujuanBody.appendChild(row);
-        });
-      }
+      const tujuanMap = new Map();
+      rows.forEach(row => {
+        const pemesan = row["Pemesan Pengiriman"] || "-";
+        const tujuan = row["Nama Tujuan"] || "-";
+        const alamat = row["Alamat"] || "-";
+        const key = `${pemesan}|${tujuan}|${alamat}`;
+        if (!tujuanMap.has(key)) {
+          tujuanMap.set(key, { pemesan, tujuan, alamat });
+        }
+      });
+      tujuanMap.forEach(({ pemesan, tujuan, alamat }) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${pemesan}</td>
+          <td>${tujuan}</td>
+          <td>${alamat}</td>
+        `;
+        tujuanBody.appendChild(row);
+      });
 
-      // Biaya table (support multiple rows, without Nama Biaya)
+      // BBM table - collect all BBM entries
+      const bbmBody = document.getElementById("print-bbm-body");
+      bbmBody.innerHTML = "";
+      rows.forEach(row => {
+        const jenis = row["Jenis BBM"] || "-";
+        const jarak = row["Jarak BBM"] || "-";
+        const liter = row["Liter BBM"] || "-";
+        const harga = row["Harga BBM"] || 0;
+        const total = row["Total BBM"] || 0;
+        const tipe = row["Tipe BBM"] || "Berangkat";
+
+        if (jenis !== "-" || jarak !== "-" || liter !== "-") {
+          const rowEl = document.createElement("tr");
+          rowEl.innerHTML = `
+            <td>${tipe}</td>
+            <td>${jenis}</td>
+            <td>${jarak}</td>
+            <td>${liter}</td>
+            <td class="text-right">${formatCurrency(harga)}</td>
+            <td class="text-right">${formatCurrency(total)}</td>
+          `;
+          bbmBody.appendChild(rowEl);
+        }
+      });
+
+      // Biaya table - collect all biaya entries
       const biayaBody = document.getElementById("print-biaya-body");
       biayaBody.innerHTML = "";
-      if (data["Kuantiti Lain-Lain"] || data["Jumlah Lain-Lain"]) {
-        // Handle single or multiple expenses
-        const biayas = Array.isArray(data.biayas) ? data.biayas : [{ qty: data["Kuantiti Lain-Lain"], harga: data["Jumlah Lain-Lain"], total: data["Total Lain-Lain"] }];
-        biayas.forEach(biaya => {
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${biaya.qty || data["Kuantiti Lain-Lain"] || "-"}</td>
-            <td class="text-right">${formatCurrency(biaya.harga || data["Jumlah Lain-Lain"])}</td>
-            <td class="text-right">${formatCurrency(biaya.total || data["Total Lain-Lain"])}</td>
+      rows.forEach(row => {
+        const nama = row["Nama Biaya Lain"] || "-";
+        const qty = row["Kuantiti Lain-Lain"] || 0;
+        const harga = row["Jumlah Lain-Lain"] || 0;
+        const total = row["Total Lain-Lain"] || 0;
+
+        if (nama !== "-") {
+          const rowEl = document.createElement("tr");
+          rowEl.innerHTML = `
+            <td>${nama}</td>
+            <td>${qty}</td>
+            <td class="text-right">${formatCurrency(harga)}</td>
+            <td class="text-right">${formatCurrency(total)}</td>
           `;
-          biayaBody.appendChild(row);
-        });
-      }
+          biayaBody.appendChild(rowEl);
+        }
+      });
 
       // Totals
-      document.getElementById("print-total-uang-makan").textContent = formatCurrency(data["Total Uang Makan"]);
-      document.getElementById("print-total-biaya-lain").textContent = formatCurrency(data["Total Lain-Lain"] || data["Total Biaya Lain"]);
-      document.getElementById("print-grand-total").textContent = formatCurrency(data["Total Biaya Keseluruhan"]);
+      document.getElementById("print-total-uang-makan").textContent = formatCurrency(mainData["Total Uang Makan"]);
+      document.getElementById("print-total-bbm-berangkat").textContent = formatCurrency(mainData["Total BBM Berangkat"] || mainData["Total BBM"]);
+      document.getElementById("print-total-bbm-pulang").textContent = formatCurrency(mainData["Total BBM Pulang"] || "0");
+      document.getElementById("print-total-penginapan").textContent = formatCurrency(mainData["Total Biaya Penginapan"]);
+      document.getElementById("print-total-biaya-lain").textContent = formatCurrency(mainData["Total Lain-Lain"] || mainData["Total Biaya Lain"]);
+      document.getElementById("print-grand-total").textContent = formatCurrency(mainData["Total Biaya Keseluruhan"]);
 
       // Footer
-      document.getElementById("footer-pembuat").textContent = data["Pembuat Dokumen"] || "-";
-      document.getElementById("footer-tanggal").textContent = formatDate(data["Tanggal Dokumen"]);
+      document.getElementById("footer-pembuat").textContent = mainData["Pembuat Dokumen"] || "-";
+      document.getElementById("footer-tanggal").textContent = formatDate(mainData["Tanggal Dokumen"]);
     }
 
     document.addEventListener("DOMContentLoaded", loadEUPDData);

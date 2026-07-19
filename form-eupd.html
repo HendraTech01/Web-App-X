@@ -1263,46 +1263,14 @@
       const noEUPD = getEUPDNo();
       const sheetName = getQuerySheetName();
 
-      if (noEUPD) {
-        // Print from saved data (edit/view mode)
-        const printUrl = `print-eupd.html?sheetName=${encodeURIComponent(sheetName)}&noEUPD=${encodeURIComponent(noEUPD)}`;
-        window.open(printUrl, '_blank');
-      } else {
-        // Print preview from current form data (create mode)
-        // Collect current form data
-        const formData = collectFormData();
-        localStorage.setItem("eupd_preview_data", JSON.stringify(formData));
-        const printUrl = `print-eupd.html?sheetName=${encodeURIComponent(sheetName)}&mode=preview`;
-        window.open(printUrl, '_blank');
+      if (!noEUPD) {
+        showFormAlert("error", "Silakan simpan dokumen terlebih dahulu sebelum mencetak.");
+        return;
       }
-    }
 
-    function collectFormData() {
-      return {
-        "Nomor Pengajuan EUPD": "PREVIEW",
-        "Tanggal Dokumen": document.getElementById("Tanggal Dokumen").value,
-        "Pembuat Dokumen": getCurrentUser(),
-        "No Kendaraan": document.getElementById("No Kendaraan").value,
-        "Nama Driver": document.getElementById("Nama Driver").value,
-        "Tanggal Berangkat": document.getElementById("Tanggal Berangkat").value,
-        "Tanggal Pulang": document.getElementById("Tanggal Pulang").value,
-        "Jumlah Hari": document.getElementById("Jumlah Hari").value,
-        "Pemesan Pengiriman": document.querySelector(".input-pemesan")?.value || "",
-        "Nama Tujuan": document.querySelector(".input-tujuan")?.value || "",
-        "Alamat": document.querySelector(".input-alamat")?.value || "",
-        "Jenis BBM": document.querySelector(".bbm-jenis")?.value || "",
-        "Jarak BBM": document.querySelector(".bbm-jarak")?.value || "",
-        "Liter BBM": document.querySelector(".bbm-liter")?.value || "",
-        "Harga BBM": document.querySelector(".bbm-harga")?.value || "",
-        "Total BBM": document.querySelector(".bbm-total-val")?.value || 0,
-        "Nama Biaya Lain": document.querySelector(".biaya-nama")?.value || "",
-        "Kuantiti Lain-Lain": document.querySelector(".biaya-qty")?.value || 0,
-        "Jumlah Lain-Lain": document.querySelector(".biaya-harga")?.value || "",
-        "Total Lain-Lain": document.querySelector(".biaya-subtotal-val")?.value || 0,
-        "Total Uang Makan": document.getElementById("Total Uang Makan").value,
-        "Total Biaya Penginapan": document.getElementById("Total Biaya Penginapan").value,
-        "Total Biaya Keseluruhan": document.getElementById("Total Biaya Keseluruhan").value
-      };
+      // Print from saved data (edit/view mode)
+      const printUrl = `print-eupd.html?sheetName=${encodeURIComponent(sheetName)}&noEUPD=${encodeURIComponent(noEUPD)}`;
+      window.open(printUrl, '_blank');
     }
 
     // 7. SET FORM READ ONLY (for view mode)
