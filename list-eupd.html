@@ -267,6 +267,8 @@
         const canUnlock = hasFeaturePermission("Unlock");
 
         let actionButtons = "";
+        // View button for all users (works even for locked documents)
+        actionButtons += `<button type="button" class="app-btn" style="padding: 0.35rem 0.75rem; font-size: 12px; background: #E0F2FE; color: #0369A1;" onclick="handleViewEUPD('${row["Nomor Pengajuan EUPD"]}')">View</button>`;
         if (canEdit && status !== "Locked") {
           actionButtons += `<button type="button" class="app-btn" style="padding: 0.35rem 0.75rem; font-size: 12px;" onclick="handleEditEUPD('${row["Nomor Pengajuan EUPD"]}')">Edit</button>`;
         }
@@ -296,6 +298,11 @@
     }
 
     // Handler functions for Edit/Lock/Unlock actions
+    async function handleViewEUPD(noEUPD) {
+      const sheetName = getQuerySheetName();
+      window.location.href = `form-eupd.html?sheetName=${encodeURIComponent(sheetName)}&returnPage=${encodeURIComponent(sheetName)}&viewNo=${encodeURIComponent(noEUPD)}`;
+    }
+
     async function handleEditEUPD(noEUPD) {
       const sheetName = getQuerySheetName();
       window.location.href = `form-eupd.html?sheetName=${encodeURIComponent(sheetName)}&returnPage=${encodeURIComponent(sheetName)}&editNo=${encodeURIComponent(noEUPD)}`;

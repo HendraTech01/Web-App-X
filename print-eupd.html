@@ -324,7 +324,20 @@
     async function loadEUPDData() {
       const sheetName = getQueryParam("sheetName");
       const noEUPD = getQueryParam("noEUPD");
+      const mode = getQueryParam("mode");
 
+      if (mode === "preview") {
+        // Preview mode: load data from localStorage (current form data)
+        const previewData = localStorage.getItem("eupd_preview_data");
+        if (previewData) {
+          populatePrintData(JSON.parse(previewData));
+        } else {
+          alert("Data preview tidak tersedia");
+        }
+        return;
+      }
+
+      // Normal mode: load from saved data
       if (!sheetName || !noEUPD) {
         alert("Parameter sheetName dan noEUPD diperlukan");
         return;
