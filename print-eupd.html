@@ -172,22 +172,8 @@
     <div class="print-header">
       <img src="" alt="Header Logo" id="header-logo" style="display: none;">
       <div class="print-title">Estimasi Perjalanan Dinas</div>
-    </div>
-
-    <div class="print-section">
-      <div class="print-section-title">Informasi Dokumen</div>
-      <div class="print-row">
-        <div class="print-label">Nomor EUPD:</div>
-        <div class="print-value" id="print-no-eupd">-</div>
-      </div>
-      <div class="print-row">
-        <div class="print-label">Tanggal Dokumen:</div>
-        <div class="print-value" id="print-tanggal">-</div>
-      </div>
-      <div class="print-row">
-        <div class="print-label">Nama Pembuat:</div>
-        <div class="print-value" id="print-pembuat">-</div>
-      </div>
+      <div style="font-size: 14px; font-weight: 600; color: #374151; margin-top: 5px;" id="print-no-eupd">-</div>
+      <div style="font-size: 12px; color: #6b7280; margin-top: 2px;" id="print-tanggal">-</div>
     </div>
 
     <div class="print-section">
@@ -201,25 +187,16 @@
         <div class="print-value" id="print-driver">-</div>
       </div>
       <div class="print-row">
-        <div class="print-label">Tanggal Berangkat:</div>
-        <div class="print-value" id="print-tgl-berangkat">-</div>
-      </div>
-      <div class="print-row">
-        <div class="print-label">Tanggal Pulang:</div>
-        <div class="print-value" id="print-tgl-pulang">-</div>
-      </div>
-      <div class="print-row">
         <div class="print-label">Jumlah Hari:</div>
         <div class="print-value" id="print-jml-hari">-</div>
       </div>
     </div>
 
     <div class="print-section">
-      <div class="print-section-title">Pemesan Pengiriman & Tujuan</div>
+      <div class="print-section-title">Tujuan</div>
       <table class="print-table">
         <thead>
           <tr>
-            <th>Pemesan</th>
             <th>Nama Tujuan</th>
             <th>Alamat</th>
           </tr>
@@ -230,29 +207,10 @@
     </div>
 
     <div class="print-section">
-      <div class="print-section-title">Konsumsi BBM</div>
-      <table class="print-table">
-        <thead>
-          <tr>
-            <th>Tipe</th>
-            <th>Jenis BBM</th>
-            <th>Jarak (KM)</th>
-            <th>Liter</th>
-            <th class="text-right">Harga/Liter</th>
-            <th class="text-right">Total</th>
-          </tr>
-        </thead>
-        <tbody id="print-bbm-body">
-        </tbody>
-      </table>
-    </div>
-
-    <div class="print-section">
       <div class="print-section-title">Biaya Lain-lain</div>
       <table class="print-table">
         <thead>
           <tr>
-            <th>Nama Biaya</th>
             <th>Kuantiti</th>
             <th class="text-right">Harga Satuan</th>
             <th class="text-right">Subtotal</th>
@@ -267,18 +225,6 @@
       <div class="print-total-row">
         <div class="print-total-label">Total Uang Makan:</div>
         <div class="print-total-value" id="print-total-uang-makan">-</div>
-      </div>
-      <div class="print-total-row">
-        <div class="print-total-label">Total BBM Berangkat:</div>
-        <div class="print-total-value" id="print-total-bbm-berangkat">-</div>
-      </div>
-      <div class="print-total-row">
-        <div class="print-total-label">Total BBM Pulang:</div>
-        <div class="print-total-value" id="print-total-bbm-pulang">-</div>
-      </div>
-      <div class="print-total-row">
-        <div class="print-total-label">Total Penginapan:</div>
-        <div class="print-total-value" id="print-total-penginapan">-</div>
       </div>
       <div class="print-total-row">
         <div class="print-total-label">Total Biaya Lain:</div>
@@ -369,63 +315,49 @@
       // Header info
       document.getElementById("print-no-eupd").textContent = data["Nomor Pengajuan EUPD"] || "-";
       document.getElementById("print-tanggal").textContent = formatDate(data["Tanggal Dokumen"]);
-      document.getElementById("print-pembuat").textContent = data["Pembuat Dokumen"] || "-";
 
       // Armada info
       document.getElementById("print-no-kendaraan").textContent = data["No Kendaraan"] || "-";
-      document.getElementById("print-driver").textContent = data["Nama Driver"] || "-";
-      document.getElementById("print-tgl-berangkat").textContent = formatDate(data["Tanggal Berangkat"]);
-      document.getElementById("print-tgl-pulang").textContent = formatDate(data["Tanggal Pulang"]);
+      // Support multiple drivers (comma-separated)
+      const drivers = data["Nama Driver"] || "-";
+      document.getElementById("print-driver").textContent = drivers;
       document.getElementById("print-jml-hari").textContent = data["Jumlah Hari"] || "-";
 
-      // Tujuan table
+      // Tujuan table (support multiple rows)
       const tujuanBody = document.getElementById("print-tujuan-body");
       tujuanBody.innerHTML = "";
-      if (data["Pemesan Pengiriman"] || data["Nama Tujuan"] || data["Alamat"]) {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${data["Pemesan Pengiriman"] || "-"}</td>
-          <td>${data["Nama Tujuan"] || "-"}</td>
-          <td>${data["Alamat"] || "-"}</td>
-        `;
-        tujuanBody.appendChild(row);
+      if (data["Nama Tujuan"] || data["Alamat"]) {
+        // Handle single or multiple destinations
+        const tujuans = Array.isArray(data.tujuans) ? data.tujuans : [{ nama: data["Nama Tujuan"], alamat: data["Alamat"] }];
+        tujuans.forEach(tujuan => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${tujuan.nama || data["Nama Tujuan"] || "-"}</td>
+            <td>${tujuan.alamat || data["Alamat"] || "-"}</td>
+          `;
+          tujuanBody.appendChild(row);
+        });
       }
 
-      // BBM table
-      const bbmBody = document.getElementById("print-bbm-body");
-      bbmBody.innerHTML = "";
-      if (data["Jenis BBM"] || data["Jarak BBM"] || data["Liter BBM"] || data["Harga BBM"]) {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>Berangkat</td>
-          <td>${data["Jenis BBM"] || "-"}</td>
-          <td>${data["Jarak BBM"] || "-"}</td>
-          <td>${data["Liter BBM"] || "-"}</td>
-          <td class="text-right">${formatCurrency(data["Harga BBM"])}</td>
-          <td class="text-right">${formatCurrency(data["Total BBM"])}</td>
-        `;
-        bbmBody.appendChild(row);
-      }
-
-      // Biaya table
+      // Biaya table (support multiple rows, without Nama Biaya)
       const biayaBody = document.getElementById("print-biaya-body");
       biayaBody.innerHTML = "";
-      if (data["Nama Biaya Lain"] || data["Kuantiti Lain-Lain"] || data["Jumlah Lain-Lain"]) {
-        const row = document.createElement("tr");
-        row.innerHTML = `
-          <td>${data["Nama Biaya Lain"] || "-"}</td>
-          <td>${data["Kuantiti Lain-Lain"] || "-"}</td>
-          <td class="text-right">${formatCurrency(data["Jumlah Lain-Lain"])}</td>
-          <td class="text-right">${formatCurrency(data["Total Lain-Lain"])}</td>
-        `;
-        biayaBody.appendChild(row);
+      if (data["Kuantiti Lain-Lain"] || data["Jumlah Lain-Lain"]) {
+        // Handle single or multiple expenses
+        const biayas = Array.isArray(data.biayas) ? data.biayas : [{ qty: data["Kuantiti Lain-Lain"], harga: data["Jumlah Lain-Lain"], total: data["Total Lain-Lain"] }];
+        biayas.forEach(biaya => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${biaya.qty || data["Kuantiti Lain-Lain"] || "-"}</td>
+            <td class="text-right">${formatCurrency(biaya.harga || data["Jumlah Lain-Lain"])}</td>
+            <td class="text-right">${formatCurrency(biaya.total || data["Total Lain-Lain"])}</td>
+          `;
+          biayaBody.appendChild(row);
+        });
       }
 
       // Totals
       document.getElementById("print-total-uang-makan").textContent = formatCurrency(data["Total Uang Makan"]);
-      document.getElementById("print-total-bbm-berangkat").textContent = formatCurrency(data["Total BBM Berangkat"] || data["Total BBM"]);
-      document.getElementById("print-total-bbm-pulang").textContent = formatCurrency(data["Total BBM Pulang"] || "0");
-      document.getElementById("print-total-penginapan").textContent = formatCurrency(data["Total Biaya Penginapan"]);
       document.getElementById("print-total-biaya-lain").textContent = formatCurrency(data["Total Lain-Lain"] || data["Total Biaya Lain"]);
       document.getElementById("print-grand-total").textContent = formatCurrency(data["Total Biaya Keseluruhan"]);
 
