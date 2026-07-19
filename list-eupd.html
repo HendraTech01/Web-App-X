@@ -140,15 +140,7 @@
       const user = getCurrentUser();
       if (!user) return [];
 
-      const storedData = localStorage.getItem("wax_feature_access_data");
-      if (storedData) {
-        try {
-          return JSON.parse(storedData);
-        } catch(e) {
-          console.error("Gagal parse cache fitur akses", e);
-        }
-      }
-
+      // Always fetch fresh data from server to ensure permissions are up to date
       try {
         const res = await fetch(`${GAS_URL}?action=getData&sheet=FiturListEUPD`);
         const json = await res.json();
@@ -169,10 +161,16 @@
 
     function hasFeaturePermission(featureName) {
       const featureAccess = JSON.parse(localStorage.getItem("wax_feature_access_data") || "[]");
-      return featureAccess.some(item => {
+      console.log("hasFeaturePermission - featureName:", featureName);
+      console.log("hasFeaturePermission - featureAccess:", featureAccess);
+      console.log("hasFeaturePermission - currentUser:", getCurrentUser());
+      const result = featureAccess.some(item => {
         const feature = String(item["Fitur List EUPD"] || item["fitur list eupd"] || "").trim();
+        console.log("Checking item:", item, "feature:", feature, "match:", feature.toLowerCase() === featureName.toLowerCase());
         return feature.toLowerCase() === featureName.toLowerCase();
       });
+      console.log("hasFeaturePermission - result:", result);
+      return result;
     }
 
     async function resolveSheetName() {
