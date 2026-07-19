@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cetak EUPD</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f5f5f5;
+      padding: 20px;
+    }
+
+    .print-container {
+      max-width: 210mm;
+      margin: 0 auto;
+      background: white;
+      padding: 20mm;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+
+    .print-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .print-header img {
+      max-width: 200px;
+      height: auto;
+      margin-bottom: 10px;
+    }
+
+    .print-title {
+      font-size: 24px;
+      font-weight: bold;
+      color: #1e40af;
+      margin-bottom: 10px;
+    }
+
+    .print-section {
+      margin-bottom: 20px;
+    }
+
+    .print-section-title {
+      font-size: 14px;
+      font-weight: bold;
+      color: #374151;
+      margin-bottom: 10px;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 5px;
+    }
+
+    .print-row {
+      display: flex;
+      margin-bottom: 8px;
+      font-size: 12px;
+    }
+
+    .print-label {
+      width: 150px;
+      font-weight: 600;
+      color: #4b5563;
+    }
+
+    .print-value {
+      flex: 1;
+      color: #1f2937;
+    }
+
+    .print-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 10px;
+      font-size: 11px;
+    }
+
+    .print-table th,
+    .print-table td {
+      border: 1px solid #d1d5db;
+      padding: 6px;
+      text-align: left;
+    }
+
+    .print-table th {
+      background: #f3f4f6;
+      font-weight: 600;
+    }
+
+    .print-table .text-right {
+      text-align: right;
+    }
+
+    .print-totals {
+      margin-top: 20px;
+    }
+
+    .print-total-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 12px;
+    }
+
+    .print-total-label {
+      font-weight: 600;
+      color: #4b5563;
+    }
+
+    .print-total-value {
+      font-weight: 600;
+      color: #1f2937;
+    }
+
+    .print-grand-total {
+      font-size: 16px;
+      font-weight: bold;
+      color: #1e40af;
+      border-top: 2px solid #1e40af;
+      padding-top: 10px;
+      margin-top: 10px;
+    }
+
+    .print-footer {
+      margin-top: 30px;
+      padding-top: 20px;
+      border-top: 1px solid #e5e7eb;
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: #6b7280;
+    }
+
+    .print-footer-left {
+      text-align: left;
+    }
+
+    .print-footer-right {
+      text-align: right;
+    }
+
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+      }
+
+      .print-container {
+        box-shadow: none;
+        padding: 0;
+        max-width: none;
+      }
+
+      .no-print {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="no-print" style="margin-bottom: 20px; text-align: center;">
+    <button onclick="window.print()" style="padding: 10px 20px; font-size: 14px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer;">🖨️ Cetak Dokumen</button>
+    <button onclick="window.close()" style="padding: 10px 20px; font-size: 14px; background: #6b7280; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">✖️ Tutup</button>
+  </div>
+
+  <div class="print-container" id="print-content">
+    <div class="print-header">
+      <img src="" alt="Header Logo" id="header-logo" style="display: none;">
+      <div class="print-title">Estimasi Perjalanan Dinas</div>
+    </div>
+
+    <div class="print-section">
+      <div class="print-section-title">Informasi Dokumen</div>
+      <div class="print-row">
+        <div class="print-label">Nomor EUPD:</div>
+        <div class="print-value" id="print-no-eupd">-</div>
+      </div>
+      <div class="print-row">
+        <div class="print-label">Tanggal Dokumen:</div>
+        <div class="print-value" id="print-tanggal">-</div>
+      </div>
+      <div class="print-row">
+        <div class="print-label">Nama Pembuat:</div>
+        <div class="print-value" id="print-pembuat">-</div>
+      </div>
+    </div>
+
+    <div class="print-section">
+      <div class="print-section-title">Informasi Armada</div>
+      <div class="print-row">
+        <div class="print-label">No Kendaraan:</div>
+        <div class="print-value" id="print-no-kendaraan">-</div>
+      </div>
+      <div class="print-row">
+        <div class="print-label">Nama Driver:</div>
+        <div class="print-value" id="print-driver">-</div>
+      </div>
+      <div class="print-row">
+        <div class="print-label">Tanggal Berangkat:</div>
+        <div class="print-value" id="print-tgl-berangkat">-</div>
+      </div>
+      <div class="print-row">
+        <div class="print-label">Tanggal Pulang:</div>
+        <div class="print-value" id="print-tgl-pulang">-</div>
+      </div>
+      <div class="print-row">
+        <div class="print-label">Jumlah Hari:</div>
+        <div class="print-value" id="print-jml-hari">-</div>
+      </div>
+    </div>
+
+    <div class="print-section">
+      <div class="print-section-title">Pemesan Pengiriman & Tujuan</div>
+      <table class="print-table">
+        <thead>
+          <tr>
+            <th>Pemesan</th>
+            <th>Nama Tujuan</th>
+            <th>Alamat</th>
+          </tr>
+        </thead>
+        <tbody id="print-tujuan-body">
+        </tbody>
+      </table>
+    </div>
+
+    <div class="print-section">
+      <div class="print-section-title">Konsumsi BBM</div>
+      <table class="print-table">
+        <thead>
+          <tr>
+            <th>Tipe</th>
+            <th>Jenis BBM</th>
+            <th>Jarak (KM)</th>
+            <th>Liter</th>
+            <th class="text-right">Harga/Liter</th>
+            <th class="text-right">Total</th>
+          </tr>
+        </thead>
+        <tbody id="print-bbm-body">
+        </tbody>
+      </table>
+    </div>
+
+    <div class="print-section">
+      <div class="print-section-title">Biaya Lain-lain</div>
+      <table class="print-table">
+        <thead>
+          <tr>
+            <th>Nama Biaya</th>
+            <th>Kuantiti</th>
+            <th class="text-right">Harga Satuan</th>
+            <th class="text-right">Subtotal</th>
+          </tr>
+        </thead>
+        <tbody id="print-biaya-body">
+        </tbody>
+      </table>
+    </div>
+
+    <div class="print-totals">
+      <div class="print-total-row">
+        <div class="print-total-label">Total Uang Makan:</div>
+        <div class="print-total-value" id="print-total-uang-makan">-</div>
+      </div>
+      <div class="print-total-row">
+        <div class="print-total-label">Total BBM Berangkat:</div>
+        <div class="print-total-value" id="print-total-bbm-berangkat">-</div>
+      </div>
+      <div class="print-total-row">
+        <div class="print-total-label">Total BBM Pulang:</div>
+        <div class="print-total-value" id="print-total-bbm-pulang">-</div>
+      </div>
+      <div class="print-total-row">
+        <div class="print-total-label">Total Penginapan:</div>
+        <div class="print-total-value" id="print-total-penginapan">-</div>
+      </div>
+      <div class="print-total-row">
+        <div class="print-total-label">Total Biaya Lain:</div>
+        <div class="print-total-value" id="print-total-biaya-lain">-</div>
+      </div>
+      <div class="print-total-row print-grand-total">
+        <div class="print-total-label">TOTAL BIAYA KESELURUHAN:</div>
+        <div class="print-total-value" id="print-grand-total">-</div>
+      </div>
+    </div>
+
+    <div class="print-footer">
+      <div class="print-footer-left">
+        <div><strong>Nama Pembuat:</strong> <span id="footer-pembuat">-</span></div>
+        <div><strong>Tanggal Dokumen:</strong> <span id="footer-tanggal">-</span></div>
+      </div>
+      <div class="print-footer-right">
+        <div>Dokumen ini diterbitkan secara elektronik</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbwf5oEpUkMp65-aTQ77PIj6CEhQV64yXjBqJMiBrkacXed5AbRYimF_Cb9qTa5mczLa/exec";
+
+    function getQueryParam(name) {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get(name);
+    }
+
+    function formatCurrency(value) {
+      if (!value) return "Rp 0,00";
+      const num = parseFloat(value);
+      return "Rp " + num.toLocaleString("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return "-";
+      const date = new Date(dateStr);
+      return date.toLocaleDateString("id-ID", { day: "2-digit", month: "long", year: "numeric" });
+    }
+
+    async function loadEUPDData() {
+      const sheetName = getQueryParam("sheetName");
+      const noEUPD = getQueryParam("noEUPD");
+
+      if (!sheetName || !noEUPD) {
+        alert("Parameter sheetName dan noEUPD diperlukan");
+        return;
+      }
+
+      try {
+        const res = await fetch(`${GAS_URL}?action=getData&sheet=${encodeURIComponent(sheetName)}`);
+        const json = await res.json();
+
+        if (json.status !== "success" || !Array.isArray(json.data)) {
+          alert("Gagal memuat data EUPD");
+          return;
+        }
+
+        const eupdData = json.data.find(row => row["Nomor Pengajuan EUPD"] === noEUPD);
+        if (!eupdData) {
+          alert("Data EUPD tidak ditemukan");
+          return;
+        }
+
+        populatePrintData(eupdData);
+      } catch (err) {
+        console.error("Gagal memuat data:", err);
+        alert("Gagal terhubung ke server");
+      }
+    }
+
+    function populatePrintData(data) {
+      // Header info
+      document.getElementById("print-no-eupd").textContent = data["Nomor Pengajuan EUPD"] || "-";
+      document.getElementById("print-tanggal").textContent = formatDate(data["Tanggal Dokumen"]);
+      document.getElementById("print-pembuat").textContent = data["Pembuat Dokumen"] || "-";
+
+      // Armada info
+      document.getElementById("print-no-kendaraan").textContent = data["No Kendaraan"] || "-";
+      document.getElementById("print-driver").textContent = data["Nama Driver"] || "-";
+      document.getElementById("print-tgl-berangkat").textContent = formatDate(data["Tanggal Berangkat"]);
+      document.getElementById("print-tgl-pulang").textContent = formatDate(data["Tanggal Pulang"]);
+      document.getElementById("print-jml-hari").textContent = data["Jumlah Hari"] || "-";
+
+      // Tujuan table
+      const tujuanBody = document.getElementById("print-tujuan-body");
+      tujuanBody.innerHTML = "";
+      if (data["Pemesan Pengiriman"] || data["Nama Tujuan"] || data["Alamat"]) {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${data["Pemesan Pengiriman"] || "-"}</td>
+          <td>${data["Nama Tujuan"] || "-"}</td>
+          <td>${data["Alamat"] || "-"}</td>
+        `;
+        tujuanBody.appendChild(row);
+      }
+
+      // BBM table
+      const bbmBody = document.getElementById("print-bbm-body");
+      bbmBody.innerHTML = "";
+      if (data["Jenis BBM"] || data["Jarak BBM"] || data["Liter BBM"] || data["Harga BBM"]) {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>Berangkat</td>
+          <td>${data["Jenis BBM"] || "-"}</td>
+          <td>${data["Jarak BBM"] || "-"}</td>
+          <td>${data["Liter BBM"] || "-"}</td>
+          <td class="text-right">${formatCurrency(data["Harga BBM"])}</td>
+          <td class="text-right">${formatCurrency(data["Total BBM"])}</td>
+        `;
+        bbmBody.appendChild(row);
+      }
+
+      // Biaya table
+      const biayaBody = document.getElementById("print-biaya-body");
+      biayaBody.innerHTML = "";
+      if (data["Nama Biaya Lain"] || data["Kuantiti Lain-Lain"] || data["Jumlah Lain-Lain"]) {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${data["Nama Biaya Lain"] || "-"}</td>
+          <td>${data["Kuantiti Lain-Lain"] || "-"}</td>
+          <td class="text-right">${formatCurrency(data["Jumlah Lain-Lain"])}</td>
+          <td class="text-right">${formatCurrency(data["Total Lain-Lain"])}</td>
+        `;
+        biayaBody.appendChild(row);
+      }
+
+      // Totals
+      document.getElementById("print-total-uang-makan").textContent = formatCurrency(data["Total Uang Makan"]);
+      document.getElementById("print-total-bbm-berangkat").textContent = formatCurrency(data["Total BBM Berangkat"] || data["Total BBM"]);
+      document.getElementById("print-total-bbm-pulang").textContent = formatCurrency(data["Total BBM Pulang"] || "0");
+      document.getElementById("print-total-penginapan").textContent = formatCurrency(data["Total Biaya Penginapan"]);
+      document.getElementById("print-total-biaya-lain").textContent = formatCurrency(data["Total Lain-Lain"] || data["Total Biaya Lain"]);
+      document.getElementById("print-grand-total").textContent = formatCurrency(data["Total Biaya Keseluruhan"]);
+
+      // Footer
+      document.getElementById("footer-pembuat").textContent = data["Pembuat Dokumen"] || "-";
+      document.getElementById("footer-tanggal").textContent = formatDate(data["Tanggal Dokumen"]);
+    }
+
+    document.addEventListener("DOMContentLoaded", loadEUPDData);
+  </script>
+</body>
+</html>

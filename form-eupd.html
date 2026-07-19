@@ -319,6 +319,7 @@
           </div>
 
           <button type="submit" id="btn-simpan-eupd" class="app-btn" style="padding: 1rem; font-size: 1.1rem;">💾 Simpan & Terbitkan Pengajuan EUPD</button>
+          <button type="button" id="btn-print-eupd" class="app-btn" style="padding: 1rem; font-size: 1.1rem; background: #3B82F6; color: white; display: none; margin-top: 0.5rem;" onclick="handlePrintEUPD()">🖨️ Cetak Dokumen EUPD</button>
         </form>
       </main>
     </div>
@@ -1212,6 +1213,9 @@
             switchToEditMode(result.noEUPD);
           }
 
+          // Show print button after successful save
+          document.getElementById("btn-print-eupd").style.display = "block";
+
           showFormAlert(
             "success",
             `Pengajuan EUPD berhasil ${isEdit ? "diperbarui" : "disimpan"}. Nomor Dokumen: ${result.noEUPD || editNo}`
@@ -1227,6 +1231,19 @@
         btn.disabled = false;
         btn.innerText = getSubmitButtonLabel();
       }
+    }
+
+    // 6. PRINT EUPD DOCUMENT
+    function handlePrintEUPD() {
+      const noEUPD = getQueryEditNo();
+      if (!noEUPD) {
+        showFormAlert("error", "Nomor EUPD tidak ditemukan. Silakan simpan dokumen terlebih dahulu.");
+        return;
+      }
+
+      const sheetName = getQuerySheetName();
+      const printUrl = `print-eupd.html?sheetName=${encodeURIComponent(sheetName)}&noEUPD=${encodeURIComponent(noEUPD)}`;
+      window.open(printUrl, '_blank');
     }
 
     document.addEventListener("DOMContentLoaded", initForm);
