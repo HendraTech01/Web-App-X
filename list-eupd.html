@@ -169,10 +169,15 @@
 
     function hasFeaturePermission(featureName) {
       const featureAccess = JSON.parse(localStorage.getItem("wax_feature_access_data") || "[]");
-      return featureAccess.some(item => {
+      console.log("hasFeaturePermission - featureName:", featureName);
+      console.log("hasFeaturePermission - featureAccess:", featureAccess);
+      const result = featureAccess.some(item => {
         const feature = String(item["Fitur List EUPD"] || item["fitur list eupd"] || "").trim();
+        console.log("Checking item:", item, "feature:", feature, "match:", feature.toLowerCase() === featureName.toLowerCase());
         return feature.toLowerCase() === featureName.toLowerCase();
       });
+      console.log("hasFeaturePermission - result:", result);
+      return result;
     }
 
     async function resolveSheetName() {
