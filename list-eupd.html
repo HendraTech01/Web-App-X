@@ -347,6 +347,25 @@
     async function fetchAndRenderSheet(sheetName) {
       const tbody = document.getElementById("table-body");
       try {
+        // Check for preloaded data in localStorage first
+        const preloadedKey = `eupd_preload_${sheetName}`;
+        const preloadedData = localStorage.getItem(preloadedKey);
+
+        if (preloadedData) {
+          const parsed = JSON.parse(preloadedData);
+          // Check if data is less than 5 minutes old (300000 ms)
+          if (Date.now() - parsed.timestamp < 300000) {
+            console.log("Using preloaded data for", sheetName);
+            renderEUPDTable(parsed.data);
+            localStorage.removeItem(preloadedKey); // Clean up after use
+            return;
+          } else {
+            // Data is stale, remove it
+            localStorage.removeItem(preloadedKey);
+          }
+        }
+
+        // Fetch fresh data if no preloaded data or data is stale
         const res = await fetch(`${GAS_URL}?action=getData&sheet=${encodeURIComponent(sheetName)}`);
         const result = await res.json();
 
