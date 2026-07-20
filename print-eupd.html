@@ -74,6 +74,7 @@
       border: 1px solid #d1d5db;
       padding: 8px;
       border-radius: 4px;
+      text-align: center;
     }
 
     .print-date-label {
@@ -114,10 +115,20 @@
     .print-table th {
       background: #f3f4f6;
       font-weight: 600;
+      text-align: center;
+    }
+
+    .print-table th.text-right,
+    .print-table th.text-center {
+      text-align: center;
     }
 
     .print-table .text-right {
       text-align: right;
+    }
+
+    .print-table .text-center {
+      text-align: center;
     }
 
     .print-totals {
@@ -242,6 +253,22 @@
     </div>
 
     <div class="print-section">
+      <div class="print-section-title">Biaya Makan</div>
+      <table class="print-table">
+        <thead>
+          <tr>
+            <th>Jumlah Driver</th>
+            <th>Jumlah Hari</th>
+            <th class="text-right">Uang Makan Per Hari</th>
+            <th class="text-right">Total Uang Makan</th>
+          </tr>
+        </thead>
+        <tbody id="print-makan-body">
+        </tbody>
+      </table>
+    </div>
+
+    <div class="print-section">
       <div class="print-section-title">Konsumsi BBM</div>
       <table class="print-table">
         <thead>
@@ -264,7 +291,7 @@
       <table class="print-table">
         <thead>
           <tr>
-            <th>Jumlah Hari Menginap</th>
+            <th class="text-center">Jumlah Hari Menginap</th>
             <th class="text-right">Biaya Per Hari per Driver</th>
             <th class="text-right">Total Penginapan</th>
           </tr>
@@ -448,43 +475,57 @@
       });
       if (!tujuanBody.children.length) appendEmptyRow(tujuanBody, 3, "Tidak ada data pemesan dan tujuan.");
 
+      // Biaya makan
+      const makanBody = document.getElementById("print-makan-body");
+      makanBody.innerHTML = `
+        <tr>
+          <td class="text-center">${mainData["Jumlah Karyawan"] || "0"}</td>
+          <td class="text-center">${mainData["Jumlah Hari"] || "0"}</td>
+          <td class="text-right">${formatCurrency(mainData["Uang Makan Per Hari"])}</td>
+          <td class="text-right">${formatCurrency(mainData["Total Uang Makan"])}</td>
+        </tr>
+      `;
+
       // BBM table - collect all BBM entries
       const bbmBody = document.getElementById("print-bbm-body");
       bbmBody.innerHTML = "";
-      rows.forEach(row => {
-        const bbmItems = [
-          {
-            tipe: "Berangkat",
-            jenis: getValue(row, ["Jenis BBM Berangkat", "Jenis BBM"]),
-            jarak: getValue(row, ["Jarak Berangkat", "Jarak BBM"]),
-            liter: getValue(row, ["Jumlah Liter BBM Berangkat", "Liter BBM"]),
-            harga: getValue(row, ["Harga BBM Berangkat Per Liter", "Harga BBM"]),
-            total: getValue(row, ["Total Harga BBM Berangkat", "Total BBM Berangkat", "Total BBM"])
-          },
-          {
-            tipe: "Pulang",
-            jenis: getValue(row, ["Jenis BBM Pulang"]),
-            jarak: getValue(row, ["Jarak Pulang"]),
-            liter: getValue(row, ["Jumlah Liter BBM Pulang"]),
-            harga: getValue(row, ["Harga BBM Pulang Per Liter"]),
-            total: getValue(row, ["Total Harga BBM Pulang", "Total BBM Pulang"])
-          }
-        ];
+      const bbmItems = [];
 
-        bbmItems.forEach(item => {
-          if (!item.jenis && !item.jarak && !item.liter && !item.harga && !item.total) return;
+      rows.forEach(row => {
+        bbmItems.push({
+          tipe: "Berangkat",
+          jenis: getValue(row, ["Jenis BBM Berangkat", "Jenis BBM"]),
+          jarak: getValue(row, ["Jarak Berangkat", "Jarak BBM"]),
+          liter: getValue(row, ["Jumlah Liter BBM Berangkat", "Liter BBM"]),
+          harga: getValue(row, ["Harga BBM Berangkat Per Liter", "Harga BBM"]),
+          total: getValue(row, ["Total Harga BBM Berangkat", "Total BBM Berangkat", "Total BBM"])
+        });
+      });
+
+      rows.forEach(row => {
+        bbmItems.push({
+          tipe: "Pulang",
+          jenis: getValue(row, ["Jenis BBM Pulang"]),
+          jarak: getValue(row, ["Jarak Pulang"]),
+          liter: getValue(row, ["Jumlah Liter BBM Pulang"]),
+          harga: getValue(row, ["Harga BBM Pulang Per Liter"]),
+          total: getValue(row, ["Total Harga BBM Pulang", "Total BBM Pulang"])
+        });
+      });
+
+      bbmItems.forEach(item => {
+        if (!item.jenis && !item.jarak && !item.liter && !item.harga && !item.total) return;
 
           const rowEl = document.createElement("tr");
           rowEl.innerHTML = `
             <td>${item.tipe}</td>
             <td>${item.jenis || "-"}</td>
-            <td>${item.jarak || "-"}</td>
-            <td>${item.liter || "-"}</td>
+            <td class="text-center">${item.jarak || "-"}</td>
+            <td class="text-center">${item.liter || "-"}</td>
             <td class="text-right">${formatCurrency(item.harga)}</td>
             <td class="text-right">${formatCurrency(item.total)}</td>
           `;
           bbmBody.appendChild(rowEl);
-        });
       });
       if (!bbmBody.children.length) appendEmptyRow(bbmBody, 6, "Tidak ada data konsumsi BBM.");
 
@@ -492,7 +533,7 @@
       const penginapanBody = document.getElementById("print-penginapan-body");
       penginapanBody.innerHTML = `
         <tr>
-          <td>${mainData["Jumlah Hari Menginap"] || "0"}</td>
+          <td class="text-center">${mainData["Jumlah Hari Menginap"] || "0"}</td>
           <td class="text-right">${formatCurrency(mainData["Biaya Penginapan Per Hari"])}</td>
           <td class="text-right">${formatCurrency(mainData["Total Biaya Penginapan"])}</td>
         </tr>
@@ -511,7 +552,7 @@
           const rowEl = document.createElement("tr");
           rowEl.innerHTML = `
             <td>${nama || "-"}</td>
-            <td>${qty}</td>
+            <td class="text-center">${qty}</td>
             <td class="text-right">${formatCurrency(harga)}</td>
             <td class="text-right">${formatCurrency(total)}</td>
           `;
