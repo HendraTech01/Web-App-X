@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cetak EUPD</title>
+  <title></title>
   <style>
     * {
       margin: 0;
@@ -165,8 +165,6 @@
       margin-top: 30px;
       padding-top: 20px;
       border-top: 1px solid #e5e7eb;
-      display: flex;
-      justify-content: space-between;
       font-size: 11px;
       color: #6b7280;
     }
@@ -180,9 +178,15 @@
     }
 
     @media print {
+      @page {
+        size: A4 portrait;
+        margin: 6mm;
+      }
+
       body {
         background: white;
         padding: 0;
+        font-size: 9px;
       }
 
       .print-container {
@@ -191,8 +195,95 @@
         max-width: none;
       }
 
+      .print-header {
+        margin-bottom: 8px;
+      }
+
+      .print-title {
+        font-size: 16px;
+        margin-bottom: 4px;
+      }
+
+      #print-no-eupd {
+        font-size: 12px !important;
+        margin-top: 4px !important;
+      }
+
+      #print-tanggal {
+        font-size: 10px !important;
+        margin-top: 2px !important;
+      }
+
+      .print-section {
+        margin-bottom: 8px;
+      }
+
+      .print-section-title {
+        font-size: 10px;
+        margin-bottom: 4px;
+        padding-bottom: 2px;
+      }
+
+      .print-row {
+        margin-bottom: 3px;
+        font-size: 9px;
+      }
+
+      .print-label {
+        width: 95px;
+      }
+
+      .print-date-row {
+        gap: 6px;
+        margin-top: 5px;
+        font-size: 9px;
+      }
+
+      .print-date-item {
+        padding: 4px;
+      }
+
+      .print-date-label {
+        margin-bottom: 2px;
+      }
+
+      .print-table {
+        font-size: 8px;
+        margin-bottom: 4px;
+      }
+
+      .print-table th,
+      .print-table td {
+        padding: 3px 4px;
+      }
+
+      .print-totals {
+        margin-top: 8px;
+      }
+
+      .print-total-row {
+        margin-bottom: 3px;
+        font-size: 9px;
+      }
+
+      .print-grand-total {
+        font-size: 11px;
+        padding-top: 5px;
+        margin-top: 5px;
+      }
+
       .no-print {
         display: none;
+      }
+
+      .print-footer {
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        margin: 0;
+        padding: 0;
+        border-top: none;
+        font-size: 8px;
       }
     }
   </style>
@@ -318,26 +409,6 @@
     </div>
 
     <div class="print-totals">
-      <div class="print-total-row">
-        <div class="print-total-label">Total Uang Makan:</div>
-        <div class="print-total-value" id="print-total-uang-makan">-</div>
-      </div>
-      <div class="print-total-row">
-        <div class="print-total-label">Total BBM Berangkat:</div>
-        <div class="print-total-value" id="print-total-bbm-berangkat">-</div>
-      </div>
-      <div class="print-total-row">
-        <div class="print-total-label">Total BBM Pulang:</div>
-        <div class="print-total-value" id="print-total-bbm-pulang">-</div>
-      </div>
-      <div class="print-total-row">
-        <div class="print-total-label">Total Penginapan:</div>
-        <div class="print-total-value" id="print-total-penginapan">-</div>
-      </div>
-      <div class="print-total-row">
-        <div class="print-total-label">Total Biaya Lain:</div>
-        <div class="print-total-value" id="print-total-biaya-lain">-</div>
-      </div>
       <div class="print-total-row print-grand-total">
         <div class="print-total-label">TOTAL BIAYA KESELURUHAN:</div>
         <div class="print-total-value" id="print-grand-total">-</div>
@@ -346,11 +417,7 @@
 
     <div class="print-footer">
       <div class="print-footer-left">
-        <div><strong>Nama Pembuat:</strong> <span id="footer-pembuat">-</span></div>
-        <div><strong>Tanggal Dokumen:</strong> <span id="footer-tanggal">-</span></div>
-      </div>
-      <div class="print-footer-right">
-        <div>Dokumen ini diterbitkan secara elektronik</div>
+        <div><strong>Dicetak:</strong> <span id="footer-print-time">-</span></div>
       </div>
     </div>
   </div>
@@ -402,6 +469,16 @@
 
     function appendEmptyRow(tbody, colspan, message) {
       tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center; color:#6b7280;">${message}</td></tr>`;
+    }
+
+    function formatDateTime(date) {
+      return date.toLocaleString("id-ID", {
+        day: "2-digit",
+        month: "long",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
     }
 
     async function loadEUPDData() {
@@ -561,17 +638,11 @@
       });
       if (!biayaBody.children.length) appendEmptyRow(biayaBody, 4, "Tidak ada data biaya lain-lain.");
 
-      // Totals
-      document.getElementById("print-total-uang-makan").textContent = formatCurrency(mainData["Total Uang Makan"]);
-      document.getElementById("print-total-bbm-berangkat").textContent = formatCurrency(rows.reduce((sum, row) => sum + parseNumber(getValue(row, ["Total Harga BBM Berangkat", "Total BBM Berangkat", "Total BBM"])), 0));
-      document.getElementById("print-total-bbm-pulang").textContent = formatCurrency(rows.reduce((sum, row) => sum + parseNumber(getValue(row, ["Total Harga BBM Pulang", "Total BBM Pulang"])), 0));
-      document.getElementById("print-total-penginapan").textContent = formatCurrency(mainData["Total Biaya Penginapan"]);
-      document.getElementById("print-total-biaya-lain").textContent = formatCurrency(rows.reduce((sum, row) => sum + parseNumber(getValue(row, ["Total Biaya Lain-Lain", "Total Lain-Lain"])), 0));
+      // Total keseluruhan
       document.getElementById("print-grand-total").textContent = formatCurrency(mainData["Total Biaya Keseluruhan"]);
 
       // Footer
-      document.getElementById("footer-pembuat").textContent = mainData["Pembuat Dokumen"] || "-";
-      document.getElementById("footer-tanggal").textContent = formatDate(mainData["Tanggal Dokumen"]);
+      document.getElementById("footer-print-time").textContent = formatDateTime(new Date());
     }
 
     document.addEventListener("DOMContentLoaded", loadEUPDData);
