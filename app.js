@@ -12,7 +12,7 @@ async function loadSidebar(slotId = "sidebar-slot") {
       if (scriptElement) {
         const inlineScript = scriptElement.innerHTML;
         if (inlineScript.trim()) {
-          eval(inlineScript);
+          window.eval(inlineScript);
         }
       }
     } else {
