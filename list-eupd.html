@@ -343,9 +343,7 @@
       }
     }
 
-    // Fetch data sheet dan render ke tabel
-    async function fetchAndRenderSheet(sheetName) {
-      const tbody = document.getElementById("table-body");
+    async function fetchSheetData(sheetName) {
       try {
         // Check for preloaded data in localStorage first
         const preloadedKey = `eupd_preload_${sheetName}`;
@@ -356,9 +354,8 @@
           // Check if data is less than 5 minutes old (300000 ms)
           if (Date.now() - parsed.timestamp < 300000) {
             console.log("Using preloaded data for", sheetName);
-            renderEUPDTable(parsed.data);
             localStorage.removeItem(preloadedKey); // Clean up after use
-            return;
+            return { status: "success", data: parsed.data };
           } else {
             // Data is stale, remove it
             localStorage.removeItem(preloadedKey);
@@ -367,17 +364,26 @@
 
         // Fetch fresh data if no preloaded data or data is stale
         const res = await fetch(`${GAS_URL}?action=getData&sheet=${encodeURIComponent(sheetName)}`);
-        const result = await res.json();
-
-        if (result.status === "success") {
-          renderEUPDTable(result.data);
-        } else {
-          tbody.innerHTML = '<tr><td colspan="8" class="text-center" style="padding: 2rem; color: red;">' + (result.message || 'Gagal mengambil data dari server.') + '</td></tr>';
-        }
+        return await res.json();
       } catch (err) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center" style="padding: 2rem; color: red;">Gagal mengambil data dari server.</td></tr>';
         console.error(err);
+        return { status: "error", message: "Gagal mengambil data dari server." };
       }
+    }
+
+    function renderSheetResult(result) {
+      const tbody = document.getElementById("table-body");
+
+      if (result.status === "success") {
+        renderEUPDTable(result.data);
+      } else {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center" style="padding: 2rem; color: red;">' + (result.message || 'Gagal mengambil data dari server.') + '</td></tr>';
+      }
+    }
+
+    // Fetch data sheet dan render ke tabel
+    async function fetchAndRenderSheet(sheetName) {
+      renderSheetResult(await fetchSheetData(sheetName));
     }
 
     // Setup UI elements (header, button) berdasarkan sheet yang sudah ditentukan
@@ -402,14 +408,16 @@
       const sheetName = getQuerySheetName();
       const returnPage = getQueryReturnPage();
 
-      // Load feature access permissions
-      await fetchUserFeatureAccess();
+      // Mulai ambil akses fitur sejak awal, tapi jangan tahan request data list.
+      const featureAccessPromise = fetchUserFeatureAccess();
 
       // FAST PATH: sheetName sudah tersedia dari URL (klik menu sidebar)
       // Langsung setup UI dan fetch data sheet tanpa menunggu fetchUserSheetAccess
       if (sheetName) {
         setupPageForSheet(sheetName, returnPage);
-        await fetchAndRenderSheet(sheetName);
+        const sheetDataPromise = fetchSheetData(sheetName);
+        const [, sheetResult] = await Promise.all([featureAccessPromise, sheetDataPromise]);
+        renderSheetResult(sheetResult);
         return;
       }
 
@@ -431,7 +439,9 @@
       window.history.replaceState(null, "", newUrl.toString());
 
       setupPageForSheet(currentSheet, currentSheet);
-      await fetchAndRenderSheet(currentSheet);
+      const sheetDataPromise = fetchSheetData(currentSheet);
+      const [, sheetResult] = await Promise.all([featureAccessPromise, sheetDataPromise]);
+      renderSheetResult(sheetResult);
     }
 
     document.addEventListener("DOMContentLoaded", () => {
