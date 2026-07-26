@@ -720,12 +720,21 @@
         return;
       }
 
-      // Format data untuk SheetJS (Biarkan semua kolom apa adanya, hanya rapikan format tanggalnya)
+      // Format data untuk SheetJS (Biarkan semua kolom apa adanya, rapikan format tanggal ke dd/mm/yyyy)
       const formattedData = dataToExport.map(row => {
         let newRow = { ...row };
-        if (newRow["Tanggal Dokumen"] && String(newRow["Tanggal Dokumen"]).includes("T")) {
-          newRow["Tanggal Dokumen"] = String(newRow["Tanggal Dokumen"]).split("T")[0];
-        }
+        Object.keys(newRow).forEach(key => {
+          let val = String(newRow[key] || "");
+          // Deteksi jika val berbentuk string tanggal ISO (YYYY-MM-DDTHH:mm:ss.sssZ)
+          if (val.includes("T") && /^\d{4}-\d{2}-\d{2}T/.test(val)) {
+            let datePart = val.split("T")[0];
+            let parts = datePart.split("-");
+            if (parts.length === 3) {
+               // Konversi menjadi dd/mm/yyyy (parts: 0=yyyy, 1=mm, 2=dd)
+               newRow[key] = `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
+          }
+        });
         return newRow;
       });
 
