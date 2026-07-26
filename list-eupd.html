@@ -569,7 +569,15 @@
       tbody.innerHTML = "";
       pageData.forEach(row => {
         let tgl = row["Tanggal Dokumen"] || "-";
-        if (tgl !== "-" && String(tgl).includes("T")) tgl = String(tgl).split("T")[0];
+        if (tgl !== "-" && String(tgl).includes("T")) {
+          let datePart = String(tgl).split("T")[0];
+          let parts = datePart.split("-");
+          if (parts.length === 3) {
+            tgl = `${parts[2]}/${parts[1]}/${parts[0]}`;
+          } else {
+            tgl = datePart;
+          }
+        }
 
         let total = row["Total Biaya Keseluruhan"] ? `Rp ${Number(row["Total Biaya Keseluruhan"]).toLocaleString('id-ID')}` : "-";
 
