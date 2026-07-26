@@ -510,14 +510,15 @@
 
           const accessItems = data.filter(item => normalizeString(item["Username"] || item["username"]).toLowerCase() === normalizeString(currentUser).toLowerCase());
 
-          // FAST PATH: sheetName sudah ditentukan dari URL (context-aware navigation)
-          // Target sheet sudah di-set di atas, tinggal cari warehouse-nya saja
+          // Pengecekan Keamanan URL
           if (currentTargetSheet) {
-            const sheetItem = findAccessItemBySheet(currentTargetSheet, hakAksesMenuData);
-            if (sheetItem) {
-              fillWarehouseFromAccessItem(sheetItem);
+            const sheetItem = findAccessItemBySheet(currentTargetSheet, accessItems);
+            if (!sheetItem) {
+              showFormAccessError(`Anda tidak memiliki hak akses untuk form EUPD di ${currentTargetSheet}.`);
+              document.getElementById("form-eupd-main").style.display = "none";
+              return;
             }
-            // Tidak perlu error atau return - biarkan master data lainnya tetap di-load
+            fillWarehouseFromAccessItem(sheetItem);
             return;
           }
 

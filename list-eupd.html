@@ -410,9 +410,25 @@
 
       // Mulai ambil akses fitur sejak awal, tapi jangan tahan request data list.
       const featureAccessPromise = fetchUserFeatureAccess();
+      
+      // WAJIB cek hak akses user untuk keamanan
+      const accessItems = await fetchUserSheetAccess();
+      const allowedSheets = accessItems.map(item => String(item["Hak Akses Menu"] || item["hak akses menu"] || "").trim().toLowerCase());
 
-      // FAST PATH: sheetName sudah tersedia dari URL (klik menu sidebar)
-      // Langsung setup UI dan fetch data sheet tanpa menunggu fetchUserSheetAccess
+      // Jika user mencoba akses URL langsung tapi tidak punya izin
+      if (sheetName && !allowedSheets.includes(sheetName.trim().toLowerCase())) {
+        document.getElementById("warehouse-selector").innerHTML = `
+          <div class="app-alert app-alert-error" style="margin-top:20px;">
+            Anda tidak memiliki hak akses untuk melihat data EUPD <b>${sheetName}</b>.
+          </div>
+        `;
+        document.getElementById("warehouse-selector").style.display = "block";
+        document.querySelector(".table-container").style.display = "none";
+        headerLabel.innerText = "Akses Ditolak";
+        return;
+      }
+
+      // FAST PATH: sheetName sudah tersedia dari URL dan VALID
       if (sheetName) {
         setupPageForSheet(sheetName, returnPage);
         const sheetDataPromise = fetchSheetData(sheetName);
@@ -421,8 +437,7 @@
         return;
       }
 
-      // SLOW PATH: tidak ada sheetName di URL, perlu cek hak akses user dulu
-      const accessItems = await fetchUserSheetAccess();
+      // SLOW PATH: tidak ada sheetName di URL, tampilkan pilihan jika lebih dari 1
       const currentSheet = (accessItems.length === 1 ? (accessItems[0]["Hak Akses Menu"] || accessItems[0]["hak akses menu"] || "") : "");
 
       if (!currentSheet) {
