@@ -30,6 +30,20 @@
     .eupd-table tr:hover td { background-color: #F8FAFC; }
     .badge-no { font-weight: 700; color: var(--color-primary); }
     
+    /* Tambahan Pagination & Filter */
+    .filter-bar { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; padding: 1rem; background: white; border-radius: var(--radius-md); border: 1px solid var(--color-border); }
+    .filter-group { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; }
+    .filter-group input { padding: 0.4rem 0.6rem; border: 1px solid var(--color-border); border-radius: 4px; font-size: 0.9rem; outline: none; }
+    
+    .pagination-bar { display: flex; align-items: center; justify-content: space-between; padding: 1rem 0; flex-wrap: wrap; gap: 1rem; }
+    .page-controls { display: flex; align-items: center; gap: 0.25rem; }
+    .page-btn { background: white; border: 1px solid var(--color-border); padding: 0.4rem 0.8rem; border-radius: 4px; cursor: pointer; color: var(--color-text-primary); transition: 0.2s; font-weight: 500; font-size: 0.9rem; }
+    .page-btn:hover:not(:disabled) { background: #F1F5F9; }
+    .page-btn.active { background: var(--color-primary); color: white; border-color: var(--color-primary); }
+    .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .page-jump { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; }
+    .page-jump input { width: 50px; padding: 0.4rem; text-align: center; border: 1px solid var(--color-border); border-radius: 4px; }
+    
     @media (max-width: 768px) {
       .app-sidebar-container { display: none; }
       body.menu-mode-active .app-sidebar-container { display: flex !important; width: 100vw !important; height: 100vh !important; position: fixed; top: 0; left: 0; z-index: 9999; }
@@ -70,6 +84,17 @@
 
         <div id="warehouse-selector" class="app-section-card" style="margin-bottom:1.5rem; display:none;"></div>
 
+        <div id="filter-container" class="filter-bar" style="display: none;">
+          <div class="filter-group">
+            <label style="font-weight:600; color:var(--color-text-secondary);">Periode:</label>
+            <input type="date" id="filter-start-date">
+            <span style="color:#94A3B8;">s/d</span>
+            <input type="date" id="filter-end-date">
+          </div>
+          <button type="button" class="app-btn" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;" onclick="applyFilters()">Terapkan</button>
+          <button type="button" class="app-btn" style="padding: 0.4rem 0.8rem; font-size: 0.9rem; background: #F1F5F9; color: #475569;" onclick="resetFilters()">Reset</button>
+        </div>
+
         <div class="table-container">
           <table class="eupd-table">
             <thead>
@@ -89,6 +114,18 @@
             </tbody>
           </table>
         </div>
+        
+        <div id="pagination-container" class="pagination-bar" style="display: none;">
+          <div style="font-size: 0.9rem; color: var(--color-text-secondary);" id="page-info">Menampilkan 0 dari 0 data</div>
+          <div class="page-controls" id="page-controls">
+            <!-- Buttons injected here -->
+          </div>
+          <div class="page-jump">
+            <span>Ke Halaman:</span>
+            <input type="number" id="jump-page-input" min="1" value="1" onkeypress="if(event.key === 'Enter') jumpToPage()">
+            <button type="button" class="app-btn" style="padding: 0.4rem 0.6rem; font-size: 0.8rem;" onclick="jumpToPage()">Go</button>
+          </div>
+        </div>
       </main>
     </div>
   </div>
@@ -96,6 +133,11 @@
   <script>
     // GANTI URL DI BAWAH INI DENGAN URL WEB APP GAS ANDA
     const GAS_URL = "https://script.google.com/macros/s/AKfycbwf5oEpUkMp65-aTQ77PIj6CEhQV64yXjBqJMiBrkacXed5AbRYimF_Cb9qTa5mczLa/exec";
+
+    let allEUPDData = [];
+    let filteredEUPDData = [];
+    let currentPage = 1;
+    const itemsPerPage = 20;
 
     function getQuerySheetName() {
       const params = new URLSearchParams(window.location.search);
@@ -227,24 +269,62 @@
       window.location.href = newUrl.toString();
     }
 
-    // Render data tabel EUPD dari array data
-    function renderEUPDTable(data) {
+    // Sistem Filter Tanggal
+    function resetFilters() {
+      document.getElementById("filter-start-date").value = "";
+      document.getElementById("filter-end-date").value = "";
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const startDateStr = document.getElementById("filter-start-date").value;
+      const endDateStr = document.getElementById("filter-end-date").value;
+      
+      let startD = startDateStr ? new Date(startDateStr) : null;
+      let endD = endDateStr ? new Date(endDateStr) : null;
+      if (startD) startD.setHours(0,0,0,0);
+      if (endD) endD.setHours(23,59,59,999);
+
+      if (!startD && !endD) {
+        filteredEUPDData = [...allEUPDData];
+      } else {
+        filteredEUPDData = allEUPDData.filter(row => {
+          let tglStr = row["Tanggal Dokumen"];
+          if (!tglStr) return false;
+          let rowDate = new Date(tglStr);
+          if (isNaN(rowDate)) return false;
+          rowDate.setHours(12,0,0,0);
+
+          if (startD && rowDate < startD) return false;
+          if (endD && rowDate > endD) return false;
+          return true;
+        });
+      }
+
+      currentPage = 1;
+      renderCurrentPage();
+    }
+
+    // Render tabel berdasarkan Pagination
+    function renderCurrentPage() {
       const tbody = document.getElementById("table-body");
-      if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" class="text-center" style="padding: 2rem; color: #64748B;">Belum ada data pengajuan EUPD di sheet tujuan ini.</td></tr>';
+      if (filteredEUPDData.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center" style="padding: 2rem; color: #64748B;">Belum ada data pengajuan EUPD yang sesuai.</td></tr>';
+        document.getElementById("page-info").innerText = "Menampilkan 0 dari 0 data";
+        document.getElementById("page-controls").innerHTML = "";
         return;
       }
 
-      const uniqueEUPD = {};
-      data.forEach(row => {
-        const no = row["Nomor Pengajuan EUPD"];
-        if (no && !uniqueEUPD[no]) {
-          uniqueEUPD[no] = row;
-        }
-      });
+      const totalPages = Math.ceil(filteredEUPDData.length / itemsPerPage);
+      if (currentPage > totalPages) currentPage = totalPages;
+      if (currentPage < 1) currentPage = 1;
 
-        tbody.innerHTML = "";
-      Object.values(uniqueEUPD).reverse().forEach(row => {
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = Math.min(startIndex + itemsPerPage, filteredEUPDData.length);
+      const pageData = filteredEUPDData.slice(startIndex, endIndex);
+
+      tbody.innerHTML = "";
+      pageData.forEach(row => {
         let tgl = row["Tanggal Dokumen"] || "-";
         if (tgl !== "-" && String(tgl).includes("T")) tgl = String(tgl).split("T")[0];
 
@@ -295,6 +375,60 @@
           </tr>
         `;
       });
+
+      document.getElementById("page-info").innerText = `Menampilkan ${startIndex + 1} - ${endIndex} dari ${filteredEUPDData.length} data`;
+      document.getElementById("jump-page-input").value = currentPage;
+      renderPaginationUI(totalPages);
+    }
+
+    function renderPaginationUI(totalPages) {
+      const controls = document.getElementById("page-controls");
+      controls.innerHTML = "";
+      if (totalPages <= 1) return;
+
+      controls.innerHTML += `<button class="page-btn" onclick="prevPage()" ${currentPage === 1 ? 'disabled' : ''}>&#8249;</button>`;
+
+      let startPage = Math.max(1, currentPage - 2);
+      let endPage = Math.min(totalPages, startPage + 4);
+      
+      if (endPage - startPage < 4) {
+        startPage = Math.max(1, endPage - 4);
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        controls.innerHTML += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+      }
+
+      controls.innerHTML += `<button class="page-btn" onclick="nextPage()" ${currentPage === totalPages ? 'disabled' : ''}>&#8250;</button>`;
+      document.getElementById("jump-page-input").max = totalPages;
+    }
+
+    function nextPage() {
+      const totalPages = Math.ceil(filteredEUPDData.length / itemsPerPage);
+      if (currentPage < totalPages) {
+        currentPage++;
+        renderCurrentPage();
+      }
+    }
+
+    function prevPage() {
+      if (currentPage > 1) {
+        currentPage--;
+        renderCurrentPage();
+      }
+    }
+
+    function goToPage(page) {
+      const totalPages = Math.ceil(filteredEUPDData.length / itemsPerPage);
+      if (page >= 1 && page <= totalPages) {
+        currentPage = page;
+        renderCurrentPage();
+      }
+    }
+
+    function jumpToPage() {
+      const val = parseInt(document.getElementById("jump-page-input").value);
+      if (!isNaN(val)) goToPage(val);
     }
 
     // Handler functions for Edit/Lock/Unlock actions
@@ -375,7 +509,17 @@
       const tbody = document.getElementById("table-body");
 
       if (result.status === "success") {
-        renderEUPDTable(result.data);
+        const uniqueEUPD = {};
+        result.data.forEach(row => {
+          const no = row["Nomor Pengajuan EUPD"];
+          if (no && !uniqueEUPD[no]) {
+            uniqueEUPD[no] = row;
+          }
+        });
+        
+        // Simpan semua data unik yang dibalik (terbaru di atas)
+        allEUPDData = Object.values(uniqueEUPD).reverse();
+        resetFilters(); // Set tampilan awal
       } else {
         tbody.innerHTML = '<tr><td colspan="8" class="text-center" style="padding: 2rem; color: red;">' + (result.message || 'Gagal mengambil data dari server.') + '</td></tr>';
       }
@@ -399,7 +543,9 @@
       }
 
       document.getElementById("warehouse-selector").style.display = "none";
+      document.getElementById("filter-container").style.display = "flex";
       document.querySelector(".table-container").style.display = "block";
+      document.getElementById("pagination-container").style.display = "flex";
     }
 
     async function loadListEUPD() {
