@@ -7,6 +7,7 @@
   <title>Daftar EUPD - Web App X</title>
   <link rel="stylesheet" href="style.css">
   <script src="app.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     body {
       padding: 0 !important;
@@ -325,6 +326,10 @@
           <div style="display: flex; gap: 0.5rem; flex-wrap: nowrap;">
             <button type="button" class="app-btn" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;" onclick="applyFilters()">Terapkan</button>
             <button type="button" class="app-btn" style="padding: 0.4rem 0.8rem; font-size: 0.9rem; background: #F1F5F9; color: #475569;" onclick="resetFilters()">Reset</button>
+            <button type="button" class="app-btn" style="padding: 0.4rem 0.8rem; font-size: 0.9rem; background: #10B981; color: white; display: flex; align-items: center; gap: 0.3rem;" onclick="exportToExcel()">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="8" y1="13" x2="16" y2="13"></line><line x1="8" y1="17" x2="16" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+              Excel
+            </button>
           </div>
         </div>
 
@@ -669,6 +674,58 @@
     function jumpToPage() {
       const val = parseInt(document.getElementById("jump-page-input").value);
       if (!isNaN(val)) goToPage(val);
+    }
+
+    // Fungsi Export ke Excel (.xlsx modern)
+    function exportToExcel() {
+      if (filteredEUPDData.length === 0) {
+        alert("Tidak ada data untuk diexport.");
+        return;
+      }
+
+      if (typeof XLSX === 'undefined') {
+        alert("Library Excel belum termuat sepenuhnya. Pastikan koneksi internet stabil lalu coba lagi.");
+        return;
+      }
+
+      // Format data untuk SheetJS
+      const dataToExport = filteredEUPDData.map(row => {
+        let tgl = row["Tanggal Dokumen"] || "";
+        if (tgl !== "" && String(tgl).includes("T")) tgl = String(tgl).split("T")[0];
+        
+        return {
+          "Nomor Pengajuan EUPD": row["Nomor Pengajuan EUPD"] || "",
+          "Tanggal Dokumen": tgl,
+          "Pembuat Dokumen": row["Pembuat Dokumen"] || "",
+          "Nama Tujuan": row["Nama Tujuan"] || "",
+          "No Kendaraan": row["No Kendaraan"] || "",
+          "Total Biaya Keseluruhan": row["Total Biaya Keseluruhan"] ? Number(row["Total Biaya Keseluruhan"]) : 0,
+          "Status": row["Status"] || "Draft"
+        };
+      });
+
+      // Konversi JSON ke Sheet
+      const ws = XLSX.utils.json_to_sheet(dataToExport);
+      
+      // Opsional: atur lebar kolom agar rapi saat dibuka
+      ws['!cols'] = [
+        { wch: 25 }, // No Pengajuan
+        { wch: 15 }, // Tanggal
+        { wch: 20 }, // Pembuat
+        { wch: 30 }, // Tujuan
+        { wch: 15 }, // Kendaraan
+        { wch: 20 }, // Total Biaya
+        { wch: 15 }  // Status
+      ];
+
+      // Buat Workbook dan simpan sebagai .xlsx
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Data EUPD");
+
+      const sheetName = getQuerySheetName() || "EUPD";
+      const timestamp = new Date().toISOString().slice(0, 10);
+      
+      XLSX.writeFile(wb, `Data_List_${sheetName}_${timestamp}.xlsx`);
     }
 
     // Handler functions for Edit/Lock/Unlock actions
