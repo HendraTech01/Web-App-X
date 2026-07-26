@@ -41,8 +41,8 @@
     .page-btn:hover:not(:disabled) { background: #F1F5F9; }
     .page-btn.active { background: var(--color-primary); color: white; border-color: var(--color-primary); }
     .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-    .page-jump { display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; }
-    .page-jump input { width: 50px; padding: 0.4rem; text-align: center; border: 1px solid var(--color-border); border-radius: 4px; }
+    .page-jump { display: flex; align-items: center; gap: 0.75rem; font-size: 0.9rem; white-space: nowrap; }
+    .page-jump input { width: 65px; padding: 0.45rem; text-align: center; border: 1px solid var(--color-border); border-radius: 4px; font-size: 0.95rem; }
     
     @media (max-width: 768px) {
       .app-sidebar-container { display: none; }
@@ -88,11 +88,13 @@
           <div class="filter-group">
             <label style="font-weight:600; color:var(--color-text-secondary);">Periode:</label>
             <input type="date" id="filter-start-date">
-            <span style="color:#94A3B8;">s/d</span>
+            <span style="color:#94A3B8; font-weight:600;">s/d</span>
             <input type="date" id="filter-end-date">
           </div>
-          <button type="button" class="app-btn" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;" onclick="applyFilters()">Terapkan</button>
-          <button type="button" class="app-btn" style="padding: 0.4rem 0.8rem; font-size: 0.9rem; background: #F1F5F9; color: #475569;" onclick="resetFilters()">Reset</button>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button type="button" class="app-btn" style="padding: 0.45rem 1rem; font-size: 0.9rem;" onclick="applyFilters()">Terapkan</button>
+            <button type="button" class="app-btn" style="padding: 0.45rem 1rem; font-size: 0.9rem; background: #F1F5F9; color: #475569;" onclick="resetFilters()">Reset</button>
+          </div>
         </div>
 
         <div class="table-container">
@@ -121,9 +123,9 @@
             <!-- Buttons injected here -->
           </div>
           <div class="page-jump">
-            <span>Ke Halaman:</span>
+            <span style="font-weight:500;">Ke Halaman:</span>
             <input type="number" id="jump-page-input" min="1" value="1" onkeypress="if(event.key === 'Enter') jumpToPage()">
-            <button type="button" class="app-btn" style="padding: 0.4rem 0.6rem; font-size: 0.8rem;" onclick="jumpToPage()">Go</button>
+            <button type="button" class="app-btn" style="padding: 0.45rem 0.8rem; font-size: 0.85rem;" onclick="jumpToPage()">Go</button>
           </div>
         </div>
       </main>
@@ -384,23 +386,26 @@
     function renderPaginationUI(totalPages) {
       const controls = document.getElementById("page-controls");
       controls.innerHTML = "";
-      if (totalPages <= 1) return;
 
-      controls.innerHTML += `<button class="page-btn" onclick="prevPage()" ${currentPage === 1 ? 'disabled' : ''}>&#8249;</button>`;
+      controls.innerHTML += `<button class="page-btn" onclick="prevPage()" ${currentPage <= 1 ? 'disabled' : ''}>&#8249;</button>`;
 
-      let startPage = Math.max(1, currentPage - 2);
-      let endPage = Math.min(totalPages, startPage + 4);
-      
-      if (endPage - startPage < 4) {
-        startPage = Math.max(1, endPage - 4);
+      if (totalPages <= 1) {
+        controls.innerHTML += `<button class="page-btn active" onclick="goToPage(1)">1</button>`;
+      } else {
+        let startPage = Math.max(1, currentPage - 2);
+        let endPage = Math.min(totalPages, startPage + 4);
+        
+        if (endPage - startPage < 4) {
+          startPage = Math.max(1, endPage - 4);
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+          controls.innerHTML += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
+        }
       }
 
-      for (let i = startPage; i <= endPage; i++) {
-        controls.innerHTML += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="goToPage(${i})">${i}</button>`;
-      }
-
-      controls.innerHTML += `<button class="page-btn" onclick="nextPage()" ${currentPage === totalPages ? 'disabled' : ''}>&#8250;</button>`;
-      document.getElementById("jump-page-input").max = totalPages;
+      controls.innerHTML += `<button class="page-btn" onclick="nextPage()" ${currentPage >= totalPages || totalPages === 0 ? 'disabled' : ''}>&#8250;</button>`;
+      document.getElementById("jump-page-input").max = Math.max(1, totalPages);
     }
 
     function nextPage() {
