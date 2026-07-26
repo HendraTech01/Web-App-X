@@ -378,6 +378,7 @@
 
     let allEUPDData = [];
     let filteredEUPDData = [];
+    let rawDatabaseData = [];
     let currentPage = 1;
     const itemsPerPage = 20;
 
@@ -678,8 +679,8 @@
 
     // Fungsi Export ke Excel (.xlsx modern)
     function exportToExcel() {
-      if (filteredEUPDData.length === 0) {
-        alert("Tidak ada data untuk diexport.");
+      if (rawDatabaseData.length === 0) {
+        alert("Tidak ada data di database untuk diexport.");
         return;
       }
 
@@ -688,44 +689,57 @@
         return;
       }
 
-      // Format data untuk SheetJS
-      const dataToExport = filteredEUPDData.map(row => {
-        let tgl = row["Tanggal Dokumen"] || "";
-        if (tgl !== "" && String(tgl).includes("T")) tgl = String(tgl).split("T")[0];
-        
-        return {
-          "Nomor Pengajuan EUPD": row["Nomor Pengajuan EUPD"] || "",
-          "Tanggal Dokumen": tgl,
-          "Pembuat Dokumen": row["Pembuat Dokumen"] || "",
-          "Nama Tujuan": row["Nama Tujuan"] || "",
-          "No Kendaraan": row["No Kendaraan"] || "",
-          "Total Biaya Keseluruhan": row["Total Biaya Keseluruhan"] ? Number(row["Total Biaya Keseluruhan"]) : 0,
-          "Status": row["Status"] || "Draft"
-        };
+      // Ambil nilai filter tanggal saat ini
+      const startDateStr = document.getElementById("filter-start-date").value;
+      const endDateStr = document.getElementById("filter-end-date").value;
+      
+      let startD = startDateStr ? new Date(startDateStr) : null;
+      let endD = endDateStr ? new Date(endDateStr) : null;
+      if (startD) startD.setHours(0,0,0,0);
+      if (endD) endD.setHours(23,59,59,999);
+
+      let dataToExport = rawDatabaseData;
+
+      // Filter berdasarkan tanggal jika ada (memakai kolom "Tanggal Dokumen")
+      if (startD || endD) {
+        dataToExport = rawDatabaseData.filter(row => {
+          let tglStr = row["Tanggal Dokumen"];
+          if (!tglStr) return false;
+          let rowDate = new Date(tglStr);
+          if (isNaN(rowDate)) return false;
+          rowDate.setHours(12,0,0,0);
+
+          if (startD && rowDate < startD) return false;
+          if (endD && rowDate > endD) return false;
+          return true;
+        });
+      }
+
+      if (dataToExport.length === 0) {
+        alert("Tidak ada data pada periode tersebut.");
+        return;
+      }
+
+      // Format data untuk SheetJS (Biarkan semua kolom apa adanya, hanya rapikan format tanggalnya)
+      const formattedData = dataToExport.map(row => {
+        let newRow = { ...row };
+        if (newRow["Tanggal Dokumen"] && String(newRow["Tanggal Dokumen"]).includes("T")) {
+          newRow["Tanggal Dokumen"] = String(newRow["Tanggal Dokumen"]).split("T")[0];
+        }
+        return newRow;
       });
 
       // Konversi JSON ke Sheet
-      const ws = XLSX.utils.json_to_sheet(dataToExport);
-      
-      // Opsional: atur lebar kolom agar rapi saat dibuka
-      ws['!cols'] = [
-        { wch: 25 }, // No Pengajuan
-        { wch: 15 }, // Tanggal
-        { wch: 20 }, // Pembuat
-        { wch: 30 }, // Tujuan
-        { wch: 15 }, // Kendaraan
-        { wch: 20 }, // Total Biaya
-        { wch: 15 }  // Status
-      ];
+      const ws = XLSX.utils.json_to_sheet(formattedData);
 
       // Buat Workbook dan simpan sebagai .xlsx
       const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Data EUPD");
+      XLSX.utils.book_append_sheet(wb, ws, "Database EUPD");
 
       const sheetName = getQuerySheetName() || "EUPD";
       const timestamp = new Date().toISOString().slice(0, 10);
       
-      XLSX.writeFile(wb, `Data_List_${sheetName}_${timestamp}.xlsx`);
+      XLSX.writeFile(wb, `Database_${sheetName}_${timestamp}.xlsx`);
     }
 
     // Handler functions for Edit/Lock/Unlock actions
@@ -806,6 +820,8 @@
       const tbody = document.getElementById("table-body");
 
       if (result.status === "success") {
+        rawDatabaseData = result.data; // Simpan data mentah asli dari database
+        
         const uniqueEUPD = {};
         result.data.forEach(row => {
           const no = row["Nomor Pengajuan EUPD"];
