@@ -800,15 +800,7 @@
             <div class="modal-col">
               <div class="app-input-group">
                 <label for="category">Kategori</label>
-                <select id="category" class="app-input" onchange="handleCategoryChange()">
-                  <option value="">-- Pilih Kategori --</option>
-                  <option value="Asset">Asset</option>
-                  <option value="Liability">Liability</option>
-                  <option value="Equity">Equity</option>
-                  <option value="Revenue">Revenue</option>
-                  <option value="Cost of Revenue">Cost of Revenue</option>
-                  <option value="Expense">Expense</option>
-                </select>
+                <input type="text" id="category" class="app-input" placeholder="Masukkan kategori" oninput="handleCategoryChange()">
                 <small id="categoryHint" class="field-hint"></small>
               </div>
             </div>
@@ -818,11 +810,7 @@
             <div class="modal-col">
               <div class="app-input-group">
                 <label for="normalBalance">Saldo Normal</label>
-                <select id="normalBalance" class="app-input">
-                  <option value="">-- Pilih Saldo Normal --</option>
-                  <option value="Debit">Debit</option>
-                  <option value="Credit">Credit</option>
-                </select>
+                <input type="text" id="normalBalance" class="app-input" placeholder="Masukkan saldo normal" readonly>
                 <small id="normalBalanceHint" class="field-hint"></small>
               </div>
             </div>
@@ -1205,8 +1193,8 @@
     async function handleLevelChange() {
       const level = parseInt(document.getElementById('level').value);
       const parentSelect = document.getElementById('parentAccount');
-      const categorySelect = document.getElementById('category');
-      const normalBalanceSelect = document.getElementById('normalBalance');
+      const categoryInput = document.getElementById('category');
+      const normalBalanceInput = document.getElementById('normalBalance');
       const categoryHint = document.getElementById('categoryHint');
       const normalBalanceHint = document.getElementById('normalBalanceHint');
       
@@ -1221,8 +1209,9 @@
         // Level 1 has no parent - enable category and normal balance selection
         parentSelect.disabled = true;
         parentSelect.value = '';
-        categorySelect.disabled = false;
-        normalBalanceSelect.disabled = false;
+        categoryInput.disabled = false;
+        categoryInput.readOnly = false;
+        normalBalanceInput.readOnly = true;
         await generateAccountNumber('', level);
       } else {
         parentSelect.disabled = false;
@@ -1236,13 +1225,14 @@
         });
         
         // Disable category and normal balance - will be auto-filled from parent
-        categorySelect.disabled = true;
-        normalBalanceSelect.disabled = true;
+        categoryInput.disabled = true;
+        categoryInput.readOnly = true;
+        normalBalanceInput.readOnly = true;
         
         // Clear auto-generated fields
         document.getElementById('accountNumber').value = '';
-        categorySelect.value = '';
-        normalBalanceSelect.value = '';
+        categoryInput.value = '';
+        normalBalanceInput.value = '';
         document.getElementById('isPosting').checked = false;
         updatePostingLabel();
       }
@@ -1251,21 +1241,22 @@
     // Handle Category Change - Auto-set normal balance based on category
     function handleCategoryChange() {
       const category = document.getElementById('category').value;
-      const normalBalanceSelect = document.getElementById('normalBalance');
+      const normalBalanceInput = document.getElementById('normalBalance');
       const categoryHint = document.getElementById('categoryHint');
       const normalBalanceHint = document.getElementById('normalBalanceHint');
       const level = parseInt(document.getElementById('level').value);
       
       // Only auto-set for Level 1
       if (level === 1) {
-        if (category === 'Asset' || category === 'Expense') {
-          normalBalanceSelect.value = 'Debit';
+        const categoryLower = category.toLowerCase();
+        if (categoryLower === 'asset' || categoryLower === 'expense') {
+          normalBalanceInput.value = 'Debit';
           normalBalanceHint.textContent = 'Otomatis: Debit (dari kategori)';
-        } else if (category === 'Liability' || category === 'Equity' || category === 'Revenue' || category === 'Cost of Revenue') {
-          normalBalanceSelect.value = 'Credit';
+        } else if (categoryLower === 'liability' || categoryLower === 'equity' || categoryLower === 'revenue' || categoryLower === 'cost of revenue') {
+          normalBalanceInput.value = 'Credit';
           normalBalanceHint.textContent = 'Otomatis: Credit (dari kategori)';
         } else {
-          normalBalanceSelect.value = '';
+          normalBalanceInput.value = '';
           normalBalanceHint.textContent = '';
         }
         categoryHint.textContent = '';
@@ -1288,13 +1279,34 @@
         return;
       }
       
-      // Get parent data
-      const parent = allCOAData.find(coa => coa.AccountNumber === parentAccount);
-      if (parent) {
-        document.getElementById('category').value = parent.Category || '';
-        document.getElementById('normalBalance').value = parent.NormalBalance || '';
-        categoryHint.textContent = `Otomatis: ${parent.Category || ''} (dari parent)`;
-        normalBalanceHint.textContent = `Otomatis: ${parent.NormalBalance || ''} (dari parent)`;
+      // Get Level 1 ancestor's category and normal balance
+      let level1Ancestor = null;
+      let currentParent = allCOAData.find(coa => coa.AccountNumber === parentAccount);
+      
+      // Traverse up to find Level 1 ancestor
+      while (currentParent && currentParent.Level > 1) {
+        const parentNumber = currentParent.ParentAccount;
+        currentParent = allCOAData.find(coa => coa.AccountNumber === parentNumber);
+      }
+      
+      if (currentParent && currentParent.Level === 1) {
+        level1Ancestor = currentParent;
+      }
+      
+      if (level1Ancestor) {
+        document.getElementById('category').value = level1Ancestor.Category || '';
+        document.getElementById('normalBalance').value = level1Ancestor.NormalBalance || '';
+        categoryHint.textContent = `Otomatis: ${level1Ancestor.Category || ''} (dari Level 1: ${level1Ancestor.AccountNumber})`;
+        normalBalanceHint.textContent = `Otomatis: ${level1Ancestor.NormalBalance || ''} (dari Level 1: ${level1Ancestor.AccountNumber})`;
+      } else {
+        // Fallback to immediate parent if Level 1 not found
+        const parent = allCOAData.find(coa => coa.AccountNumber === parentAccount);
+        if (parent) {
+          document.getElementById('category').value = parent.Category || '';
+          document.getElementById('normalBalance').value = parent.NormalBalance || '';
+          categoryHint.textContent = `Otomatis: ${parent.Category || ''} (dari parent)`;
+          normalBalanceHint.textContent = `Otomatis: ${parent.NormalBalance || ''} (dari parent)`;
+        }
       }
       
       // Set default posting based on level
