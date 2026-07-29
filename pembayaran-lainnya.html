@@ -7,6 +7,7 @@
   
   <link rel="stylesheet" href="style.css">
   <script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     /* Specific styles for Placeholder Page using Azure Sky Cloud guidelines */
     .placeholder-container {
@@ -166,7 +167,40 @@
   </div>
 
   <script>
+    const GAS_URL = window.GAS_URL || "https://script.google.com/macros/s/AKfycbwf5oEpUkMp65-aTQ77PIj6CEhQV64yXjBqJMiBrkacXed5AbRYimF_Cb9qTa5mczLa/exec";
+
+    async function checkPembayaranAccess() {
+      const user = localStorage.getItem("wax_logged_user");
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      try {
+        const response = await fetch(`${GAS_URL}?action=getMenuAccess&username=${encodeURIComponent(user)}`);
+        const json = await response.json();
+        
+        if (json.status === "success" && Array.isArray(json.data)) {
+          const accessList = json.data.map(item => String(item["Hak Akses Menu"] || item["hak akses menu"]).trim());
+          
+          if (!accessList.includes("Pembayaran")) {
+            Swal.fire({
+              icon: 'error',
+              title: 'Akses Ditolak',
+              text: 'Anda tidak memiliki hak akses untuk halaman Pembayaran',
+              confirmButtonText: 'Kembali ke Dashboard'
+            }).then(() => {
+              window.location.href = "dashboard.html";
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Gagal mengecek akses Pembayaran:", err);
+      }
+    }
+
     document.addEventListener("DOMContentLoaded", function() {
+      checkPembayaranAccess();
       // Load Sidebar using app.js function
       if (typeof loadSidebar === 'function') {
         loadSidebar();
