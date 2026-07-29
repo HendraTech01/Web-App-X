@@ -116,7 +116,12 @@
       flex-direction: column;
       gap: 0.25rem;
       min-width: 150px;
+      flex: 0 0 auto;
+    }
+
+    .filter-group:first-child {
       flex: 1;
+      max-width: 300px;
     }
 
     .filter-group label {
@@ -657,6 +662,14 @@
             </svg>
             Tambah Akun
           </button>
+          <button class="btn-create-new" onclick="exportCOAToExcel()" style="background-color: #10B981;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            Export Excel
+          </button>
         </div>
 
         <!-- Filter & Search Bar -->
@@ -903,6 +916,19 @@
       }
     }
 
+    // Export COA to Excel
+    function exportCOAToExcel() {
+      showLoading(true);
+      const exportUrl = `${GAS_URL}?action=exportCOAToExcel`;
+      
+      // Open in new window to trigger download
+      window.open(exportUrl, '_blank');
+      
+      setTimeout(() => {
+        showLoading(false);
+      }, 2000);
+    }
+
     function setupKeyboardShortcuts() {
       document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
@@ -928,6 +954,9 @@
           allCOAData = json.data;
           console.log('allCOAData loaded:', allCOAData);
           filteredData = [...allCOAData];
+          // Sort by AccountNumber by default
+          sortColumn = 'AccountNumber';
+          sortDirection = 'asc';
           renderTable();
         } else {
           Swal.fire('Error', json.message, 'error');
@@ -1024,7 +1053,7 @@
       
       filteredData = allCOAData.filter(row => {
         const matchesSearch = !searchTerm || 
-          (row.AccountNumber && row.AccountNumber.toLowerCase().includes(searchTerm)) ||
+          (row.AccountNumber && String(row.AccountNumber).toLowerCase().includes(searchTerm)) ||
           (row.AccountName && row.AccountName.toLowerCase().includes(searchTerm));
         
         const matchesCategory = !categoryFilter || row.Category === categoryFilter;
