@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="style.css">
   <script src="app.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <style>
     body {
       padding: 0 !important;
@@ -918,15 +919,44 @@
 
     // Export COA to Excel
     function exportCOAToExcel() {
+      if (!allCOAData || allCOAData.length === 0) {
+        Swal.fire('Info', 'Tidak ada data untuk diexport', 'info');
+        return;
+      }
+      
       showLoading(true);
-      const exportUrl = `${GAS_URL}?action=exportCOAToExcel`;
       
-      // Open in new window to trigger download
-      window.open(exportUrl, '_blank');
-      
-      setTimeout(() => {
+      try {
+        // Format data for excel
+        const excelData = allCOAData.map((item, index) => ({
+          'No': index + 1,
+          'Account Number': item.AccountNumber || '',
+          'Account Name': item.AccountName || '',
+          'Level': item.Level || '',
+          'Parent Account': item.ParentAccount || '',
+          'Category': item.Category || '',
+          'Normal Balance': item.NormalBalance || '',
+          'Posting': item.IsPosting ? 'Yes' : 'No',
+          'Status': item.IsActive ? 'Aktif' : 'Non Aktif'
+        }));
+
+        // Create worksheet
+        const ws = XLSX.utils.json_to_sheet(excelData);
+        
+        // Create workbook
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "Chart of Account");
+        
+        // Generate Excel file and trigger download
+        XLSX.writeFile(wb, "ChartOfAccount_Export.xlsx");
+        
         showLoading(false);
-      }, 2000);
+        Swal.fire('Sukses', 'Data berhasil diexport ke Excel', 'success');
+      } catch (error) {
+        console.error('Error exporting to Excel:', error);
+        showLoading(false);
+        Swal.fire('Error', 'Gagal mengeksport data', 'error');
+      }
     }
 
     function setupKeyboardShortcuts() {
