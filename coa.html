@@ -869,10 +869,42 @@
 
     // Initialize
     document.addEventListener('DOMContentLoaded', function() {
+      checkCOAAccess();
       loadSidebar();
       loadCOAData();
       setupKeyboardShortcuts();
     });
+
+    // Check COA Access
+    async function checkCOAAccess() {
+      const user = localStorage.getItem("wax_logged_user");
+      if (!user) {
+        window.location.href = "login.html";
+        return;
+      }
+
+      try {
+        const response = await fetch(`${GAS_URL}?action=getMenuAccess&username=${encodeURIComponent(user)}`);
+        const json = await response.json();
+        
+        if (json.status === "success" && Array.isArray(json.data)) {
+          const accessList = json.data.map(item => String(item["Hak Akses Menu"] || item["hak akses menu"]).trim());
+          
+          if (!accessList.includes("ChartOfAccount")) {
+            Swal.fire({
+              icon: 'error',
+              title: 'Akses Ditolak',
+              text: 'Anda tidak memiliki hak akses untuk halaman Chart of Account',
+              confirmButtonText: 'Kembali ke Dashboard'
+            }).then(() => {
+              window.location.href = "dashboard.html";
+            });
+          }
+        }
+      } catch (err) {
+        console.error("Gagal mengecek akses COA:", err);
+      }
+    }
 
     function setupKeyboardShortcuts() {
       document.addEventListener('keydown', function(e) {
