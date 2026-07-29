@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pembayaran EUPD - Web App X</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    .app-content-body { max-width: 1200px; margin: 0 auto; }
+
+    .payment-eupd-header { margin-bottom: 1.5rem; }
+    .payment-eupd-header .top-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0.5rem; }
+    .payment-eupd-header .back-btn { display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; color: var(--color-text-secondary); font-size: var(--font-sm); font-weight: 600; padding: 0.4rem 0.75rem; background: #FFF; border: 1px solid var(--color-border); border-radius: var(--radius-sm); transition: all 0.2s; }
+    .payment-eupd-header .back-btn:hover { background: var(--color-primary-light); color: var(--color-primary); }
+
+    .info-bar { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; }
+    .info-bar .app-input-group { margin-bottom: 0; min-width: 180px; }
+    .info-bar .app-input-group .app-input { min-width: 200px; }
+    .info-bar .app-input-group label { white-space: nowrap; }
+
+    .form-section-card { background: white; border-radius: var(--radius-md); border: 1px solid var(--color-border); padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+    .section-header { font-size: 1.1rem; font-weight: 700; color: var(--color-primary); margin-bottom: 1.25rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--color-primary-light); display: flex; align-items: center; gap: 0.5rem; justify-content: space-between; }
+    .section-header .group-actions { display: flex; gap: 0.5rem; }
+    .btn-remove-group { background: #FEE2E2; color: #EF4444; border: none; border-radius: 4px; padding: 0.35rem 0.75rem; font-size: 11px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.3rem; }
+    .btn-remove-group:hover { background: #FECACA; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+
+    .autocomplete-wrapper { position: relative; width: 100%; }
+    .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; z-index: 1000; background: white; border: 1px solid var(--color-primary); border-radius: 0 0 var(--radius-sm) var(--radius-sm); max-height: 200px; overflow-y: auto; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); display: none; }
+    .autocomplete-item { padding: 0.65rem 0.85rem; font-size: var(--font-sm); cursor: pointer; border-bottom: 1px solid #F1F5F9; }
+    .autocomplete-item:hover { background-color: var(--color-primary-light); color: var(--color-primary); font-weight: 600; }
+    .autocomplete-item .ac-sub { font-size: 11px; color: var(--color-text-secondary); font-weight: 400; }
+
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; }
+    .info-grid .info-item { background: #F8FAFC; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.5rem 0.75rem; }
+    .info-grid .info-item .info-label { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 0.15rem; }
+    .info-grid .info-item .info-value { font-size: var(--font-base); font-weight: 600; color: var(--color-text-primary); word-break: break-word; }
+
+    .journal-table-wrap { overflow-x: auto; margin-top: 0.75rem; }
+    .journal-table { width: 100%; border-collapse: collapse; font-size: var(--font-sm); min-width: 650px; }
+    .journal-table th { background: var(--color-primary-light); color: var(--color-primary); font-weight: 600; padding: 0.5rem 0.6rem; text-align: left; font-size: 11px; white-space: nowrap; border: 1px solid var(--color-border); }
+    .journal-table td { padding: 0.4rem 0.6rem; border: 1px solid var(--color-border); vertical-align: top; }
+    .journal-table td .autocomplete-wrapper { display: flex; }
+    .journal-table td .autocomplete-wrapper input { min-width: 140px; }
+    .journal-table td input, .journal-table td select { width: 100%; box-sizing: border-box; padding: 0.4rem 0.5rem; border: 1px solid var(--color-border); border-radius: 4px; font-size: var(--font-sm); background: var(--color-surface); color: var(--color-text-primary); }
+    .journal-table td input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary-light); }
+    .journal-table td input[readonly] { background: #F1F5F9; cursor: default; }
+    .journal-table .btn-journal-remove { background: #FEE2E2; color: #EF4444; border: none; border-radius: 4px; padding: 0.3rem 0.5rem; font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .journal-table .btn-journal-remove:hover { background: #FECACA; }
+
+    .journal-totals { display: flex; gap: 1.5rem; justify-content: flex-end; margin-top: 0.75rem; padding: 0.5rem 0.75rem; background: #F8FAFC; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: var(--font-sm); font-weight: 600; }
+    .journal-totals .total-label { color: var(--color-text-secondary); font-weight: 500; }
+    .journal-totals .total-value { color: var(--color-text-primary); min-width: 100px; text-align: right; }
+    .journal-totals .total-value.balance-ok { color: var(--color-success); }
+    .journal-totals .total-value.balance-error { color: var(--color-danger); }
+
+    .btn-outline-primary { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: transparent; color: var(--color-primary); border: 1px dashed var(--color-primary); border-radius: var(--radius-sm); font-size: var(--font-sm); font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-outline-primary:hover { background: var(--color-primary-light); }
+
+    .btn-secondary { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; background: var(--color-primary-light); color: var(--color-primary); border: 1px dashed var(--color-primary); border-radius: var(--radius-sm); font-size: var(--font-sm); font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-secondary:hover { background: #E0F2FE; }
+
+    .btn-add-journal { display: inline-flex; align-items: center; gap: 0.3rem; background: none; border: none; color: var(--color-primary); font-size: var(--font-sm); font-weight: 600; cursor: pointer; padding: 0.4rem 0; margin-top: 0.5rem; }
+    .btn-add-journal:hover { color: var(--color-primary-hover); }
+
+    .bottom-actions { display: flex; gap: 1rem; justify-content: flex-end; align-items: center; margin-top: 1.5rem; flex-wrap: wrap; }
+    .bottom-actions .app-btn { width: auto; padding: 0.75rem 2rem; margin-top: 0; }
+
+    .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.5); z-index: 9999; align-items: center; justify-content: center; }
+    .loading-overlay.active { display: flex; }
+    .spinner { width: 40px; height: 40px; border: 4px solid var(--color-primary-light); border-top: 4px solid var(--color-primary); border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    .balance-warning { display: none; color: var(--color-danger); font-size: var(--font-sm); font-weight: 500; margin-top: 0.25rem; }
+
+    @media (max-width: 768px) and (orientation: portrait) {
+      .app-sidebar-container { display: none; }
+      body.menu-mode-active .app-sidebar-container { display: flex !important; width: 100vw !important; height: 100vh !important; position: fixed; top: 0; left: 0; z-index: 9999; }
+      body.menu-mode-active .app-main-content { display: none !important; }
+      body.menu-mode-active .app-menu-close-btn { display: flex; position: absolute; right: 1rem; top: 1.5rem; background: none; border: none; color: var(--color-text-secondary); cursor: pointer; }
+      .grid-2, .grid-3, .info-grid { grid-template-columns: 1fr !important; gap: 0.75rem; }
+      .info-bar { flex-direction: column; align-items: stretch; }
+      .info-bar .app-input-group { min-width: auto; }
+      .journal-table-wrap { overflow-x: auto; }
+      .bottom-actions { flex-direction: column; }
+      .bottom-actions .app-btn { width: 100%; }
+    }
+  </style>
+</head>
+<body class="dashboard-page">
+
+<script>
+  if (!localStorage.getItem("wax_logged_user")) {
+    window.location.replace("login.html");
+  }
+</script>
+
+<div class="app-layout-wrapper">
+  <div class="app-sidebar-container">
+    <div id="sidebar-slot"></div>
+  </div>
+
+  <div class="app-main-content">
+    <header class="app-mobile-header">
+      <button type="button" class="app-hamburger-btn" onclick="toggleMobileMenu()" title="Buka Menu">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="app-title">Pembayaran EUPD</div>
+    </header>
+
+    <main class="app-content-body">
+
+      <div class="payment-eupd-header">
+        <div class="top-bar">
+          <a href="pembayaran.html" class="back-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Kembali
+          </a>
+          <h1 class="app-page-title" style="font-size:1.4rem;margin:0;">Pembayaran EUPD</h1>
+        </div>
+        <p style="font-size:var(--font-sm);color:var(--color-text-secondary);margin-top:0.25rem;">Catat pembayaran pengajuan EUPD yang telah disetujui (Locked).</p>
+      </div>
+
+      <div id="form-alert" class="app-alert"></div>
+
+      <div class="info-bar">
+        <div class="app-input-group">
+          <label>No Pembayaran EUPD</label>
+          <input type="text" id="noPembayaran" class="app-input" readonly style="background:#F1F5F9;font-weight:700;color:var(--color-primary);">
+        </div>
+        <div class="app-input-group">
+          <label for="tanggalPembayaran">Tanggal</label>
+          <input type="text" id="tanggalPembayaran" class="app-input" placeholder="dd/MM/yyyy" onfocus="this.type='date'" onblur="formatTanggalInput(this)">
+        </div>
+      </div>
+
+      <div id="groups-container"></div>
+
+      <div style="margin-top:1rem;">
+        <button type="button" class="btn-outline-primary" onclick="addGroup()">+ Tambah Pengajuan EUPD</button>
+      </div>
+
+      <div class="bottom-actions">
+        <button type="button" class="app-btn" onclick="handleSimpan()" id="btn-simpan" style="width:auto;padding:0.75rem 2rem;">Simpan Pembayaran EUPD</button>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+</div>
+
+<script>
+  const GAS_URL = window.GAS_URL || "https://script.google.com/macros/s/AKfycbwf5oEpUkMp65-aTQ77PIj6CEhQV64yXjBqJMiBrkacXed5AbRYimF_Cb9qTa5mczLa/exec";
+
+  let availableEUPDList = [];
+  let postingAccounts = [];
+  let groupCounter = 0;
+  let selectedPengajuanMap = {};
+
+  function showLoading(show) {
+    const el = document.getElementById('loadingOverlay');
+    el.classList.toggle('active', show);
+  }
+
+  function showAlert(type, msg) {
+    const el = document.getElementById('form-alert');
+    el.className = 'app-alert app-alert-' + type;
+    el.innerText = msg;
+    el.style.display = 'block';
+    setTimeout(function() { el.style.display = 'none'; }, 5000);
+  }
+
+  function formatTanggalInput(el) {
+    if (el.type === 'date' && el.value) {
+      var parts = el.value.split('-');
+      if (parts.length === 3) {
+        el.type = 'text';
+        el.value = parts[2] + '/' + parts[1] + '/' + parts[0];
+      }
+    }
+  }
+
+  function getTodayDateInput() {
+    var d = new Date();
+    var dd = String(d.getDate()).padStart(2, '0');
+    var mm = String(d.getMonth() + 1).padStart(2, '0');
+    var yyyy = d.getFullYear();
+    return dd + '/' + mm + '/' + yyyy;
+  }
+
+  function parseDateInput(val) {
+    if (!val) return '';
+    var parts = val.split('/');
+    if (parts.length === 3) return parts[2] + '-' + parts[1] + '-' + parts[0];
+    return val;
+  }
+
+  function cleanNumberInput(el) {
+    if (el.value.includes(',')) return;
+    el.value = el.value.replace(/[^0-9]/g, '');
+  }
+
+  function formatDecimalDisplay(el) {
+    var v = el.value.replace(/\./g, '').replace(/,/g, '.');
+    var n = parseFloat(v) || 0;
+    el.value = n > 0 ? n.toLocaleString('id-ID', {minimumFractionDigits:2, maximumFractionDigits:2}) : '';
+  }
+
+  function removeDecimalFormat(el) {
+    var v = el.value.replace(/\./g, '').replace(/,/g, '.');
+    var n = parseFloat(v) || 0;
+    el.value = n > 0 ? Math.floor(n).toString() : '';
+  }
+
+  function getRawValue(valStr) {
+    if (!valStr) return 0;
+    return parseFloat(String(valStr).replace(/\./g, '').replace(/,/g, '.')) || 0;
+  }
+
+  function formatCurrency(val) {
+    return val.toLocaleString('id-ID', {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+
+  // ---- Autocomplete ----
+  function filterAutocomplete(inputEl, masterArray, labelKey, subKey, onSelect) {
+    var wrapper = inputEl.closest('.autocomplete-wrapper');
+    if (!wrapper) return;
+    var listEl = wrapper.querySelector('.autocomplete-list');
+    if (!listEl) return;
+    var val = inputEl.value.trim().toLowerCase();
+
+    if (!val) { listEl.style.display = 'none'; return; }
+
+    var filtered = masterArray.filter(function(item) {
+      var label = String(item[labelKey] || '').toLowerCase();
+      return label.includes(val);
+    });
+
+    if (filtered.length === 0) { listEl.style.display = 'none'; return; }
+
+    listEl.innerHTML = '';
+    filtered.forEach(function(item) {
+      var div = document.createElement('div');
+      div.className = 'autocomplete-item';
+      var label = item[labelKey] || '';
+      var sub = subKey ? (item[subKey] || '') : '';
+      div.innerText = label;
+      if (sub) {
+        var subEl = document.createElement('span');
+        subEl.className = 'ac-sub';
+        subEl.innerText = ' - ' + sub;
+        div.appendChild(subEl);
+      }
+      div.onclick = function() {
+        inputEl.value = label;
+        listEl.style.display = 'none';
+        if (typeof onSelect === 'function') onSelect(item, inputEl);
+      };
+      listEl.appendChild(div);
+    });
+    listEl.style.display = 'block';
+  }
+
+  function filterAutocompleteMulti(inputEl, masterArray, labelKey, subKey, groupId, onSelect) {
+    filterAutocomplete(inputEl, masterArray, labelKey, subKey, function(item, el) {
+      if (typeof onSelect === 'function') onSelect(item, el, groupId);
+    });
+  }
+
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.autocomplete-wrapper')) {
+      document.querySelectorAll('.autocomplete-list').forEach(function(l) { l.style.display = 'none'; });
+    }
+  });
+
+  // ---- Available EUPD filter (for autocomplete) ----
+  function filterAvailableEUPD(inputEl, groupId) {
+    var wrapper = inputEl.closest('.autocomplete-wrapper');
+    if (!wrapper) return;
+    var listEl = wrapper.querySelector('.autocomplete-list');
+    if (!listEl) return;
+    var val = inputEl.value.trim().toLowerCase();
+
+    // Hide already selected
+    var filtered = availableEUPDList.filter(function(item) {
+      var no = String(item.noPengajuan || '').toLowerCase();
+      return no.includes(val) && !selectedPengajuanMap[item.noPengajuan];
+    });
+
+    if (filtered.length === 0) { listEl.style.display = 'none'; return; }
+
+    listEl.innerHTML = '';
+    filtered.forEach(function(item) {
+      var div = document.createElement('div');
+      div.className = 'autocomplete-item';
+      div.innerHTML = '<strong>' + (item.noPengajuan || '') + '</strong><span class="ac-sub"> - ' + (item.warehouse || '') + ' | ' + (item.driver || '') + '</span>';
+      div.onclick = function() {
+        inputEl.value = item.noPengajuan;
+        listEl.style.display = 'none';
+        onSelectPengajuan(item, groupId);
+      };
+      listEl.appendChild(div);
+    });
+    listEl.style.display = 'block';
+  }
+
+  // ---- Select Pengajuan handler ----
+  async function onSelectPengajuan(item, groupId) {
+    var group = document.querySelector('.group-card[data-group-id="' + groupId + '"]');
+    if (!group) return;
+
+    selectedPengajuanMap[item.noPengajuan] = true;
+    showLoading(true);
+
+    try {
+      var res = await fetch(GAS_URL + '?action=getEUPDDetail&noPengajuan=' + encodeURIComponent(item.noPengajuan));
+      var json = await res.json();
+
+      if (json.status !== 'success' || !json.data) {
+        showAlert('error', 'Gagal memuat detail pengajuan: ' + (json.message || ''));
+        showLoading(false);
+        return;
+      }
+
+      var d = json.data;
+
+      group.querySelector('.info-wh').innerText = d.warehouse || '-';
+      group.querySelector('.info-driver').innerText = d.driver || '-';
+      group.querySelector('.info-kendaraan').innerText = d.kendaraan || '-';
+      group.querySelector('.info-pemesan').innerText = d.pemesan || '-';
+      group.querySelector('.info-tujuan').innerText = d.tujuan || '-';
+      group.querySelector('.info-uang-makan').innerText = formatCurrency(Number(d.totalUangMakan) || 0);
+      group.querySelector('.info-bbm').innerText = formatCurrency(Number(d.totalUangBBM) || 0);
+      group.querySelector('.info-inap').innerText = formatCurrency(Number(d.totalBiayaPenginapan) || 0);
+      group.querySelector('.info-biaya-lain').innerText = formatCurrency(Number(d.totalBiayaLainLain) || 0);
+      group.querySelector('.info-total').innerText = formatCurrency(Number(d.totalBiayaKeseluruhan) || 0);
+
+      // Store group data
+      group.dataset.noPengajuan = d.noPengajuan;
+      group.dataset.whAwal = d.warehouse || '';
+      group.dataset.namaDriver = d.driver || '';
+      group.dataset.nomorKendaraan = d.kendaraan || '';
+      group.dataset.pemesan = d.pemesan || '';
+      group.dataset.tujuan = d.tujuan || '';
+      group.dataset.totalUangMakan = d.totalUangMakan || 0;
+      group.dataset.totalUangBBM = d.totalUangBBM || 0;
+      group.dataset.totalBiayaPenginapan = d.totalBiayaPenginapan || 0;
+      group.dataset.totalBiayaLainLain = d.totalBiayaLainLain || 0;
+      group.dataset.totalBiayaKeseluruhan = d.totalBiayaKeseluruhan || 0;
+
+      // Auto-create first journal row
+      var journalBody = group.querySelector('.journal-body');
+      journalBody.innerHTML = '';
+      addJournalRow(groupId);
+
+      group.querySelector('.group-info-section').style.display = 'block';
+      group.querySelector('.journal-section').style.display = 'block';
+      group.dataset.loaded = 'true';
+    } catch (err) {
+      showAlert('error', 'Gagal mengambil detail pengajuan: ' + err.message);
+      console.error(err);
+    } finally {
+      showLoading(false);
+    }
+  }
+
+  // ---- Group management ----
+  function addGroup() {
+    groupCounter++;
+    var groupId = 'group-' + groupCounter;
+    var container = document.getElementById('groups-container');
+
+    var div = document.createElement('div');
+    div.className = 'form-section-card group-card';
+    div.id = groupId;
+    div.dataset.groupId = groupId;
+    div.dataset.loaded = 'false';
+
+    div.innerHTML =
+      '<div class="section-header">' +
+        '<span>Group Pengajuan EUPD #' + groupCounter + '</span>' +
+        '<div class="group-actions">' +
+          '<button type="button" class="btn-remove-group" onclick="removeGroup(\'' + groupId + '\')">Hapus Group</button>' +
+        '</div>' +
+      '</div>' +
+      '<div class="app-input-group" style="margin-bottom:1rem;">' +
+        '<label>Nomor Pengajuan EUPD</label>' +
+        '<div class="autocomplete-wrapper">' +
+          '<input type="text" class="app-input input-pengajuan" placeholder="Ketik nomor pengajuan..." oninput="filterAvailableEUPD(this, \'' + groupId + '\')">' +
+          '<div class="autocomplete-list"></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="group-info-section" style="display:none;">' +
+        '<div class="info-grid">' +
+          '<div class="info-item"><div class="info-label">WH Awal</div><div class="info-value info-wh">-</div></div>' +
+          '<div class="info-item"><div class="info-label">Nama Driver</div><div class="info-value info-driver">-</div></div>' +
+          '<div class="info-item"><div class="info-label">Nomor Kendaraan</div><div class="info-value info-kendaraan">-</div></div>' +
+          '<div class="info-item"><div class="info-label">Pemesan</div><div class="info-value info-pemesan">-</div></div>' +
+          '<div class="info-item"><div class="info-label">Tujuan</div><div class="info-value info-tujuan">-</div></div>' +
+          '<div class="info-item"><div class="info-label">Total Uang Makan</div><div class="info-value info-uang-makan">Rp 0,00</div></div>' +
+          '<div class="info-item"><div class="info-label">Total Uang BBM</div><div class="info-value info-bbm">Rp 0,00</div></div>' +
+          '<div class="info-item"><div class="info-label">Total Biaya Penginapan</div><div class="info-value info-inap">Rp 0,00</div></div>' +
+          '<div class="info-item"><div class="info-label">Total Biaya Lain-Lain</div><div class="info-value info-biaya-lain">Rp 0,00</div></div>' +
+          '<div class="info-item" style="grid-column:span 2;"><div class="info-label">Total Biaya Keseluruhan</div><div class="info-value info-total" style="font-size:1rem;color:var(--color-primary);">Rp 0,00</div></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="journal-section" style="display:none;">' +
+        '<div class="journal-table-wrap">' +
+          '<table class="journal-table">' +
+            '<thead><tr>' +
+              '<th style="width:25%;">Keterangan</th>' +
+              '<th style="width:15%;">No Akun</th>' +
+              '<th style="width:20%;">Nama Akun</th>' +
+              '<th style="width:13%;">Debit</th>' +
+              '<th style="width:13%;">Kredit</th>' +
+              '<th style="width:1%;"></th>' +
+            '</tr></thead>' +
+            '<tbody class="journal-body"></tbody>' +
+          '</table>' +
+        '</div>' +
+        '<button type="button" class="btn-add-journal" onclick="addJournalRow(\'' + groupId + '\')">+ Tambah Baris</button>' +
+        '<div id="journal-totals-' + groupId + '" class="journal-totals">' +
+          '<span><span class="total-label">Total Debit:</span> <span class="total-value" id="total-debit-' + groupId + '">Rp 0,00</span></span>' +
+          '<span><span class="total-label">Total Kredit:</span> <span class="total-value" id="total-kredit-' + groupId + '">Rp 0,00</span></span>' +
+          '<div class="balance-warning" id="balance-warning-' + groupId + '">Total Debit dan Kredit harus seimbang.</div>' +
+        '</div>' +
+      '</div>';
+
+    container.appendChild(div);
+
+    // Scroll to new group
+    div.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function removeGroup(groupId) {
+    var group = document.getElementById(groupId);
+    if (!group) return;
+
+    var noPengajuan = group.dataset.noPengajuan;
+    if (noPengajuan) {
+      delete selectedPengajuanMap[noPengajuan];
+    }
+
+    group.remove();
+  }
+
+  function addJournalRow(groupId) {
+    var group = document.getElementById(groupId);
+    if (!group) return;
+    var tbody = group.querySelector('.journal-body');
+
+    // Auto-fill first row
+    var isFirst = tbody.querySelectorAll('tr').length === 0;
+
+    var tr = document.createElement('tr');
+    tr.className = 'journal-row';
+
+    var noPengajuan = group.dataset.noPengajuan || '';
+    var namaDriver = group.dataset.namaDriver || '';
+    var nomorKendaraan = group.dataset.nomorKendaraan || '';
+    var pemesan = group.dataset.pemesan || '';
+    var tujuan = group.dataset.tujuan || '';
+    var totalKeseluruhan = Number(group.dataset.totalBiayaKeseluruhan) || 0;
+
+    var defaultKeterangan = isFirst
+      ? 'Piutang UPD ' + namaDriver + ' (' + nomorKendaraan + '), Pemesan oleh ' + pemesan + ', Tujuan ' + tujuan
+      : '';
+    var defaultDebit = isFirst ? totalKeseluruhan : 0;
+    var defaultKredit = isFirst ? 0 : 0;
+
+    tr.innerHTML =
+      '<td><input type="text" class="journal-keterangan" value="' + htmlEscape(defaultKeterangan) + '" placeholder="Keterangan..."></td>' +
+      '<td><div class="autocomplete-wrapper"><input type="text" class="app-input journal-no-akun" placeholder="Cari No Akun..." oninput="filterAkun(this, \'' + groupId + '\')"><div class="autocomplete-list"></div></div></td>' +
+      '<td><input type="text" class="journal-nama-akun" readonly style="background:#F1F5F9;" placeholder="Otomatis..."></td>' +
+      '<td><input type="text" class="journal-debit" value="' + (defaultDebit > 0 ? formatCurrency(defaultDebit) : '') + '" placeholder="0" oninput="cleanNumberInput(this);formatDecimalDisplay(this);updateGroupTotals(\'' + groupId + '\');" onfocus="removeDecimalFormat(this)" onblur="formatDecimalDisplay(this)"></td>' +
+      '<td><input type="text" class="journal-kredit" value="' + (defaultKredit > 0 ? formatCurrency(defaultKredit) : '') + '" placeholder="0" oninput="cleanNumberInput(this);formatDecimalDisplay(this);updateGroupTotals(\'' + groupId + '\');" onfocus="removeDecimalFormat(this)" onblur="formatDecimalDisplay(this)"></td>' +
+      '<td><button type="button" class="btn-journal-remove" onclick="removeJournalRow(this)">x</button></td>';
+
+    tbody.appendChild(tr);
+    updateGroupTotals(groupId);
+  }
+
+  function htmlEscape(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function removeJournalRow(btn) {
+    var tr = btn.closest('tr');
+    var tbody = tr.closest('tbody');
+    tr.remove();
+    var groupId = tbody.closest('.group-card').dataset.groupId;
+    updateGroupTotals(groupId);
+  }
+
+  function filterAkun(inputEl, groupId) {
+    filterAutocomplete(inputEl, postingAccounts, 'displayLabel', null, function(item, el) {
+      var tr = el.closest('tr');
+      if (tr) {
+        tr.querySelector('.journal-no-akun').value = item.accountNumber;
+        tr.querySelector('.journal-nama-akun').value = item.accountName;
+      }
+    });
+  }
+
+  function updateGroupTotals(groupId) {
+    var group = document.getElementById(groupId);
+    if (!group) return;
+
+    var rows = group.querySelectorAll('.journal-row');
+    var totalDebit = 0;
+    var totalKredit = 0;
+
+    rows.forEach(function(row) {
+      var debitInput = row.querySelector('.journal-debit');
+      var kreditInput = row.querySelector('.journal-kredit');
+      var d = getRawValue(debitInput ? debitInput.value : '');
+      var k = getRawValue(kreditInput ? kreditInput.value : '');
+      totalDebit += d;
+      totalKredit += k;
+    });
+
+    group.querySelector('#total-debit-' + groupId).innerText = 'Rp ' + formatCurrency(totalDebit);
+    group.querySelector('#total-kredit-' + groupId).innerText = 'Rp ' + formatCurrency(totalKredit);
+
+    var warning = group.querySelector('#balance-warning-' + groupId);
+    var debitEl = group.querySelector('#total-debit-' + groupId);
+    var kreditEl = group.querySelector('#total-kredit-' + groupId);
+
+    if (Math.abs(totalDebit - totalKredit) > 0.01) {
+      warning.style.display = 'block';
+      debitEl.className = 'total-value balance-error';
+      kreditEl.className = 'total-value balance-error';
+    } else {
+      warning.style.display = 'none';
+      debitEl.className = 'total-value balance-ok';
+      kreditEl.className = 'total-value balance-ok';
+    }
+  }
+
+  // ---- Validation & Save ----
+  function validateAll() {
+    var groups = document.querySelectorAll('.group-card');
+    if (groups.length === 0) {
+      showAlert('error', 'Minimal harus ada satu Group Pengajuan EUPD.');
+      return false;
+    }
+
+    var noPembayaran = document.getElementById('noPembayaran').value.trim();
+    if (!noPembayaran) {
+      showAlert('error', 'Nomor Pembayaran EUPD belum tersedia. Coba refresh halaman.');
+      return false;
+    }
+
+    for (var i = 0; i < groups.length; i++) {
+      var g = groups[i];
+      var noPengajuan = g.dataset.noPengajuan;
+      if (!noPengajuan) {
+        showAlert('error', 'Group #' + (i + 1) + ': Silakan pilih Nomor Pengajuan EUPD terlebih dahulu.');
+        g.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+      }
+
+      var journalRows = g.querySelectorAll('.journal-row');
+      if (journalRows.length === 0) {
+        showAlert('error', 'Group #' + (i + 1) + ' (' + noPengajuan + '): Minimal harus ada satu Detail Jurnal.');
+        g.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+      }
+
+      var totalDebit = 0;
+      var totalKredit = 0;
+      var allAccountsFilled = true;
+
+      journalRows.forEach(function(row) {
+        var noAkun = row.querySelector('.journal-no-akun').value.trim();
+        if (!noAkun) allAccountsFilled = false;
+        totalDebit += getRawValue(row.querySelector('.journal-debit').value);
+        totalKredit += getRawValue(row.querySelector('.journal-kredit').value);
+      });
+
+      if (!allAccountsFilled) {
+        showAlert('error', 'Group #' + (i + 1) + ' (' + noPengajuan + '): Semua Nomor Akun wajib dipilih.');
+        g.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+      }
+
+      if (Math.abs(totalDebit - totalKredit) > 0.01) {
+        showAlert('error', 'Group #' + (i + 1) + ' (' + noPengajuan + '): Total Debit dan Kredit harus seimbang.');
+        g.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  function buildPayload() {
+    var groups = document.querySelectorAll('.group-card');
+    var tanggal = parseDateInput(document.getElementById('tanggalPembayaran').value);
+
+    var groupData = [];
+    groups.forEach(function(g) {
+      var journals = [];
+      g.querySelectorAll('.journal-row').forEach(function(row) {
+        var debit = getRawValue(row.querySelector('.journal-debit').value);
+        var kredit = getRawValue(row.querySelector('.journal-kredit').value);
+        journals.push({
+          keterangan: row.querySelector('.journal-keterangan').value.trim(),
+          noAkun: row.querySelector('.journal-no-akun').value.trim(),
+          namaAkun: row.querySelector('.journal-nama-akun').value.trim(),
+          debit: debit,
+          kredit: kredit
+        });
+      });
+
+      groupData.push({
+        noPengajuan: g.dataset.noPengajuan,
+        whAwal: g.dataset.whAwal,
+        namaDriver: g.dataset.namaDriver,
+        nomorKendaraan: g.dataset.nomorKendaraan,
+        pemesan: g.dataset.pemesan,
+        tujuan: g.dataset.tujuan,
+        totalUangMakan: Number(g.dataset.totalUangMakan) || 0,
+        totalUangBBM: Number(g.dataset.totalUangBBM) || 0,
+        totalBiayaPenginapan: Number(g.dataset.totalBiayaPenginapan) || 0,
+        totalBiayaLainLain: Number(g.dataset.totalBiayaLainLain) || 0,
+        totalBiayaKeseluruhan: Number(g.dataset.totalBiayaKeseluruhan) || 0,
+        journals: journals
+      });
+    });
+
+    return {
+      action: 'savePembayaranEUPD',
+      noPembayaran: document.getElementById('noPembayaran').value.trim(),
+      tanggal: tanggal,
+      groups: groupData
+    };
+  }
+
+  async function handleSimpan() {
+    if (!validateAll()) return;
+
+    var btn = document.getElementById('btn-simpan');
+    btn.disabled = true;
+    btn.innerText = 'Menyimpan...';
+    showLoading(true);
+
+    var payload = buildPayload();
+
+    try {
+      var res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+      var result = await res.json();
+
+      if (result.status === 'success') {
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: 'Pembayaran EUPD berhasil disimpan. No: ' + result.noPembayaran,
+          confirmButtonText: 'OK'
+        }).then(function() {
+          window.location.href = 'pembayaran.html';
+        });
+      } else {
+        Swal.fire({
+          icon: 'error',
+          title: 'Gagal',
+          text: result.message || 'Gagal menyimpan data.',
+          confirmButtonText: 'Tutup'
+        });
+      }
+    } catch (err) {
+      Swal.fire({
+        icon: 'error',
+        title: 'Kesalahan',
+        text: 'Gagal terhubung ke server: ' + err.message,
+        confirmButtonText: 'Tutup'
+      });
+      console.error(err);
+    } finally {
+      btn.disabled = false;
+      btn.innerText = 'Simpan Pembayaran EUPD';
+      showLoading(false);
+    }
+  }
+
+  // ---- Init ----
+  async function initPage() {
+    try {
+      await loadSidebar();
+      showLoading(true);
+
+      // Set today's date
+      document.getElementById('tanggalPembayaran').value = getTodayDateInput();
+      document.getElementById('tanggalPembayaran').type = 'text';
+
+      // Fetch available EUPD (locked)
+      var eupdRes = await fetch(GAS_URL + '?action=getAvailableEUPD');
+      var eupdJson = await eupdRes.json();
+      if (eupdJson.status === 'success') {
+        availableEUPDList = eupdJson.data || [];
+      }
+
+      // Fetch posting accounts
+      var accRes = await fetch(GAS_URL + '?action=getPostingAccounts');
+      var accJson = await accRes.json();
+      if (accJson.status === 'success') {
+        postingAccounts = (accJson.data || []).map(function(a) {
+          return {
+            accountNumber: a.accountNumber,
+            accountName: a.accountName,
+            displayLabel: a.accountNumber + ' - ' + a.accountName
+          };
+        });
+      }
+
+      // Generate payment number
+      var payRes = await fetch(GAS_URL + '?action=generatePaymentNumber');
+      var payJson = await payRes.json();
+      if (payJson.status === 'success') {
+        document.getElementById('noPembayaran').value = payJson.paymentNo;
+      }
+
+      // Add first empty group
+      addGroup();
+
+    } catch (err) {
+      console.error('Init error:', err);
+      showAlert('error', 'Gagal memuat data. Periksa koneksi.');
+    } finally {
+      showLoading(false);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', initPage);
+</script>
+
+</body>
+</html>
