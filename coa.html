@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chart of Account - Web App X</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    body {
+      padding: 0 !important;
+      align-items: stretch !important;
+      justify-content: flex-start !important;
+      background-color: #F8FAFC !important;
+    }
+
+    .app-layout-wrapper {
+      display: flex;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    .app-sidebar-container {
+      width: 240px;
+      background-color: var(--color-surface);
+      border-right: 1px solid var(--color-border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .app-main-content {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .app-mobile-header {
+      background-color: var(--color-surface);
+      border-bottom: 1px solid var(--color-border);
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .app-mobile-header .app-title {
+      flex: 1;
+      margin: 0;
+    }
+
+    .app-hamburger-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--color-text-primary);
+      padding: 0.25rem;
+      order: -1;
+    }
+
+    .app-content-body {
+      padding: 1.5rem;
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+
+    /* Header & Tombol Aksi */
+    .page-header-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .btn-create-new {
+      width: auto;
+      margin-top: 0;
+      padding: 0.65rem 1.25rem;
+      background-color: var(--color-primary);
+      color: white;
+      text-decoration: none;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: var(--font-base);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 10px rgba(56, 130, 246, 0.2);
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-create-new:hover {
+      background-color: var(--color-primary-hover);
+      transform: translateY(-1px);
+    }
+
+    /* Filter & Search Bar */
+    .filter-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+      align-items: center;
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+      min-width: 150px;
+      flex: 1;
+    }
+
+    .filter-group label {
+      font-size: var(--font-sm);
+      font-weight: 600;
+      color: var(--color-text-secondary);
+    }
+
+    .filter-select,
+    .search-input {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm);
+      font-size: var(--font-base);
+      background-color: var(--color-surface);
+      color: var(--color-text-primary);
+      transition: border-color 0.2s;
+    }
+
+    .filter-select:focus,
+    .search-input:focus {
+      outline: none;
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px var(--color-primary-light);
+    }
+
+    .search-input {
+      flex: 2;
+      min-width: 200px;
+    }
+
+    /* Data Table */
+    .table-container {
+      background-color: var(--color-surface);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      overflow-x: auto;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: var(--font-sm);
+      white-space: nowrap;
+    }
+
+    .data-table thead {
+      background-color: var(--color-primary-light);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .data-table th {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      font-weight: 600;
+      color: var(--color-text-primary);
+      border-bottom: 2px solid var(--color-primary);
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.2s;
+    }
+
+    .data-table th:hover {
+      background-color: #E0F2FE;
+    }
+
+    .data-table th.sort-asc::after {
+      content: " ▲";
+      font-size: 0.7em;
+    }
+
+    .data-table th.sort-desc::after {
+      content: " ▼";
+      font-size: 0.7em;
+    }
+
+    .data-table tbody tr {
+      border-bottom: 1px solid var(--color-border);
+      transition: background-color 0.2s;
+    }
+
+    .data-table tbody tr:hover {
+      background-color: var(--color-primary-light);
+    }
+
+    .data-table td {
+      padding: 0.75rem 1rem;
+      color: var(--color-text-primary);
+    }
+
+    /* Badges */
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 12px;
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-align: center;
+      min-width: 50px;
+    }
+
+    .badge-success {
+      background-color: #D1FAE5;
+      color: #065F46;
+    }
+
+    .badge-danger {
+      background-color: #FEE2E2;
+      color: #991B1B;
+    }
+
+    .badge-primary {
+      background-color: var(--color-primary-light);
+      color: var(--color-primary);
+    }
+
+    .badge-warning {
+      background-color: #FEF3C7;
+      color: #92400E;
+    }
+
+    /* Action Buttons */
+    .action-btn {
+      padding: 0.35rem 0.6rem;
+      border: none;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: var(--font-sm);
+      font-weight: 600;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      margin-right: 0.25rem;
+    }
+
+    .btn-edit {
+      background-color: var(--color-primary-light);
+      color: var(--color-primary);
+    }
+
+    .btn-edit:hover {
+      background-color: var(--color-primary);
+      color: white;
+    }
+
+    .btn-delete {
+      background-color: #FEE2E2;
+      color: var(--color-danger);
+    }
+
+    .btn-delete:hover {
+      background-color: var(--color-danger);
+      color: white;
+    }
+
+    /* Pagination */
+    .pagination {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem;
+      border-top: 1px solid var(--color-border);
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .pagination-info {
+      font-size: var(--font-sm);
+      color: var(--color-text-secondary);
+    }
+
+    .pagination-controls {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .pagination-btn {
+      padding: 0.4rem 0.8rem;
+      border: 1px solid var(--color-border);
+      background-color: var(--color-surface);
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      font-size: var(--font-sm);
+      font-weight: 600;
+      color: var(--color-text-primary);
+      transition: all 0.2s;
+    }
+
+    .pagination-btn:hover:not(:disabled) {
+      background-color: var(--color-primary-light);
+      border-color: var(--color-primary);
+      color: var(--color-primary);
+    }
+
+    .pagination-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .pagination-btn.active {
+      background-color: var(--color-primary);
+      color: white;
+      border-color: var(--color-primary);
+    }
+
+    /* Modal */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(15, 23, 42, 0.5);
+      z-index: 9999;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background-color: var(--color-surface);
+      border-radius: var(--radius-md);
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 40px rgba(15, 23, 42, 0.2);
+      animation: modalSlideIn 0.3s ease;
+    }
+
+    @keyframes modalSlideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .modal-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--color-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--color-text-primary);
+      margin: 0;
+    }
+
+    .modal-close-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--color-text-secondary);
+      padding: 0.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-close-btn:hover {
+      color: var(--color-danger);
+    }
+
+    .modal-body {
+      padding: 1.5rem;
+    }
+
+    .modal-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid var(--color-border);
+      display: flex;
+      gap: 0.75rem;
+      justify-content: flex-end;
+    }
+
+    .modal-row {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .modal-col {
+      flex: 1;
+    }
+
+    .readonly-field {
+      background-color: #F1F5F9;
+      cursor: not-allowed;
+    }
+
+    /* Switch Toggle */
+    .switch-container {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .switch {
+      position: relative;
+      width: 50px;
+      height: 26px;
+    }
+
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #CBD5E1;
+      transition: 0.3s;
+      border-radius: 26px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 20px;
+      width: 20px;
+      left: 3px;
+      bottom: 3px;
+      background-color: white;
+      transition: 0.3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background-color: var(--color-primary);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(24px);
+    }
+
+    .switch-label {
+      font-size: var(--font-base);
+      color: var(--color-text-primary);
+      font-weight: 500;
+    }
+
+    /* Loading */
+    .loading-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(15, 23, 42, 0.5);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .loading-overlay.active {
+      display: flex;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border: 4px solid var(--color-primary-light);
+      border-top: 4px solid var(--color-primary);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--color-text-secondary);
+    }
+
+    .empty-state svg {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 1rem;
+      color: var(--color-border);
+    }
+
+    .empty-state-text {
+      font-size: var(--font-base);
+      margin-bottom: 0.5rem;
+    }
+
+    .empty-state-subtext {
+      font-size: var(--font-sm);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .filter-group {
+        min-width: 100%;
+      }
+
+      .search-input {
+        min-width: 100%;
+      }
+
+      .modal-content {
+        max-height: 95vh;
+      }
+
+      .modal-row {
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .data-table {
+        font-size: 0.7rem;
+      }
+
+      .data-table th,
+      .data-table td {
+        padding: 0.5rem 0.75rem;
+      }
+
+      .badge {
+        font-size: 0.6rem;
+        padding: 0.2rem 0.4rem;
+      }
+
+      .action-btn {
+        padding: 0.25rem 0.4rem;
+        font-size: 0.65rem;
+      }
+    }
+
+    @media (max-width: 768px) and (orientation: portrait) {
+      .app-sidebar-container {
+        display: none;
+      }
+
+      body.menu-mode-active .app-sidebar-container {
+        display: flex !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 9999;
+      }
+
+      body.menu-mode-active .app-main-content {
+        display: none !important;
+      }
+
+      body.menu-mode-active .app-menu-close-btn {
+        display: flex;
+        position: absolute;
+        right: 1rem;
+        top: 1.5rem;
+        background: none;
+        border: none;
+        color: var(--color-text-secondary);
+        cursor: pointer;
+      }
+    }
+  </style>
+</head>
+
+<body class="dashboard-page">
+  <div class="app-layout-wrapper">
+    <!-- Sidebar -->
+    <div class="app-sidebar-container">
+      <div id="sidebar-slot"></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="app-main-content">
+      <!-- Mobile Header -->
+      <div class="app-mobile-header">
+        <button class="app-hamburger-btn" onclick="toggleMobileMenu()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <h1 class="app-title">Chart of Account</h1>
+      </div>
+
+      <!-- Content Body -->
+      <div class="app-content-body">
+        <!-- Page Header -->
+        <div class="page-header-bar">
+          <div>
+            <h1 class="app-page-title">Chart of Account</h1>
+            <p class="page-subtitle">Kelola daftar akun akuntansi yang digunakan pada sistem.</p>
+          </div>
+          <button class="btn-create-new" onclick="openModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+            Tambah Akun
+          </button>
+        </div>
+
+        <!-- Filter & Search Bar -->
+        <div class="filter-bar">
+          <div class="filter-group">
+            <label for="searchInput">Cari Akun</label>
+            <input type="text" id="searchInput" class="search-input" placeholder="Nomor atau Nama Akun..." oninput="handleSearch()">
+          </div>
+          <div class="filter-group">
+            <label for="filterCategory">Kategori</label>
+            <select id="filterCategory" class="filter-select" onchange="handleFilter()">
+              <option value="">Semua Kategori</option>
+              <option value="Asset">Asset</option>
+              <option value="Liability">Liability</option>
+              <option value="Equity">Equity</option>
+              <option value="Revenue">Revenue</option>
+              <option value="Cost of Revenue">Cost of Revenue</option>
+              <option value="Expense">Expense</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="filterLevel">Level</label>
+            <select id="filterLevel" class="filter-select" onchange="handleFilter()">
+              <option value="">Semua Level</option>
+              <option value="1">Level 1</option>
+              <option value="2">Level 2</option>
+              <option value="3">Level 3</option>
+              <option value="4">Level 4</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="filterStatus">Status</label>
+            <select id="filterStatus" class="filter-select" onchange="handleFilter()">
+              <option value="">Semua Status</option>
+              <option value="true">Aktif</option>
+              <option value="false">Non Aktif</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Data Table -->
+        <div class="table-container">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th onclick="handleSort('No')">No</th>
+                <th onclick="handleSort('AccountNumber')">Account Number</th>
+                <th onclick="handleSort('AccountName')">Account Name</th>
+                <th onclick="handleSort('Level')">Level</th>
+                <th onclick="handleSort('ParentAccount')">Parent Account</th>
+                <th onclick="handleSort('Category')">Category</th>
+                <th onclick="handleSort('NormalBalance')">Normal Balance</th>
+                <th onclick="handleSort('IsPosting')">Posting</th>
+                <th onclick="handleSort('IsActive')">Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody">
+              <!-- Data will be loaded here -->
+            </tbody>
+          </table>
+          
+          <!-- Empty State -->
+          <div id="emptyState" class="empty-state" style="display: none;">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <p class="empty-state-text">Belum ada data Chart of Account</p>
+            <p class="empty-state-subtext">Silakan tambahkan akun baru untuk memulai</p>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination">
+          <div class="pagination-info" id="paginationInfo">
+            Menampilkan 0 dari 0 data
+          </div>
+          <div class="pagination-controls" id="paginationControls">
+            <!-- Pagination buttons will be generated here -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Form -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title" id="modalTitle">Tambah Chart of Account</h2>
+        <button class="modal-close-btn" onclick="closeModal()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form id="coaForm">
+          <input type="hidden" id="editId" value="">
+          
+          <div class="modal-row">
+            <div class="modal-col">
+              <div class="app-input-group">
+                <label for="level">Level Akun *</label>
+                <select id="level" class="app-input" required onchange="handleLevelChange()">
+                  <option value="">Pilih Level</option>
+                  <option value="1">Level 1</option>
+                  <option value="2">Level 2</option>
+                  <option value="3">Level 3</option>
+                  <option value="4">Level 4</option>
+                </select>
+              </div>
+            </div>
+            <div class="modal-col">
+              <div class="app-input-group">
+                <label for="parentAccount">Parent Account</label>
+                <select id="parentAccount" class="app-input" onchange="handleParentChange()">
+                  <option value="">-- Pilih Parent --</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="app-input-group">
+            <label for="accountName">Nama Akun *</label>
+            <input type="text" id="accountName" class="app-input" placeholder="Masukkan Nama Akun" required>
+          </div>
+
+          <div class="modal-row">
+            <div class="modal-col">
+              <div class="app-input-group">
+                <label for="accountNumber">Nomor Akun</label>
+                <input type="text" id="accountNumber" class="app-input readonly-field" readonly>
+              </div>
+            </div>
+            <div class="modal-col">
+              <div class="app-input-group">
+                <label for="category">Kategori</label>
+                <input type="text" id="category" class="app-input readonly-field" readonly>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-row">
+            <div class="modal-col">
+              <div class="app-input-group">
+                <label for="normalBalance">Saldo Normal</label>
+                <input type="text" id="normalBalance" class="app-input readonly-field" readonly>
+              </div>
+            </div>
+            <div class="modal-col">
+              <div class="app-input-group">
+                <label for="isPosting">Posting</label>
+                <div class="switch-container">
+                  <label class="switch">
+                    <input type="checkbox" id="isPosting">
+                    <span class="slider"></span>
+                  </label>
+                  <span class="switch-label" id="postingLabel">Tidak</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="app-input-group">
+            <label>Status</label>
+            <div class="switch-container">
+              <label class="switch">
+                <input type="checkbox" id="isActive" checked>
+                <span class="slider"></span>
+              </label>
+              <span class="switch-label" id="statusLabel">Aktif</span>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="app-btn" style="background-color: var(--color-text-secondary); margin-top: 0;" onclick="closeModal()">Batal</button>
+        <button type="button" class="app-btn" style="margin-top: 0;" onclick="saveCOA()">Simpan</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+  </div>
+
+  <script>
+    const GAS_URL = window.GAS_URL || "https://script.google.com/macros/s/AKfycbwf5oEpUkMp65-aTQ77PIj6CEhQV64yXjBqJMiBrkacXed5AbRYimF_Cb9qTa5mczLa/exec";
+    
+    // Global State
+    let allCOAData = [];
+    let filteredData = [];
+    let currentPage = 1;
+    const itemsPerPage = 10;
+    let sortColumn = '';
+    let sortDirection = 'asc';
+    let parentAccountsCache = {};
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      loadSidebar();
+      loadCOAData();
+      setupKeyboardShortcuts();
+    });
+
+    function setupKeyboardShortcuts() {
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          closeModal();
+        }
+        if (e.key === 'Enter' && document.getElementById('modalOverlay').classList.contains('active')) {
+          e.preventDefault();
+          saveCOA();
+        }
+      });
+    }
+
+    // Load COA Data
+    async function loadCOAData() {
+      showLoading(true);
+      try {
+        const response = await fetch(`${GAS_URL}?action=getChartOfAccounts`);
+        const json = await response.json();
+        
+        if (json.status === 'success') {
+          allCOAData = json.data;
+          filteredData = [...allCOAData];
+          renderTable();
+        } else {
+          Swal.fire('Error', json.message, 'error');
+        }
+      } catch (error) {
+        console.error('Error loading COA data:', error);
+        Swal.fire('Error', 'Gagal memuat data Chart of Account', 'error');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // Render Table
+    function renderTable() {
+      const tableBody = document.getElementById('tableBody');
+      const emptyState = document.getElementById('emptyState');
+      
+      // Apply filters and search
+      applyFilters();
+      
+      // Apply sorting
+      applySorting();
+      
+      // Calculate pagination
+      const totalPages = Math.ceil(filteredData.length / itemsPerPage);
+      if (currentPage > totalPages && totalPages > 0) {
+        currentPage = totalPages;
+      }
+      
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const pageData = filteredData.slice(startIndex, endIndex);
+      
+      // Clear table
+      tableBody.innerHTML = '';
+      
+      if (pageData.length === 0) {
+        emptyState.style.display = 'block';
+        tableBody.parentElement.style.display = 'none';
+      } else {
+        emptyState.style.display = 'none';
+        tableBody.parentElement.style.display = 'table';
+        
+        // Render rows
+        pageData.forEach((row, index) => {
+          const tr = document.createElement('tr');
+          tr.innerHTML = `
+            <td>${startIndex + index + 1}</td>
+            <td>${row.AccountNumber || '-'}</td>
+            <td>${row.AccountName || '-'}</td>
+            <td>${row.Level || '-'}</td>
+            <td>${getParentAccountName(row.ParentAccount) || '-'}</td>
+            <td><span class="badge badge-primary">${row.Category || '-'}</span></td>
+            <td><span class="badge ${row.NormalBalance === 'Debit' ? 'badge-success' : 'badge-warning'}">${row.NormalBalance || '-'}</span></td>
+            <td><span class="badge ${row.IsPosting ? 'badge-success' : 'badge-danger'}">${row.IsPosting ? 'Ya' : 'Tidak'}</span></td>
+            <td><span class="badge ${row.IsActive ? 'badge-success' : 'badge-danger'}">${row.IsActive ? 'Aktif' : 'Non Aktif'}</span></td>
+            <td>
+              <button class="action-btn btn-edit" onclick="editCOA('${row.ID}')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+                Edit
+              </button>
+              <button class="action-btn btn-delete" onclick="deleteCOA('${row.ID}', '${row.AccountNumber}')">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+                Delete
+              </button>
+            </td>
+          `;
+          tableBody.appendChild(tr);
+        });
+      }
+      
+      // Update pagination
+      updatePagination();
+    }
+
+    function getParentAccountName(parentNumber) {
+      if (!parentNumber) return '';
+      const parent = allCOAData.find(coa => coa.AccountNumber === parentNumber);
+      return parent ? parent.AccountName : '';
+    }
+
+    // Filter Functions
+    function applyFilters() {
+      const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+      const categoryFilter = document.getElementById('filterCategory').value;
+      const levelFilter = document.getElementById('filterLevel').value;
+      const statusFilter = document.getElementById('filterStatus').value;
+      
+      filteredData = allCOAData.filter(row => {
+        const matchesSearch = !searchTerm || 
+          (row.AccountNumber && row.AccountNumber.toLowerCase().includes(searchTerm)) ||
+          (row.AccountName && row.AccountName.toLowerCase().includes(searchTerm));
+        
+        const matchesCategory = !categoryFilter || row.Category === categoryFilter;
+        const matchesLevel = !levelFilter || String(row.Level) === levelFilter;
+        const matchesStatus = !statusFilter || String(row.IsActive) === statusFilter;
+        
+        return matchesSearch && matchesCategory && matchesLevel && matchesStatus;
+      });
+    }
+
+    function handleSearch() {
+      currentPage = 1;
+      renderTable();
+    }
+
+    function handleFilter() {
+      currentPage = 1;
+      renderTable();
+    }
+
+    // Sort Functions
+    function applySorting() {
+      if (!sortColumn) return;
+      
+      filteredData.sort((a, b) => {
+        let valA = a[sortColumn];
+        let valB = b[sortColumn];
+        
+        if (typeof valA === 'string') valA = valA.toLowerCase();
+        if (typeof valB === 'string') valB = valB.toLowerCase();
+        
+        if (valA < valB) return sortDirection === 'asc' ? -1 : 1;
+        if (valA > valB) return sortDirection === 'asc' ? 1 : -1;
+        return 0;
+      });
+      
+      // Update sort indicators
+      document.querySelectorAll('.data-table th').forEach(th => {
+        th.classList.remove('sort-asc', 'sort-desc');
+      });
+      const columnIndex = {
+        'No': 0, 'AccountNumber': 1, 'AccountName': 2, 'Level': 3,
+        'ParentAccount': 4, 'Category': 5, 'NormalBalance': 6,
+        'IsPosting': 7, 'IsActive': 8
+      };
+      const th = document.querySelectorAll('.data-table th')[columnIndex[sortColumn]];
+      if (th) {
+        th.classList.add(sortDirection === 'asc' ? 'sort-asc' : 'sort-desc');
+      }
+    }
+
+    function handleSort(column) {
+      if (sortColumn === column) {
+        sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortColumn = column;
+        sortDirection = 'asc';
+      }
+      renderTable();
+    }
+
+    // Pagination
+    function updatePagination() {
+      const totalItems = filteredData.length;
+      const totalPages = Math.ceil(totalItems / itemsPerPage);
+      const startIndex = (currentPage - 1) * itemsPerPage + 1;
+      const endIndex = Math.min(currentPage * itemsPerPage, totalItems);
+      
+      document.getElementById('paginationInfo').textContent = 
+        `Menampilkan ${totalItems > 0 ? startIndex : 0} - ${endIndex} dari ${totalItems} data`;
+      
+      const controls = document.getElementById('paginationControls');
+      controls.innerHTML = '';
+      
+      if (totalPages <= 1) return;
+      
+      // Previous button
+      const prevBtn = document.createElement('button');
+      prevBtn.className = 'pagination-btn';
+      prevBtn.innerHTML = '‹';
+      prevBtn.disabled = currentPage === 1;
+      prevBtn.onclick = () => { if (currentPage > 1) { currentPage--; renderTable(); } };
+      controls.appendChild(prevBtn);
+      
+      // Page numbers
+      const maxVisiblePages = 5;
+      let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+      let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+      
+      if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+      }
+      
+      for (let i = startPage; i <= endPage; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.className = `pagination-btn ${i === currentPage ? 'active' : ''}`;
+        pageBtn.textContent = i;
+        pageBtn.onclick = () => { currentPage = i; renderTable(); };
+        controls.appendChild(pageBtn);
+      }
+      
+      // Next button
+      const nextBtn = document.createElement('button');
+      nextBtn.className = 'pagination-btn';
+      nextBtn.innerHTML = '›';
+      nextBtn.disabled = currentPage === totalPages;
+      nextBtn.onclick = () => { if (currentPage < totalPages) { currentPage++; renderTable(); } };
+      controls.appendChild(nextBtn);
+    }
+
+    // Modal Functions
+    function openModal(isEdit = false) {
+      document.getElementById('modalOverlay').classList.add('active');
+      document.getElementById('modalTitle').textContent = isEdit ? 'Edit Chart of Account' : 'Tambah Chart of Account';
+      
+      if (!isEdit) {
+        // Reset form for new entry
+        document.getElementById('coaForm').reset();
+        document.getElementById('editId').value = '';
+        document.getElementById('level').disabled = false;
+        document.getElementById('parentAccount').disabled = false;
+        document.getElementById('isActive').checked = true;
+        updateStatusLabel();
+        updatePostingLabel();
+      }
+    }
+
+    function closeModal() {
+      document.getElementById('modalOverlay').classList.remove('active');
+      document.getElementById('coaForm').reset();
+      document.getElementById('editId').value = '';
+    }
+
+    // Load Parent Accounts
+    async function loadParentAccounts(level) {
+      const cacheKey = `level_${level}`;
+      if (parentAccountsCache[cacheKey]) {
+        return parentAccountsCache[cacheKey];
+      }
+      
+      showLoading(true);
+      try {
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'getParentAccounts',
+            level: level
+          })
+        });
+        const json = await response.json();
+        
+        if (json.status === 'success') {
+          parentAccountsCache[cacheKey] = json.data;
+          return json.data;
+        } else {
+          Swal.fire('Error', json.message, 'error');
+          return [];
+        }
+      } catch (error) {
+        console.error('Error loading parent accounts:', error);
+        Swal.fire('Error', 'Gagal memuat data parent account', 'error');
+        return [];
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // Handle Level Change
+    async function handleLevelChange() {
+      const level = parseInt(document.getElementById('level').value);
+      const parentSelect = document.getElementById('parentAccount');
+      
+      // Clear parent options
+      parentSelect.innerHTML = '<option value="">-- Pilih Parent --</option>';
+      
+      if (level === 1) {
+        // Level 1 has no parent
+        parentSelect.disabled = true;
+        parentSelect.value = '';
+        await generateAccountNumber('', level);
+      } else {
+        parentSelect.disabled = false;
+        // Load parent accounts (one level above)
+        const parents = await loadParentAccounts(level);
+        parents.forEach(parent => {
+          const option = document.createElement('option');
+          option.value = parent.AccountNumber;
+          option.textContent = `${parent.AccountNumber} - ${parent.AccountName}`;
+          parentSelect.appendChild(option);
+        });
+        
+        // Clear auto-generated fields
+        document.getElementById('accountNumber').value = '';
+        document.getElementById('category').value = '';
+        document.getElementById('normalBalance').value = '';
+        document.getElementById('isPosting').checked = false;
+        updatePostingLabel();
+      }
+    }
+
+    // Handle Parent Change
+    async function handleParentChange() {
+      const level = parseInt(document.getElementById('level').value);
+      const parentAccount = document.getElementById('parentAccount').value;
+      
+      if (!parentAccount) {
+        document.getElementById('accountNumber').value = '';
+        document.getElementById('category').value = '';
+        document.getElementById('normalBalance').value = '';
+        return;
+      }
+      
+      // Get parent data
+      const parent = allCOAData.find(coa => coa.AccountNumber === parentAccount);
+      if (parent) {
+        document.getElementById('category').value = parent.Category || '';
+        document.getElementById('normalBalance').value = parent.NormalBalance || '';
+      }
+      
+      // Set default posting based on level
+      const defaultPosting = level === 4;
+      document.getElementById('isPosting').checked = defaultPosting;
+      updatePostingLabel();
+      
+      // Generate account number
+      await generateAccountNumber(parentAccount, level);
+    }
+
+    // Generate Account Number
+    async function generateAccountNumber(parentAccount, level) {
+      showLoading(true);
+      try {
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'generateAccountNumber',
+            parentAccount: parentAccount,
+            level: level
+          })
+        });
+        const json = await response.json();
+        
+        if (json.status === 'success') {
+          document.getElementById('accountNumber').value = json.accountNumber;
+        } else {
+          Swal.fire('Error', json.message, 'error');
+        }
+      } catch (error) {
+        console.error('Error generating account number:', error);
+        Swal.fire('Error', 'Gagal generate nomor akun', 'error');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // Update Labels
+    function updateStatusLabel() {
+      const isActive = document.getElementById('isActive').checked;
+      document.getElementById('statusLabel').textContent = isActive ? 'Aktif' : 'Non Aktif';
+    }
+
+    function updatePostingLabel() {
+      const isPosting = document.getElementById('isPosting').checked;
+      document.getElementById('postingLabel').textContent = isPosting ? 'Ya' : 'Tidak';
+    }
+
+    // Event listeners for switches
+    document.getElementById('isActive').addEventListener('change', updateStatusLabel);
+    document.getElementById('isPosting').addEventListener('change', updatePostingLabel);
+
+    // Save COA
+    async function saveCOA() {
+      const editId = document.getElementById('editId').value;
+      const level = parseInt(document.getElementById('level').value);
+      const parentAccount = document.getElementById('parentAccount').value;
+      const accountName = document.getElementById('accountName').value.trim();
+      const accountNumber = document.getElementById('accountNumber').value.trim();
+      const category = document.getElementById('category').value.trim();
+      const normalBalance = document.getElementById('normalBalance').value.trim();
+      const isPosting = document.getElementById('isPosting').checked;
+      const isActive = document.getElementById('isActive').checked;
+      
+      // Validation
+      if (!level) {
+        Swal.fire('Validasi', 'Level akun wajib dipilih', 'warning');
+        return;
+      }
+      
+      if (!accountName) {
+        Swal.fire('Validasi', 'Nama akun wajib diisi', 'warning');
+        return;
+      }
+      
+      if (level > 1 && !parentAccount) {
+        Swal.fire('Validasi', 'Parent account wajib dipilih untuk level di atas 1', 'warning');
+        return;
+      }
+      
+      if (!accountNumber) {
+        Swal.fire('Validasi', 'Nomor akun belum digenerate', 'warning');
+        return;
+      }
+      
+      // Check duplicate account name
+      showLoading(true);
+      try {
+        const duplicateResponse = await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'checkDuplicateAccountName',
+            accountName: accountName,
+            excludeId: editId
+          })
+        });
+        const duplicateJson = await duplicateResponse.json();
+        
+        if (duplicateJson.status === 'success' && duplicateJson.isDuplicate) {
+          showLoading(false);
+          Swal.fire('Validasi', 'Nama akun sudah digunakan. Gunakan nama yang berbeda.', 'warning');
+          return;
+        }
+      } catch (error) {
+        console.error('Error checking duplicate:', error);
+      }
+      
+      // Save or Update
+      try {
+        const action = editId ? 'updateChartOfAccount' : 'saveChartOfAccount';
+        const payload = {
+          action: action,
+          AccountNumber: accountNumber,
+          AccountName: accountName,
+          Level: level,
+          ParentAccount: parentAccount,
+          Category: category,
+          NormalBalance: normalBalance,
+          IsPosting: isPosting,
+          IsActive: isActive
+        };
+        
+        if (editId) {
+          payload.id = editId;
+        }
+        
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        const json = await response.json();
+        
+        if (json.status === 'success') {
+          Swal.fire('Berhasil', json.message, 'success');
+          closeModal();
+          await loadCOAData();
+        } else {
+          Swal.fire('Error', json.message, 'error');
+        }
+      } catch (error) {
+        console.error('Error saving COA:', error);
+        Swal.fire('Error', 'Gagal menyimpan data', 'error');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // Edit COA
+    async function editCOA(id) {
+      const coa = allCOAData.find(c => c.ID === id);
+      if (!coa) {
+        Swal.fire('Error', 'Data tidak ditemukan', 'error');
+        return;
+      }
+      
+      // Load parent accounts for the level
+      const level = parseInt(coa.Level);
+      await loadParentAccounts(level);
+      
+      // Populate parent dropdown
+      const parentSelect = document.getElementById('parentAccount');
+      parentSelect.innerHTML = '<option value="">-- Pilih Parent --</option>';
+      
+      if (level > 1) {
+        const parents = parentAccountsCache[`level_${level}`] || [];
+        parents.forEach(parent => {
+          const option = document.createElement('option');
+          option.value = parent.AccountNumber;
+          option.textContent = `${parent.AccountNumber} - ${parent.AccountName}`;
+          parentSelect.appendChild(option);
+        });
+      }
+      
+      // Populate form
+      document.getElementById('editId').value = coa.ID;
+      document.getElementById('level').value = coa.Level;
+      document.getElementById('level').disabled = true; // Cannot change level on edit
+      document.getElementById('parentAccount').value = coa.ParentAccount || '';
+      document.getElementById('parentAccount').disabled = true; // Cannot change parent on edit
+      document.getElementById('accountName').value = coa.AccountName || '';
+      document.getElementById('accountNumber').value = coa.AccountNumber || '';
+      document.getElementById('category').value = coa.Category || '';
+      document.getElementById('normalBalance').value = coa.NormalBalance || '';
+      document.getElementById('isPosting').checked = coa.IsPosting || false;
+      document.getElementById('isActive').checked = coa.IsActive !== false;
+      
+      updateStatusLabel();
+      updatePostingLabel();
+      
+      openModal(true);
+    }
+
+    // Delete COA
+    async function deleteCOA(id, accountNumber) {
+      const result = await Swal.fire({
+        title: 'Hapus Akun?',
+        text: 'Apakah Anda yakin ingin menghapus akun ini?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#EF4444',
+        cancelButtonColor: '#64748B',
+        confirmButtonText: 'Ya, Hapus',
+        cancelButtonText: 'Batal'
+      });
+      
+      if (!result.isConfirmed) return;
+      
+      showLoading(true);
+      try {
+        // Check for child accounts
+        const childResponse = await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'checkChildAccount',
+            accountNumber: accountNumber
+          })
+        });
+        const childJson = await childResponse.json();
+        
+        if (childJson.status === 'success' && childJson.hasChild) {
+          showLoading(false);
+          Swal.fire('Error', 'Akun tidak dapat dihapus karena masih memiliki akun turunan.', 'error');
+          return;
+        }
+        
+        // Check if used in transactions
+        const usedResponse = await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'checkAccountUsed',
+            accountNumber: accountNumber
+          })
+        });
+        const usedJson = await usedResponse.json();
+        
+        if (usedJson.status === 'success' && usedJson.isUsed) {
+          showLoading(false);
+          Swal.fire('Error', 'Akun sudah digunakan pada transaksi jurnal. Hanya dapat diubah status menjadi Non Aktif.', 'error');
+          return;
+        }
+        
+        // Delete account
+        const deleteResponse = await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify({
+            action: 'deleteChartOfAccount',
+            id: id
+          })
+        });
+        const deleteJson = await deleteResponse.json();
+        
+        if (deleteJson.status === 'success') {
+          Swal.fire('Berhasil', deleteJson.message, 'success');
+          await loadCOAData();
+        } else {
+          Swal.fire('Error', deleteJson.message, 'error');
+        }
+      } catch (error) {
+        console.error('Error deleting COA:', error);
+        Swal.fire('Error', 'Gagal menghapus data', 'error');
+      } finally {
+        showLoading(false);
+      }
+    }
+
+    // Loading Helper
+    function showLoading(show) {
+      document.getElementById('loadingOverlay').classList.toggle('active', show);
+    }
+  </script>
+</body>
+
+</html>
