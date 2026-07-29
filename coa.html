@@ -1284,7 +1284,7 @@
       
       // Get Level 1 ancestor's category and normal balance
       let level1Ancestor = null;
-      let currentParent = allCOAData.find(coa => coa.AccountNumber === parentAccount);
+      let currentParent = allCOAData.find(coa => String(coa.AccountNumber) === parentAccount);
       
       console.log('Parent account selected:', parentAccount);
       console.log('Current parent found:', currentParent);
@@ -1293,7 +1293,7 @@
       while (currentParent && Number(currentParent.Level) > 1) {
         const parentNumber = currentParent.ParentAccount;
         console.log('Traversing up from', currentParent.AccountNumber, 'to parent', parentNumber);
-        currentParent = allCOAData.find(coa => coa.AccountNumber === parentNumber);
+        currentParent = allCOAData.find(coa => String(coa.AccountNumber) === String(parentNumber));
         console.log('Found parent:', currentParent);
       }
       
@@ -1309,7 +1309,7 @@
         normalBalanceHint.textContent = `Otomatis: ${level1Ancestor.NormalBalance || ''} (dari Level 1: ${level1Ancestor.AccountNumber})`;
       } else {
         // Fallback to immediate parent if Level 1 not found
-        const parent = allCOAData.find(coa => coa.AccountNumber === parentAccount);
+        const parent = allCOAData.find(coa => String(coa.AccountNumber) === parentAccount);
         console.log('Using immediate parent as fallback:', parent);
         if (parent) {
           document.getElementById('category').value = parent.Category || '';
