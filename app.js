@@ -36,5 +36,6 @@ function toggleMobileMenu() {
 
 function handleLogout() {
   localStorage.removeItem("wax_logged_user");
+  localStorage.removeItem("wax_menu_access_data");
   window.location.replace("index.html");
 }
