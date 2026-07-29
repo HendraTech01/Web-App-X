@@ -468,6 +468,13 @@
       border-radius: 50%;
     }
 
+    .field-hint {
+      display: block;
+      margin-top: 4px;
+      font-size: 12px;
+      color: #64748B;
+    }
+
     input:checked + .slider {
       background-color: var(--color-primary);
     }
@@ -802,6 +809,7 @@
                   <option value="Cost of Revenue">Cost of Revenue</option>
                   <option value="Expense">Expense</option>
                 </select>
+                <small id="categoryHint" class="field-hint"></small>
               </div>
             </div>
           </div>
@@ -815,6 +823,7 @@
                   <option value="Debit">Debit</option>
                   <option value="Credit">Credit</option>
                 </select>
+                <small id="normalBalanceHint" class="field-hint"></small>
               </div>
             </div>
             <div class="modal-col">
@@ -1198,9 +1207,15 @@
       const parentSelect = document.getElementById('parentAccount');
       const categorySelect = document.getElementById('category');
       const normalBalanceSelect = document.getElementById('normalBalance');
+      const categoryHint = document.getElementById('categoryHint');
+      const normalBalanceHint = document.getElementById('normalBalanceHint');
       
       // Clear parent options
       parentSelect.innerHTML = '<option value="">-- Pilih Parent --</option>';
+      
+      // Clear hints
+      categoryHint.textContent = '';
+      normalBalanceHint.textContent = '';
       
       if (level === 1) {
         // Level 1 has no parent - enable category and normal balance selection
@@ -1237,17 +1252,23 @@
     function handleCategoryChange() {
       const category = document.getElementById('category').value;
       const normalBalanceSelect = document.getElementById('normalBalance');
+      const categoryHint = document.getElementById('categoryHint');
+      const normalBalanceHint = document.getElementById('normalBalanceHint');
       const level = parseInt(document.getElementById('level').value);
       
       // Only auto-set for Level 1
       if (level === 1) {
         if (category === 'Asset' || category === 'Expense') {
           normalBalanceSelect.value = 'Debit';
+          normalBalanceHint.textContent = 'Otomatis: Debit (dari kategori)';
         } else if (category === 'Liability' || category === 'Equity' || category === 'Revenue' || category === 'Cost of Revenue') {
           normalBalanceSelect.value = 'Credit';
+          normalBalanceHint.textContent = 'Otomatis: Credit (dari kategori)';
         } else {
           normalBalanceSelect.value = '';
+          normalBalanceHint.textContent = '';
         }
+        categoryHint.textContent = '';
       }
     }
 
@@ -1255,11 +1276,15 @@
     async function handleParentChange() {
       const level = parseInt(document.getElementById('level').value);
       const parentAccount = document.getElementById('parentAccount').value;
+      const categoryHint = document.getElementById('categoryHint');
+      const normalBalanceHint = document.getElementById('normalBalanceHint');
       
       if (!parentAccount) {
         document.getElementById('accountNumber').value = '';
         document.getElementById('category').value = '';
         document.getElementById('normalBalance').value = '';
+        categoryHint.textContent = '';
+        normalBalanceHint.textContent = '';
         return;
       }
       
@@ -1268,6 +1293,8 @@
       if (parent) {
         document.getElementById('category').value = parent.Category || '';
         document.getElementById('normalBalance').value = parent.NormalBalance || '';
+        categoryHint.textContent = `Otomatis: ${parent.Category || ''} (dari parent)`;
+        normalBalanceHint.textContent = `Otomatis: ${parent.NormalBalance || ''} (dari parent)`;
       }
       
       // Set default posting based on level

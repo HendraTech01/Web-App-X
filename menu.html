@@ -208,8 +208,16 @@
       link.style.display = "none";
     });
 
+    // Hide COA link initially
+    const coaLink = document.querySelector(".app-sidebar-nav .app-nav-item[href='coa.html']");
+    if (coaLink) {
+      coaLink.style.display = "none";
+    }
+
     function applyAccess(data) {
       const accessList = data.map(item => String(item["Hak Akses Menu"] || item["hak akses menu"]).trim());
+      
+      // Show sheet links based on access
       sheetLinks.forEach(link => {
         const hrefSearch = link.getAttribute("href").split("?")[1] || "";
         const linkSheet = new URLSearchParams(hrefSearch).get("sheetName") || "";
@@ -217,6 +225,11 @@
           link.style.display = ""; // Show if they have access
         }
       });
+
+      // Show COA link if user has access
+      if (coaLink && accessList.includes("ChartOfAccount")) {
+        coaLink.style.display = "";
+      }
     }
 
     const storedAccess = localStorage.getItem("wax_menu_access_data");
