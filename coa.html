@@ -927,8 +927,15 @@
       showLoading(true);
       
       try {
+        // Sort data by AccountNumber
+        const sortedData = [...allCOAData].sort((a, b) => {
+          const numA = String(a.AccountNumber || "");
+          const numB = String(b.AccountNumber || "");
+          return numA.localeCompare(numB, undefined, {numeric: true});
+        });
+
         // Format data for excel
-        const excelData = allCOAData.map((item, index) => ({
+        const excelData = sortedData.map((item, index) => ({
           'No': index + 1,
           'Account Number': item.AccountNumber || '',
           'Account Name': item.AccountName || '',
