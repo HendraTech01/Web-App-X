@@ -793,7 +793,15 @@
             <div class="modal-col">
               <div class="app-input-group">
                 <label for="category">Kategori</label>
-                <input type="text" id="category" class="app-input readonly-field" readonly>
+                <select id="category" class="app-input" onchange="handleCategoryChange()">
+                  <option value="">-- Pilih Kategori --</option>
+                  <option value="Asset">Asset</option>
+                  <option value="Liability">Liability</option>
+                  <option value="Equity">Equity</option>
+                  <option value="Revenue">Revenue</option>
+                  <option value="Cost of Revenue">Cost of Revenue</option>
+                  <option value="Expense">Expense</option>
+                </select>
               </div>
             </div>
           </div>
@@ -802,7 +810,11 @@
             <div class="modal-col">
               <div class="app-input-group">
                 <label for="normalBalance">Saldo Normal</label>
-                <input type="text" id="normalBalance" class="app-input readonly-field" readonly>
+                <select id="normalBalance" class="app-input">
+                  <option value="">-- Pilih Saldo Normal --</option>
+                  <option value="Debit">Debit</option>
+                  <option value="Credit">Credit</option>
+                </select>
               </div>
             </div>
             <div class="modal-col">
@@ -1152,14 +1164,18 @@
     async function handleLevelChange() {
       const level = parseInt(document.getElementById('level').value);
       const parentSelect = document.getElementById('parentAccount');
+      const categorySelect = document.getElementById('category');
+      const normalBalanceSelect = document.getElementById('normalBalance');
       
       // Clear parent options
       parentSelect.innerHTML = '<option value="">-- Pilih Parent --</option>';
       
       if (level === 1) {
-        // Level 1 has no parent
+        // Level 1 has no parent - enable category and normal balance selection
         parentSelect.disabled = true;
         parentSelect.value = '';
+        categorySelect.disabled = false;
+        normalBalanceSelect.disabled = false;
         await generateAccountNumber('', level);
       } else {
         parentSelect.disabled = false;
@@ -1172,12 +1188,34 @@
           parentSelect.appendChild(option);
         });
         
+        // Disable category and normal balance - will be auto-filled from parent
+        categorySelect.disabled = true;
+        normalBalanceSelect.disabled = true;
+        
         // Clear auto-generated fields
         document.getElementById('accountNumber').value = '';
-        document.getElementById('category').value = '';
-        document.getElementById('normalBalance').value = '';
+        categorySelect.value = '';
+        normalBalanceSelect.value = '';
         document.getElementById('isPosting').checked = false;
         updatePostingLabel();
+      }
+    }
+
+    // Handle Category Change - Auto-set normal balance based on category
+    function handleCategoryChange() {
+      const category = document.getElementById('category').value;
+      const normalBalanceSelect = document.getElementById('normalBalance');
+      const level = parseInt(document.getElementById('level').value);
+      
+      // Only auto-set for Level 1
+      if (level === 1) {
+        if (category === 'Asset' || category === 'Expense') {
+          normalBalanceSelect.value = 'Debit';
+        } else if (category === 'Liability' || category === 'Equity' || category === 'Revenue' || category === 'Cost of Revenue') {
+          normalBalanceSelect.value = 'Credit';
+        } else {
+          normalBalanceSelect.value = '';
+        }
       }
     }
 
