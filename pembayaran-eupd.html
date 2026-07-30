@@ -35,20 +35,22 @@
     .autocomplete-item:hover { background-color: var(--color-primary-light); color: var(--color-primary); font-weight: 600; }
     .autocomplete-item .ac-sub { font-size: 11px; color: var(--color-text-secondary); font-weight: 400; }
 
-    .info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.75rem; margin-bottom: 1rem; }
-    .info-grid .info-item { background: #F8FAFC; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.5rem 0.75rem; }
-    .info-grid .info-item .info-label { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 0.15rem; }
-    .info-grid .info-item .info-value { font-size: var(--font-base); font-weight: 600; color: var(--color-text-primary); word-break: break-word; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 0.4rem; margin-bottom: 0.75rem; }
+    .info-grid .info-item { background: #F8FAFC; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.3rem 0.5rem; }
+    .info-grid .info-item .info-label { font-size: 10px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 0.05rem; }
+    .info-grid .info-item .info-value { font-size: var(--font-sm); font-weight: 600; color: var(--color-text-primary); word-break: break-word; }
+    .info-grid .info-item.info-total-item { grid-column: span 2; }
 
     .journal-table-wrap { overflow-x: auto; margin-top: 0.75rem; }
-    .journal-table { width: 100%; border-collapse: collapse; font-size: var(--font-sm); min-width: 650px; }
+    .journal-table { width: 100%; border-collapse: collapse; font-size: var(--font-sm); min-width: 750px; }
     .journal-table th { background: var(--color-primary-light); color: var(--color-primary); font-weight: 600; padding: 0.5rem 0.6rem; text-align: left; font-size: 11px; white-space: nowrap; border: 1px solid var(--color-border); }
-    .journal-table td { padding: 0.4rem 0.6rem; border: 1px solid var(--color-border); vertical-align: top; }
+    .journal-table td { padding: 0.3rem 0.5rem; border: 1px solid var(--color-border); vertical-align: top; }
     .journal-table td .autocomplete-wrapper { display: flex; }
-    .journal-table td .autocomplete-wrapper input { min-width: 140px; }
-    .journal-table td input, .journal-table td select { width: 100%; box-sizing: border-box; padding: 0.4rem 0.5rem; border: 1px solid var(--color-border); border-radius: 4px; font-size: var(--font-sm); background: var(--color-surface); color: var(--color-text-primary); }
-    .journal-table td input:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary-light); }
+    .journal-table td .autocomplete-wrapper input { min-width: 110px; }
+    .journal-table td input, .journal-table td select, .journal-table td textarea { width: 100%; box-sizing: border-box; padding: 0.35rem 0.45rem; border: 1px solid var(--color-border); border-radius: 4px; font-size: var(--font-sm); background: var(--color-surface); color: var(--color-text-primary); font-family: inherit; }
+    .journal-table td input:focus, .journal-table td textarea:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary-light); }
     .journal-table td input[readonly] { background: #F1F5F9; cursor: default; }
+    .journal-table td textarea { resize: none; min-height: 36px; overflow: hidden; line-height: 1.4; }
     .journal-table .btn-journal-remove { background: #FEE2E2; color: #EF4444; border: none; border-radius: 4px; padding: 0.3rem 0.5rem; font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap; }
     .journal-table .btn-journal-remove:hover { background: #FECACA; }
 
@@ -116,7 +118,7 @@
 
       <div class="payment-eupd-header">
         <div class="top-bar">
-          <a href="pembayaran.html" class="back-btn">
+          <a href="list-pembayaran-eupd.html" class="back-btn">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
             Kembali
           </a>
@@ -130,7 +132,7 @@
       <div class="info-bar">
         <div class="app-input-group">
           <label>No Pembayaran EUPD</label>
-          <input type="text" id="noPembayaran" class="app-input" readonly style="background:#F1F5F9;font-weight:700;color:var(--color-primary);">
+          <input type="text" id="noPembayaran" class="app-input" readonly style="background:#F1F5F9;font-style:italic;font-size:12px;" value="Generate otomatis saat disimpan">
         </div>
         <div class="app-input-group">
           <label for="tanggalPembayaran">Tanggal</label>
@@ -401,25 +403,25 @@
         '<div class="info-grid">' +
           '<div class="info-item"><div class="info-label">WH Awal</div><div class="info-value info-wh">-</div></div>' +
           '<div class="info-item"><div class="info-label">Nama Driver</div><div class="info-value info-driver">-</div></div>' +
-          '<div class="info-item"><div class="info-label">Nomor Kendaraan</div><div class="info-value info-kendaraan">-</div></div>' +
+          '<div class="info-item"><div class="info-label">Kendaraan</div><div class="info-value info-kendaraan">-</div></div>' +
           '<div class="info-item"><div class="info-label">Pemesan</div><div class="info-value info-pemesan">-</div></div>' +
           '<div class="info-item"><div class="info-label">Tujuan</div><div class="info-value info-tujuan">-</div></div>' +
-          '<div class="info-item"><div class="info-label">Total Uang Makan</div><div class="info-value info-uang-makan">Rp 0,00</div></div>' +
-          '<div class="info-item"><div class="info-label">Total Uang BBM</div><div class="info-value info-bbm">Rp 0,00</div></div>' +
-          '<div class="info-item"><div class="info-label">Total Biaya Penginapan</div><div class="info-value info-inap">Rp 0,00</div></div>' +
-          '<div class="info-item"><div class="info-label">Total Biaya Lain-Lain</div><div class="info-value info-biaya-lain">Rp 0,00</div></div>' +
-          '<div class="info-item" style="grid-column:span 2;"><div class="info-label">Total Biaya Keseluruhan</div><div class="info-value info-total" style="font-size:1rem;color:var(--color-primary);">Rp 0,00</div></div>' +
+          '<div class="info-item"><div class="info-label">Uang Makan</div><div class="info-value info-uang-makan">Rp 0</div></div>' +
+          '<div class="info-item"><div class="info-label">BBM</div><div class="info-value info-bbm">Rp 0</div></div>' +
+          '<div class="info-item"><div class="info-label">Penginapan</div><div class="info-value info-inap">Rp 0</div></div>' +
+          '<div class="info-item"><div class="info-label">Biaya Lain</div><div class="info-value info-biaya-lain">Rp 0</div></div>' +
+          '<div class="info-item info-total-item"><div class="info-label">Total Keseluruhan</div><div class="info-value info-total" style="font-weight:700;color:var(--color-primary);">Rp 0</div></div>' +
         '</div>' +
       '</div>' +
       '<div class="journal-section" style="display:none;">' +
         '<div class="journal-table-wrap">' +
           '<table class="journal-table">' +
             '<thead><tr>' +
-              '<th style="width:25%;">Keterangan</th>' +
-              '<th style="width:15%;">No Akun</th>' +
-              '<th style="width:20%;">Nama Akun</th>' +
-              '<th style="width:13%;">Debit</th>' +
-              '<th style="width:13%;">Kredit</th>' +
+              '<th style="width:28%;">Keterangan</th>' +
+              '<th style="width:14%;">No Akun</th>' +
+              '<th style="width:18%;">Nama Akun</th>' +
+              '<th style="width:15%;">Debit</th>' +
+              '<th style="width:15%;">Kredit</th>' +
               '<th style="width:1%;"></th>' +
             '</tr></thead>' +
             '<tbody class="journal-body"></tbody>' +
@@ -476,11 +478,11 @@
     var defaultKredit = isFirst ? 0 : 0;
 
     tr.innerHTML =
-      '<td><input type="text" class="journal-keterangan" value="' + htmlEscape(defaultKeterangan) + '" placeholder="Keterangan..."></td>' +
+      '<td><textarea class="journal-keterangan" rows="1" placeholder="Keterangan..." oninput="autoHeight(this)">' + htmlEscape(defaultKeterangan) + '</textarea></td>' +
       '<td><div class="autocomplete-wrapper"><input type="text" class="app-input journal-no-akun" placeholder="Cari No Akun..." oninput="filterAkun(this, \'' + groupId + '\')"><div class="autocomplete-list"></div></div></td>' +
       '<td><input type="text" class="journal-nama-akun" readonly style="background:#F1F5F9;" placeholder="Otomatis..."></td>' +
-      '<td><input type="text" class="journal-debit" value="' + (defaultDebit > 0 ? formatCurrency(defaultDebit) : '') + '" placeholder="0" oninput="cleanNumberInput(this);formatDecimalDisplay(this);updateGroupTotals(\'' + groupId + '\');" onfocus="removeDecimalFormat(this)" onblur="formatDecimalDisplay(this)"></td>' +
-      '<td><input type="text" class="journal-kredit" value="' + (defaultKredit > 0 ? formatCurrency(defaultKredit) : '') + '" placeholder="0" oninput="cleanNumberInput(this);formatDecimalDisplay(this);updateGroupTotals(\'' + groupId + '\');" onfocus="removeDecimalFormat(this)" onblur="formatDecimalDisplay(this)"></td>' +
+      '<td><input type="text" class="journal-debit" value="' + (defaultDebit > 0 ? formatCurrency(defaultDebit) : '') + '" placeholder="0" style="font-weight:600;text-align:right;" oninput="cleanNumberInput(this);formatDecimalDisplay(this);updateGroupTotals(\'' + groupId + '\');" onfocus="removeDecimalFormat(this)" onblur="formatDecimalDisplay(this)"></td>' +
+      '<td><input type="text" class="journal-kredit" value="' + (defaultKredit > 0 ? formatCurrency(defaultKredit) : '') + '" placeholder="0" style="font-weight:600;text-align:right;" oninput="cleanNumberInput(this);formatDecimalDisplay(this);updateGroupTotals(\'' + groupId + '\');" onfocus="removeDecimalFormat(this)" onblur="formatDecimalDisplay(this)"></td>' +
       '<td><button type="button" class="btn-journal-remove" onclick="removeJournalRow(this)">x</button></td>';
 
     tbody.appendChild(tr);
@@ -490,6 +492,11 @@
   function htmlEscape(str) {
     if (!str) return '';
     return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  }
+
+  function autoHeight(el) {
+    el.style.height = 'auto';
+    el.style.height = el.scrollHeight + 'px';
   }
 
   function removeJournalRow(btn) {
@@ -553,12 +560,6 @@
       return false;
     }
 
-    var noPembayaran = document.getElementById('noPembayaran').value.trim();
-    if (!noPembayaran) {
-      showAlert('error', 'Nomor Pembayaran EUPD belum tersedia. Coba refresh halaman.');
-      return false;
-    }
-
     for (var i = 0; i < groups.length; i++) {
       var g = groups[i];
       var noPengajuan = g.dataset.noPengajuan;
@@ -602,6 +603,18 @@
     return true;
   }
 
+  function getMode() {
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('viewNo')) return 'view';
+    if (params.get('editNo')) return 'edit';
+    return 'create';
+  }
+
+  function getModeNo() {
+    var params = new URLSearchParams(window.location.search);
+    return params.get('editNo') || params.get('viewNo') || '';
+  }
+
   function buildPayload() {
     var groups = document.querySelectorAll('.group-card');
     var tanggal = parseDateInput(document.getElementById('tanggalPembayaran').value);
@@ -638,8 +651,8 @@
     });
 
     return {
-      action: 'savePembayaranEUPD',
-      noPembayaran: document.getElementById('noPembayaran').value.trim(),
+      action: getMode() === 'edit' ? 'updatePembayaranEUPD' : 'savePembayaranEUPD',
+      noPembayaran: getModeNo(),
       tanggal: tanggal,
       groups: groupData
     };
@@ -654,19 +667,26 @@
     showLoading(true);
 
     var payload = buildPayload();
+    var isEdit = getMode() === 'edit';
 
     try {
       var res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
       var result = await res.json();
 
       if (result.status === 'success') {
+        var noPembayaran = result.noPembayaran;
         Swal.fire({
           icon: 'success',
           title: 'Berhasil!',
-          text: 'Pembayaran EUPD berhasil disimpan. No: ' + result.noPembayaran,
+          text: 'Pembayaran EUPD berhasil ' + (isEdit ? 'diperbarui.' : 'disimpan. No: ' + noPembayaran),
           confirmButtonText: 'OK'
         }).then(function() {
-          window.location.href = 'pembayaran.html';
+          // Stay on page, switch to edit mode
+          if (!isEdit && noPembayaran) {
+            var params = new URLSearchParams(window.location.search);
+            params.set('editNo', noPembayaran);
+            window.location.search = params.toString();
+          }
         });
       } else {
         Swal.fire({
@@ -691,15 +711,142 @@
     }
   }
 
+  // ---- Populate form from existing data (edit/view mode) ----
+  function populateFromData(rows) {
+    // Group rows by Nomor Pengajuan EUPD
+    var groups = {};
+    rows.forEach(function(row) {
+      var no = row['Nomor Pengajuan EUPD'] || '';
+      if (!groups[no]) groups[no] = [];
+      groups[no].push(row);
+    });
+
+    // Clear containers
+    var container = document.getElementById('groups-container');
+    container.innerHTML = '';
+    groupCounter = 0;
+
+    var noPengajuanList = Object.keys(groups);
+    noPengajuanList.forEach(function(noPengajuan) {
+      var groupRows = groups[noPengajuan];
+      var first = groupRows[0];
+      var isView = getMode() === 'view';
+
+      addGroup();
+
+      var group = container.lastElementChild;
+      group.dataset.loaded = 'true';
+
+      var inp = group.querySelector('.input-pengajuan');
+      inp.value = noPengajuan;
+      inp.disabled = true;
+
+      // Fill info
+      var wh = first['WH Awal'] || '';
+      var driver = first['Nama Driver'] || '';
+      var kendaraan = first['Nomor Kendaraan'] || '';
+      var pemesan = first['Pemesan'] || '';
+      var tujuan = first['Tujuan'] || '';
+
+      group.querySelector('.info-wh').innerText = wh || '-';
+      group.querySelector('.info-driver').innerText = driver || '-';
+      group.querySelector('.info-kendaraan').innerText = kendaraan || '-';
+      group.querySelector('.info-pemesan').innerText = pemesan || '-';
+      group.querySelector('.info-tujuan').innerText = tujuan || '-';
+      group.querySelector('.info-uang-makan').innerText = formatCurrency(Number(first['Total Uang Makan']) || 0);
+      group.querySelector('.info-bbm').innerText = formatCurrency(Number(first['Total Uang BBM']) || 0);
+      group.querySelector('.info-inap').innerText = formatCurrency(Number(first['Total Biaya Penginapan']) || 0);
+      group.querySelector('.info-biaya-lain').innerText = formatCurrency(Number(first['Total Biaya Lain-Lain']) || 0);
+      group.querySelector('.info-total').innerText = formatCurrency(Number(first['Total Biaya Keseluruhan']) || 0);
+
+      group.dataset.noPengajuan = noPengajuan;
+      group.dataset.whAwal = wh;
+      group.dataset.namaDriver = driver;
+      group.dataset.nomorKendaraan = kendaraan;
+      group.dataset.pemesan = pemesan;
+      group.dataset.tujuan = tujuan;
+      group.dataset.totalUangMakan = first['Total Uang Makan'] || 0;
+      group.dataset.totalUangBBM = first['Total Uang BBM'] || 0;
+      group.dataset.totalBiayaPenginapan = first['Total Biaya Penginapan'] || 0;
+      group.dataset.totalBiayaLainLain = first['Total Biaya Lain-Lain'] || 0;
+      group.dataset.totalBiayaKeseluruhan = first['Total Biaya Keseluruhan'] || 0;
+
+      group.querySelector('.group-info-section').style.display = 'block';
+      group.querySelector('.journal-section').style.display = 'block';
+
+      // Populate journal rows
+      var tbody = group.querySelector('.journal-body');
+      tbody.innerHTML = '';
+
+      groupRows.forEach(function(row, idx) {
+        var tr = document.createElement('tr');
+        tr.className = 'journal-row';
+
+        var keterangan = row['Keterangan'] || '';
+        var noAkun = row['No Akun'] || '';
+        var namaAkun = row['Nama Akun'] || '';
+        var debit = Number(row['Debit']) || 0;
+        var kredit = Number(row['Kredit']) || 0;
+
+        tr.innerHTML =
+          '<td><textarea class="journal-keterangan" rows="1" placeholder="Keterangan..." oninput="autoHeight(this)">' + htmlEscape(keterangan) + '</textarea></td>' +
+          '<td><div class="autocomplete-wrapper"><input type="text" class="app-input journal-no-akun" value="' + htmlEscape(noAkun) + '" placeholder="Cari No Akun..." oninput="filterAkun(this, \'' + group.dataset.groupId + '\')" ' + (isView ? 'readonly' : '') + '><div class="autocomplete-list"></div></div></td>' +
+          '<td><input type="text" class="journal-nama-akun" value="' + htmlEscape(namaAkun) + '" readonly style="background:#F1F5F9;" placeholder="Otomatis..."></td>' +
+          '<td><input type="text" class="journal-debit" value="' + (debit > 0 ? formatCurrency(debit) : '') + '" placeholder="0" style="font-weight:600;text-align:right;" ' + (isView ? 'readonly' : 'oninput="cleanNumberInput(this);formatDecimalDisplay(this);updateGroupTotals(\'' + group.dataset.groupId + '\');" onfocus="removeDecimalFormat(this)" onblur="formatDecimalDisplay(this)"') + '></td>' +
+          '<td><input type="text" class="journal-kredit" value="' + (kredit > 0 ? formatCurrency(kredit) : '') + '" placeholder="0" style="font-weight:600;text-align:right;" ' + (isView ? 'readonly' : 'oninput="cleanNumberInput(this);formatDecimalDisplay(this);updateGroupTotals(\'' + group.dataset.groupId + '\');" onfocus="removeDecimalFormat(this)" onblur="formatDecimalDisplay(this)"') + '></td>' +
+          (isView ? '<td></td>' : '<td><button type="button" class="btn-journal-remove" onclick="removeJournalRow(this)">x</button></td>');
+
+        tbody.appendChild(tr);
+
+        // Set account autocomplete
+        if (noAkun) {
+          var accInput = tr.querySelector('.journal-no-akun');
+          var accNameInput = tr.querySelector('.journal-nama-akun');
+          accInput.value = noAkun;
+          accNameInput.value = namaAkun;
+        }
+
+        // Auto height
+        var ta = tr.querySelector('.journal-keterangan');
+        if (ta) setTimeout(function() { autoHeight(ta); }, 10);
+      });
+
+      updateGroupTotals(group.dataset.groupId);
+
+      // Hide add/remove buttons in view mode
+      if (isView) {
+        group.querySelector('.btn-add-journal').style.display = 'none';
+        group.querySelector('.btn-remove-group').style.display = 'none';
+        group.querySelector('.input-pengajuan').disabled = true;
+      }
+    });
+  }
+
   // ---- Init ----
   async function initPage() {
     try {
       await loadSidebar();
       showLoading(true);
 
+      var mode = getMode();
+      var modeNo = getModeNo();
+      var isView = mode === 'view';
+      var isEdit = mode === 'edit';
+
       // Set today's date
       document.getElementById('tanggalPembayaran').value = getTodayDateInput();
       document.getElementById('tanggalPembayaran').type = 'text';
+
+      // Update UI based on mode
+      if (isView) {
+        document.querySelector('h1.app-page-title').innerText = 'View Pembayaran EUPD';
+        document.getElementById('btn-simpan').style.display = 'none';
+        document.querySelector('.btn-outline-primary').style.display = 'none';
+        document.getElementById('tanggalPembayaran').readOnly = true;
+      } else if (isEdit) {
+        document.querySelector('h1.app-page-title').innerText = 'Edit Pembayaran EUPD';
+        document.getElementById('btn-simpan').innerText = 'Update Pembayaran EUPD';
+      }
 
       // Fetch available EUPD (locked)
       var eupdRes = await fetch(GAS_URL + '?action=getAvailableEUPD');
@@ -721,15 +868,34 @@
         });
       }
 
-      // Generate payment number
-      var payRes = await fetch(GAS_URL + '?action=generatePaymentNumber');
-      var payJson = await payRes.json();
-      if (payJson.status === 'success') {
-        document.getElementById('noPembayaran').value = payJson.paymentNo;
-      }
+      if (isEdit || isView) {
+        // Set payment number in readonly field
+        document.getElementById('noPembayaran').value = modeNo;
+        document.getElementById('noPembayaran').style.fontStyle = 'normal';
+        document.getElementById('noPembayaran').style.fontWeight = '700';
+        document.getElementById('noPembayaran').style.color = 'var(--color-primary)';
 
-      // Add first empty group
-      addGroup();
+        // Fetch existing data
+        var detailRes = await fetch(GAS_URL + '?action=getPembayaranEUPDByID&noPembayaran=' + encodeURIComponent(modeNo));
+        var detailJson = await detailRes.json();
+
+        if (detailJson.status === 'success' && detailJson.data && detailJson.data.length > 0) {
+          var firstRow = detailJson.data[0];
+          // Set date
+          var tgl = String(firstRow['Tanggal'] || firstRow['tanggal'] || '');
+          if (tgl) {
+            document.getElementById('tanggalPembayaran').value = tgl;
+            document.getElementById('tanggalPembayaran').type = 'text';
+          }
+          // Populate groups
+          populateFromData(detailJson.data);
+        } else {
+          showAlert('error', 'Data tidak ditemukan.');
+        }
+      } else {
+        // Create mode: add first empty group
+        addGroup();
+      }
 
     } catch (err) {
       console.error('Init error:', err);

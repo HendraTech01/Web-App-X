@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>List Pembayaran EUPD - Web App X</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    .app-content-body { max-width: 1200px; margin: 0 auto; }
+
+    .page-header-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 1.5rem; }
+    .btn-create-new { width: auto; margin-top: 0; padding: 0.65rem 1.25rem; background-color: var(--color-primary); color: white; text-decoration: none; border-radius: var(--radius-sm); font-weight: 600; font-size: var(--font-base); display: inline-flex; align-items: center; gap: 0.5rem; box-shadow: 0 4px 10px rgba(56,130,246,0.2); transition: all 0.2s; border: none; cursor: pointer; }
+    .btn-create-new:hover { background-color: var(--color-primary-hover); transform: translateY(-1px); }
+
+    .filter-bar { display: flex; align-items: flex-end; gap: 1rem; flex-wrap: wrap; background: white; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 1rem 1.25rem; margin-bottom: 1.25rem; }
+    .filter-bar .app-input-group { margin-bottom: 0; }
+    .filter-bar .app-input { min-width: 160px; }
+    .filter-btn { padding: 0.5rem 1rem; background: var(--color-primary); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: var(--font-sm); cursor: pointer; white-space: nowrap; }
+    .filter-btn:hover { background: var(--color-primary-hover); }
+    .filter-reset { padding: 0.5rem 1rem; background: transparent; color: var(--color-text-secondary); border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-weight: 600; font-size: var(--font-sm); cursor: pointer; }
+    .filter-reset:hover { background: #F1F5F9; }
+    .btn-export { padding: 0.5rem 1rem; background: #10B981; color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: var(--font-sm); cursor: pointer; white-space: nowrap; display: inline-flex; align-items: center; gap: 0.4rem; }
+    .btn-export:hover { background: #059669; }
+
+    .table-container { background: white; border-radius: var(--radius-md); border: 1px solid var(--color-border); overflow-x: auto; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03); }
+    .data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: var(--font-base); }
+    .data-table th { background: var(--color-background); padding: 0.75rem 0.85rem; font-weight: 600; color: var(--color-text-primary); border-bottom: 1px solid var(--color-border); white-space: nowrap; cursor: pointer; user-select: none; }
+    .data-table th:hover { color: var(--color-primary); }
+    .data-table th .sort-arrow { margin-left: 0.3rem; font-size: 10px; color: var(--color-text-secondary); }
+    .data-table td { padding: 0.75rem 0.85rem; border-bottom: 1px solid var(--color-border); color: var(--color-text-primary); }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: #F8FAFC; }
+    .badge-draft { background: #FEF3C7; color: #D97706; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 11px; font-weight: 600; }
+    .badge-posted { background: #D1FAE5; color: #059669; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 11px; font-weight: 600; }
+    .badge-locked { background: #DBEAFE; color: #2563EB; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 11px; font-weight: 600; }
+    .action-btn { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.35rem 0.6rem; border: none; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; text-decoration: none; }
+    .btn-view { background: #E0F2FE; color: #0284C7; }
+    .btn-view:hover { background: #BAE6FD; }
+    .btn-edit { background: #FEF3C7; color: #D97706; }
+    .btn-edit:hover { background: #FDE68A; }
+    .btn-lock { background: #DBEAFE; color: #2563EB; }
+    .btn-lock:hover { background: #BFDBFE; }
+    .btn-unlock { background: #FEE2E2; color: #DC2626; }
+    .btn-unlock:hover { background: #FECACA; }
+
+    .pagination-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; padding: 0.85rem 1rem; border-top: 1px solid var(--color-border); }
+    .pagination-bar .page-info { font-size: var(--font-sm); color: var(--color-text-secondary); }
+    .page-btn-group { display: flex; gap: 0.35rem; }
+    .page-btn { padding: 0.4rem 0.75rem; border: 1px solid var(--color-border); background: white; border-radius: 4px; font-size: var(--font-sm); cursor: pointer; font-weight: 500; }
+    .page-btn:hover { background: var(--color-primary-light); color: var(--color-primary); }
+    .page-btn.active { background: var(--color-primary); color: white; border-color: var(--color-primary); }
+    .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.5); z-index: 9999; align-items: center; justify-content: center; }
+    .loading-overlay.active { display: flex; }
+    .spinner { width: 40px; height: 40px; border: 4px solid var(--color-primary-light); border-top: 4px solid var(--color-primary); border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    .empty-state { text-align: center; padding: 3rem 1rem; color: var(--color-text-secondary); }
+    .empty-state svg { margin-bottom: 1rem; }
+    .empty-state p { font-size: var(--font-base); }
+
+    @media (max-width: 768px) and (orientation: portrait) {
+      .app-sidebar-container { display: none; }
+      body.menu-mode-active .app-sidebar-container { display: flex !important; width: 100vw !important; height: 100vh !important; position: fixed; top: 0; left: 0; z-index: 9999; }
+      body.menu-mode-active .app-main-content { display: none !important; }
+      body.menu-mode-active .app-menu-close-btn { display: flex; position: absolute; right: 1rem; top: 1.5rem; background: none; border: none; color: var(--color-text-secondary); cursor: pointer; }
+      .filter-bar { flex-direction: column; align-items: stretch; }
+      .filter-bar .app-input { min-width: auto; }
+      .page-header-bar .btn-create-new { width: 100%; justify-content: center; }
+      .action-btn { font-size: 10px; padding: 0.25rem 0.4rem; }
+    }
+  </style>
+</head>
+<body class="dashboard-page">
+<script>if (!localStorage.getItem("wax_logged_user")) window.location.replace("login.html");</script>
+
+<div class="app-layout-wrapper">
+  <div class="app-sidebar-container"><div id="sidebar-slot"></div></div>
+  <div class="app-main-content">
+    <header class="app-mobile-header">
+      <button type="button" class="app-hamburger-btn" onclick="toggleMobileMenu()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="app-title">List Pembayaran EUPD</div>
+    </header>
+    <main class="app-content-body">
+
+      <div class="page-header-bar">
+        <div>
+          <h1 class="app-page-title" style="margin:0;font-size:1.4rem;">List Pembayaran EUPD</h1>
+          <p style="font-size:var(--font-sm);color:var(--color-text-secondary);margin-top:0.25rem;">Daftar transaksi pembayaran pengajuan EUPD.</p>
+        </div>
+        <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
+          <button type="button" class="btn-export" onclick="exportToExcel()">Export Excel</button>
+          <a href="pembayaran-eupd.html" class="btn-create-new">+ Tambah Pembayaran</a>
+        </div>
+      </div>
+
+      <div class="filter-bar">
+        <div class="app-input-group">
+          <label>Tanggal Awal</label>
+          <input type="date" id="filterTglAwal" class="app-input">
+        </div>
+        <div class="app-input-group">
+          <label>Tanggal Akhir</label>
+          <input type="date" id="filterTglAkhir" class="app-input">
+        </div>
+        <button type="button" class="filter-btn" onclick="applyFilters()">Filter</button>
+        <button type="button" class="filter-reset" onclick="resetFilters()">Reset</button>
+      </div>
+
+      <div class="table-container">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th onclick="sortBy('noPembayaran')">No Pembayaran EUPD <span class="sort-arrow" id="sort-noPembayaran"></span></th>
+              <th onclick="sortBy('tanggal')">Tanggal <span class="sort-arrow" id="sort-tanggal"></span></th>
+              <th onclick="sortBy('nomorPengajuan')">No Pengajuan EUPD <span class="sort-arrow" id="sort-nomorPengajuan"></span></th>
+              <th onclick="sortBy('whAwal')">WH Awal <span class="sort-arrow" id="sort-whAwal"></span></th>
+              <th onclick="sortBy('namaDriver')">Nama Driver <span class="sort-arrow" id="sort-namaDriver"></span></th>
+              <th onclick="sortBy('tujuan')">Tujuan <span class="sort-arrow" id="sort-tujuan"></span></th>
+              <th onclick="sortBy('totalBiaya')">Total Biaya <span class="sort-arrow" id="sort-totalBiaya"></span></th>
+              <th onclick="sortBy('status')">Status <span class="sort-arrow" id="sort-status"></span></th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody id="table-body"></tbody>
+        </table>
+        <div class="empty-state" id="empty-state" style="display:none;">
+          <p>Tidak ada data Pembayaran EUPD.</p>
+        </div>
+        <div class="pagination-bar" id="pagination-bar" style="display:none;">
+          <span class="page-info" id="page-info"></span>
+          <div class="page-btn-group" id="page-btn-group"></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
+
+<script>
+  const GAS_URL = window.GAS_URL || "https://script.google.com/macros/s/AKfycbwf5oEpUkMp65-aTQ77PIj6CEhQV64yXjBqJMiBrkacXed5AbRYimF_Cb9qTa5mczLa/exec";
+
+  let allData = [];
+  let filteredData = [];
+  let currentPage = 1;
+  const PER_PAGE = 20;
+  let sortColumn = "";
+  let sortDirection = "";
+
+  function showLoading(show) { document.getElementById('loadingOverlay').classList.toggle('active', show); }
+
+  function formatTanggal(val) {
+    if (!val) return "-";
+    var s = String(val);
+    if (s.includes('/')) return s;
+    if (s.includes('-')) {
+      var p = s.split('-');
+      return p[2] + '/' + p[1] + '/' + p[0];
+    }
+    return s;
+  }
+
+  function formatCurrency(val) {
+    var n = Number(val) || 0;
+    return 'Rp ' + n.toLocaleString('id-ID', {minimumFractionDigits:2, maximumFractionDigits:2});
+  }
+
+  function getStatusBadge(status) {
+    var s = String(status || "").trim();
+    if (s === "Posted") return '<span class="badge-posted">Posted</span>';
+    if (s === "Locked") return '<span class="badge-locked">Locked</span>';
+    if (s === "Draft") return '<span class="badge-draft">Draft</span>';
+    return '<span>' + s + '</span>';
+  }
+
+  async function fetchData() {
+    showLoading(true);
+    try {
+      var res = await fetch(GAS_URL + '?action=getPembayaranEUPDList');
+      var json = await res.json();
+      if (json.status === 'success') {
+        allData = json.data || [];
+        applyFilters();
+      } else {
+        Swal.fire({ icon: 'error', title: 'Gagal', text: json.message || 'Gagal memuat data.' });
+      }
+    } catch (err) {
+      console.error(err);
+      Swal.fire({ icon: 'error', title: 'Kesalahan', text: 'Gagal terhubung ke server.' });
+    } finally { showLoading(false); }
+  }
+
+  function applyFilters() {
+    var tglAwal = document.getElementById('filterTglAwal').value;
+    var tglAkhir = document.getElementById('filterTglAkhir').value;
+
+    filteredData = allData.filter(function(item) {
+      if (tglAwal && item.tanggal) {
+        var d = item.tanggal.split('/');
+        if (d.length === 3) {
+          var itemDate = d[2] + '-' + d[1] + '-' + d[0];
+          if (itemDate < tglAwal) return false;
+        }
+      }
+      if (tglAkhir && item.tanggal) {
+        var d = item.tanggal.split('/');
+        if (d.length === 3) {
+          var itemDate = d[2] + '-' + d[1] + '-' + d[0];
+          if (itemDate > tglAkhir) return false;
+        }
+      }
+      return true;
+    });
+
+    currentPage = 1;
+    renderTable();
+  }
+
+  function resetFilters() {
+    document.getElementById('filterTglAwal').value = '';
+    document.getElementById('filterTglAkhir').value = '';
+    applyFilters();
+  }
+
+  function sortBy(col) {
+    if (sortColumn === col) {
+      sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      sortColumn = col;
+      sortDirection = 'asc';
+    }
+
+    document.querySelectorAll('.sort-arrow').forEach(function(el) { el.innerText = ''; });
+    var arrow = document.getElementById('sort-' + col);
+    if (arrow) arrow.innerText = sortDirection === 'asc' ? '▲' : '▼';
+
+    filteredData.sort(function(a, b) {
+      var va = (a[col] || '').toString().toLowerCase();
+      var vb = (b[col] || '').toString().toLowerCase();
+      if (col === 'totalBiaya') {
+        va = Number(a[col]) || 0;
+        vb = Number(b[col]) || 0;
+      }
+      if (va < vb) return sortDirection === 'asc' ? -1 : 1;
+      if (va > vb) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+    currentPage = 1;
+    renderTable();
+  }
+
+  function renderTable() {
+    var tbody = document.getElementById('table-body');
+    var empty = document.getElementById('empty-state');
+    var pagination = document.getElementById('pagination-bar');
+
+    tbody.innerHTML = '';
+
+    if (filteredData.length === 0) {
+      empty.style.display = 'block';
+      pagination.style.display = 'none';
+      return;
+    }
+
+    empty.style.display = 'none';
+    pagination.style.display = 'flex';
+
+    var totalPages = Math.ceil(filteredData.length / PER_PAGE);
+    if (currentPage > totalPages) currentPage = totalPages;
+    var start = (currentPage - 1) * PER_PAGE;
+    var end = Math.min(start + PER_PAGE, filteredData.length);
+    var pageData = filteredData.slice(start, end);
+
+    pageData.forEach(function(item) {
+      var isLocked = String(item.status || "").trim() === "Locked";
+      var noP = encodeURIComponent(item.noPembayaran || '');
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td><strong style="color:var(--color-primary);">' + (item.noPembayaran || '-') + '</strong></td>' +
+        '<td>' + formatTanggal(item.tanggal) + '</td>' +
+        '<td>' + (item.nomorPengajuan || '-') + '</td>' +
+        '<td>' + (item.whAwal || '-') + '</td>' +
+        '<td>' + (item.namaDriver || '-') + '</td>' +
+        '<td>' + (item.tujuan || '-') + '</td>' +
+        '<td style="text-align:right;font-weight:600;">' + formatCurrency(item.totalBiaya) + '</td>' +
+        '<td>' + getStatusBadge(item.status) + '</td>' +
+        '<td style="white-space:nowrap;">' +
+          '<a href="pembayaran-eupd.html?viewNo=' + noP + '" class="action-btn btn-view">View</a> ' +
+          (!isLocked ? '<a href="pembayaran-eupd.html?editNo=' + noP + '" class="action-btn btn-edit">Edit</a> ' : '<span class="action-btn btn-edit" style="opacity:0.4;cursor:not-allowed;">Edit</span> ') +
+          (!isLocked ? '<button class="action-btn btn-lock" onclick="handleLock(\'' + noP + '\')">Lock</button> ' : '<button class="action-btn btn-unlock" onclick="handleUnlock(\'' + noP + '\')">Unlock</button>') +
+        '</td>';
+      tbody.appendChild(tr);
+    });
+
+    renderPagination(totalPages);
+  }
+
+  function renderPagination(totalPages) {
+    var info = document.getElementById('page-info');
+    var group = document.getElementById('page-btn-group');
+    info.innerText = 'Halaman ' + currentPage + ' dari ' + totalPages + ' (' + filteredData.length + ' data)';
+
+    group.innerHTML = '';
+    var prev = document.createElement('button');
+    prev.className = 'page-btn';
+    prev.innerText = '‹';
+    prev.disabled = currentPage <= 1;
+    prev.onclick = function() { if (currentPage > 1) { currentPage--; renderTable(); } };
+    group.appendChild(prev);
+
+    var startP = Math.max(1, currentPage - 2);
+    var endP = Math.min(totalPages, currentPage + 2);
+    for (var i = startP; i <= endP; i++) {
+      var btn = document.createElement('button');
+      btn.className = 'page-btn' + (i === currentPage ? ' active' : '');
+      btn.innerText = i;
+      btn.onclick = function(p) { return function() { currentPage = p; renderTable(); }; }(i);
+      group.appendChild(btn);
+    }
+
+    var next = document.createElement('button');
+    next.className = 'page-btn';
+    next.innerText = '›';
+    next.disabled = currentPage >= totalPages;
+    next.onclick = function() { if (currentPage < totalPages) { currentPage++; renderTable(); } };
+    group.appendChild(next);
+  }
+
+  function handleLock(noPembayaran) {
+    Swal.fire({
+      title: 'Konfirmasi Lock',
+      text: 'Apakah Anda yakin ingin mengunci data ini? Data yang sudah dikunci tidak dapat diedit.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Ya, Lock',
+      cancelButtonText: 'Batal'
+    }).then(async function(res) {
+      if (!res.isConfirmed) return;
+      showLoading(true);
+      try {
+        var result = await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'lockPembayaranEUPD', noPembayaran: noPembayaran })
+        });
+        var json = await result.json();
+        if (json.status === 'success') {
+          Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Data berhasil dikunci.', timer: 1500, showConfirmButton: false });
+          fetchData();
+        } else {
+          Swal.fire({ icon: 'error', title: 'Gagal', text: json.message });
+        }
+      } catch (err) {
+        Swal.fire({ icon: 'error', title: 'Kesalahan', text: err.message });
+      } finally { showLoading(false); }
+    });
+  }
+
+  function handleUnlock(noPembayaran) {
+    Swal.fire({
+      title: 'Konfirmasi Unlock',
+      text: 'Apakah Anda yakin ingin membuka kunci data ini? Data dapat diedit kembali.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Ya, Unlock',
+      cancelButtonText: 'Batal'
+    }).then(async function(res) {
+      if (!res.isConfirmed) return;
+      showLoading(true);
+      try {
+        var result = await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'unlockPembayaranEUPD', noPembayaran: noPembayaran })
+        });
+        var json = await result.json();
+        if (json.status === 'success') {
+          Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Data berhasil dibuka kuncinya.', timer: 1500, showConfirmButton: false });
+          fetchData();
+        } else {
+          Swal.fire({ icon: 'error', title: 'Gagal', text: json.message });
+        }
+      } catch (err) {
+        Swal.fire({ icon: 'error', title: 'Kesalahan', text: err.message });
+      } finally { showLoading(false); }
+    });
+  }
+
+  function exportToExcel() {
+    var data = filteredData.length > 0 ? filteredData : allData;
+    if (data.length === 0) {
+      Swal.fire({ icon: 'info', title: 'Tidak ada data', text: 'Tidak ada data untuk diexport.' });
+      return;
+    }
+
+    var wb = XLSX.utils.book_new();
+    var wsData = [['No Pembayaran EUPD', 'Tanggal', 'Nomor Pengajuan EUPD', 'WH Awal', 'Nama Driver', 'Tujuan', 'Total Biaya Keseluruhan', 'Status']];
+    data.forEach(function(item) {
+      wsData.push([
+        item.noPembayaran || '',
+        formatTanggal(item.tanggal),
+        item.nomorPengajuan || '',
+        item.whAwal || '',
+        item.namaDriver || '',
+        item.tujuan || '',
+        Number(item.totalBiaya) || 0,
+        item.status || ''
+      ]);
+    });
+
+    var ws = XLSX.utils.aoa_to_sheet(wsData);
+    ws['!cols'] = [
+      { wch: 25 }, { wch: 12 }, { wch: 22 }, { wch: 10 }, { wch: 20 }, { wch: 20 }, { wch: 18 }, { wch: 10 }
+    ];
+
+    // Format currency column
+    for (var i = 1; i < wsData.length; i++) {
+      var cellRef = 'G' + (i + 1);
+      if (ws[cellRef]) {
+        ws[cellRef].z = '#,##0.00';
+      }
+    }
+
+    XLSX.utils.book_append_sheet(wb, ws, 'PembayaranEUPD');
+    XLSX.writeFile(wb, 'Pembayaran_EUPD.xlsx');
+  }
+
+  document.addEventListener('DOMContentLoaded', async function() {
+    await loadSidebar();
+    fetchData();
+  });
+</script>
+
+</body>
+</html>
