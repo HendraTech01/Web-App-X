@@ -161,20 +161,15 @@
       margin-top: 10px;
     }
 
-    .print-footer {
+    .print-page-meta {
       margin-top: 30px;
       padding-top: 20px;
-      border-top: 1px solid #e5e7eb;
       font-size: 11px;
       color: #6b7280;
     }
 
-    .print-footer-left {
+    .print-page-meta-left {
       text-align: left;
-    }
-
-    .print-footer-right {
-      text-align: right;
     }
 
     @media print {
@@ -276,7 +271,7 @@
         display: none;
       }
 
-      .print-footer {
+      .print-page-meta {
         position: fixed;
         left: 0;
         bottom: 0;
@@ -415,8 +410,9 @@
       </div>
     </div>
 
-    <div class="print-footer">
-      <div class="print-footer-left">
+    <div class="print-page-meta">
+      <div class="print-page-meta-left">
+        <div><strong>Nama Pembuat:</strong> <span id="page-meta-pembuat">-</span></div>
         <div><strong>Dicetak:</strong> <span id="footer-print-time">-</span></div>
       </div>
     </div>
@@ -482,31 +478,23 @@
     }
 
     async function loadEUPDData() {
-      const sheetName = getQueryParam("sheetName");
       const noEUPD = getQueryParam("noEUPD");
 
-      if (!sheetName || !noEUPD) {
-        alert("Parameter sheetName dan noEUPD diperlukan");
+      if (!noEUPD) {
+        alert("Parameter noEUPD diperlukan");
         return;
       }
 
       try {
-        const res = await fetch(`${GAS_URL}?action=getData&sheet=${encodeURIComponent(sheetName)}`);
+        const res = await fetch(`${GAS_URL}?action=getEUPDDetail&noPengajuan=${encodeURIComponent(noEUPD)}`);
         const json = await res.json();
 
-        if (json.status !== "success" || !Array.isArray(json.data)) {
+        if (json.status !== "success" || !json.data || !Array.isArray(json.data.rows)) {
           alert("Gagal memuat data EUPD");
           return;
         }
 
-        // Get all rows with the same noEUPD (for dynamic rows)
-        const eupdRows = json.data.filter(row => row["Nomor Pengajuan EUPD"] === noEUPD);
-        if (eupdRows.length === 0) {
-          alert("Data EUPD tidak ditemukan");
-          return;
-        }
-
-        populatePrintData(eupdRows);
+        populatePrintData(json.data.rows);
       } catch (err) {
         console.error("Gagal memuat data:", err);
         alert("Gagal terhubung ke server");
@@ -642,6 +630,7 @@
       document.getElementById("print-grand-total").textContent = formatCurrency(mainData["Total Biaya Keseluruhan"]);
 
       // Footer
+      document.getElementById("page-meta-pembuat").textContent = mainData["Pembuat Dokumen"] || "-";
       document.getElementById("footer-print-time").textContent = formatDateTime(new Date());
     }
 

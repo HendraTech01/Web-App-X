@@ -366,20 +366,18 @@
       if (initialBiaya) registerDynamicRow("biaya", initialBiaya);
     }
 
-    let currentTargetSheet = "";
-
     function normalizeString(value) {
       return String(value || "").trim();
     }
 
-    function getQuerySheetName() {
+    function getQueryWarehouse() {
       const params = new URLSearchParams(window.location.search);
-      return params.get("sheetName") || params.get("sheet") || "";
+      return params.get("warehouse") || params.get("sheetName") || params.get("sheet") || "";
     }
-    
+
     function getQueryReturnPage() {
       const params = new URLSearchParams(window.location.search);
-      return params.get("returnPage") || getQuerySheetName();
+      return params.get("returnPage") || getQueryWarehouse();
     }
 
     function getQueryEditNo() {
@@ -404,31 +402,19 @@
       return getQueryEditNo() || getQueryViewNo();
     }
 
-    function getFormTargetSheet() {
-      return currentTargetSheet || normalizeString(getQuerySheetName());
+    function findAccessItemByWarehouse(warehouseName, accessItems) {
+      const normalized = normalizeString(warehouseName);
+      return accessItems.find(item => {
+        const wh = normalizeString(item["Nama Warehouse"] || item["Hak Akses Menu"] || "");
+        return wh === normalized;
+      });
     }
 
-    function setFormTargetSheet(sheetName) {
-      currentTargetSheet = normalizeString(sheetName);
-    }
-
-    function findAccessItemBySheet(sheetName, accessItems) {
-      const normalizedSheet = normalizeString(sheetName);
-      return accessItems.find(item => normalizeString(item["Hak Akses Menu"] || item["hak akses menu"]) === normalizedSheet);
-    }
-
-    function findSingleAccessItemForUser(userName, accessItems) {
-      const normalizedUser = normalizeString(userName).toLowerCase();
-      const matchedItems = accessItems.filter(item => normalizeString(item["Username"] || item["username"]).toLowerCase() === normalizedUser);
-      return matchedItems.length === 1 ? matchedItems[0] : null;
-    }
-
-    function fillWarehouseFromAccessItem(item) {
+    function fillWarehouseFromAccessItem(warehouseName) {
       const warehouseInput = document.getElementById("Warehouse Asal");
-      if (!item || !warehouseInput) return;
-      const namaWarehouse = normalizeString(item["Nama Warehouse"] || item["nama warehouse"] || item["Warehouse"] || item["warehouse"]);
-      if (namaWarehouse) {
-        warehouseInput.value = namaWarehouse;
+      if (!warehouseInput) return;
+      if (warehouseName) {
+        warehouseInput.value = warehouseName;
         warehouseInput.readOnly = true;
         warehouseInput.style.background = "#F1F5F9";
       }
@@ -453,11 +439,9 @@
         await loadSidebar();
         initDynamicRowRegistry();
 
-        // Tanggal Dokumen selalu hari ini (create & edit), tidak bisa diubah manual
         setTanggalDokumenHariIni();
         const now = getTodayDateString();
 
-        // Set Jadwal Berangkat & Sampai hanya jika mode create
         const editNo = getQueryEditNo();
         const viewNo = getQueryViewNo();
         const eupdNo = getEUPDNo();
@@ -468,24 +452,22 @@
 
         const currentUser = getCurrentUser();
 
-        const selectedSheet = getQuerySheetName();
-        setFormTargetSheet(selectedSheet);
+        const warehouse = getQueryWarehouse();
 
-        // Jika sheetName sudah ada dari URL, langsung set back link sekarang (sebelum API call)
-        if (selectedSheet) {
-          const returnPage = getQueryReturnPage() || selectedSheet;
+        // Back link menggunakan warehouse
+        if (warehouse) {
+          const returnPage = getQueryReturnPage() || warehouse;
           const backLink = document.querySelector('a[href*="list-eupd.html"]');
           if (backLink) {
-            backLink.href = `list-eupd.html?sheetName=${encodeURIComponent(returnPage)}&returnPage=${encodeURIComponent(returnPage)}`;
+            backLink.href = `list-eupd.html?warehouse=${encodeURIComponent(returnPage)}&returnPage=${encodeURIComponent(returnPage)}`;
           }
         }
 
         // Jika mode edit atau view, fetch dan populate data EUPD yang ada
-        if (eupdNo && selectedSheet) {
-          const eupdData = await fetchEUPDData(eupdNo, selectedSheet);
+        if (eupdNo) {
+          const eupdData = await fetchEUPDData(eupdNo);
           if (eupdData) {
             populateForm(eupdData);
-            // Update form title dan tombol berdasarkan mode
             if (isViewMode()) {
               document.querySelector(".app-title").innerText = "View Pengajuan EUPD";
               document.getElementById("btn-simpan-eupd").style.display = "none";
@@ -497,7 +479,6 @@
           }
         }
 
-        let hakAksesMenuData = [];
         function showFormAccessError(message) {
           const alertBox = document.getElementById("form-alert");
           alertBox.className = "app-alert app-alert-error";
@@ -506,29 +487,24 @@
         }
 
         fetchMaster("HakAksesMenu", data => {
-          hakAksesMenuData = data;
-
           const accessItems = data.filter(item => normalizeString(item["Username"] || item["username"]).toLowerCase() === normalizeString(currentUser).toLowerCase());
 
-          // Pengecekan Keamanan URL
-          if (currentTargetSheet) {
-            const sheetItem = findAccessItemBySheet(currentTargetSheet, accessItems);
-            if (!sheetItem) {
-              showFormAccessError(`Anda tidak memiliki hak akses untuk form EUPD di ${currentTargetSheet}.`);
+          if (warehouse && !warehouse.startsWith("ListEUPD")) {
+            const accessItem = findAccessItemByWarehouse(warehouse, accessItems);
+            if (!accessItem) {
+              showFormAccessError(`Anda tidak memiliki hak akses untuk form EUPD di warehouse ${warehouse}.`);
               document.getElementById("form-eupd-main").style.display = "none";
               return;
             }
-            fillWarehouseFromAccessItem(sheetItem);
+            fillWarehouseFromAccessItem(warehouse);
             return;
           }
 
-          // SLOW PATH: tidak ada sheetName dari URL, cari dari hak akses user
+          // SLOW PATH: tidak ada warehouse di URL, cari dari hak akses user
           if (accessItems.length === 1) {
-            const singleItem = accessItems[0];
-            const sheetName = normalizeString(singleItem["Hak Akses Menu"] || singleItem["hak akses menu"]);
-            if (sheetName) {
-              setFormTargetSheet(sheetName);
-              fillWarehouseFromAccessItem(singleItem);
+            const wh = normalizeString(accessItems[0]["Nama Warehouse"] || accessItems[0]["Hak Akses Menu"] || "");
+            if (wh) {
+              fillWarehouseFromAccessItem(wh);
             }
             return;
           }
@@ -587,9 +563,9 @@
       }
     }
 
-    async function fetchEUPDData(noEUPD, sheetName) {
+    async function fetchEUPDData(noEUPD) {
       try {
-        const res = await fetch(`${GAS_URL}?action=getEUPDData&noEUPD=${encodeURIComponent(noEUPD)}&sheet=${encodeURIComponent(sheetName)}`);
+        const res = await fetch(`${GAS_URL}?action=getEUPDData&noEUPD=${encodeURIComponent(noEUPD)}`);
         const json = await res.json();
         if (json.status === "success") return json.data;
         return null;
@@ -1131,9 +1107,6 @@
       const params = new URLSearchParams(window.location.search);
       params.set("editNo", noEUPD);
 
-      const sheetName = getFormTargetSheet();
-      if (sheetName) params.set("sheetName", sheetName);
-
       const returnPage = getQueryReturnPage();
       if (returnPage) params.set("returnPage", returnPage);
 
@@ -1208,7 +1181,6 @@
         "Tanggal Dokumen": formatDateForSheet(document.getElementById("Tanggal Dokumen").value),
         "Pembuat Dokumen": document.getElementById("Pembuat Dokumen").value,
         "Warehouse Asal": document.getElementById("Warehouse Asal").value,
-        "TargetSheet": getFormTargetSheet(),
         "No Kendaraan": document.getElementById("No Kendaraan").value,
         "Jenis Kendaraan": document.getElementById("Jenis Kendaraan").value,
         "Jadwal Berangkat": formatDateForSheet(document.getElementById("Jadwal Berangkat").value),
@@ -1262,15 +1234,13 @@
     // 6. PRINT EUPD DOCUMENT
     function handlePrintEUPD() {
       const noEUPD = getEUPDNo();
-      const sheetName = getQuerySheetName();
 
       if (!noEUPD) {
         showFormAlert("error", "Silakan simpan dokumen terlebih dahulu sebelum mencetak.");
         return;
       }
 
-      // Print from saved data (edit/view mode)
-      const printUrl = `print-eupd.html?sheetName=${encodeURIComponent(sheetName)}&noEUPD=${encodeURIComponent(noEUPD)}`;
+      const printUrl = `print-eupd.html?noEUPD=${encodeURIComponent(noEUPD)}`;
       window.open(printUrl, '_blank');
     }
 

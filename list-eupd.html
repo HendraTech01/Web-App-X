@@ -423,14 +423,14 @@
     let currentPage = 1;
     const itemsPerPage = 20;
 
-    function getQuerySheetName() {
+    function getQueryWarehouse() {
       const params = new URLSearchParams(window.location.search);
-      return params.get("sheetName") || params.get("sheet") || "";
+      return params.get("warehouse") || params.get("sheetName") || params.get("sheet") || "";
     }
 
     function getQueryReturnPage() {
       const params = new URLSearchParams(window.location.search);
-      return params.get("returnPage") || getQuerySheetName();
+      return params.get("returnPage") || getQueryWarehouse();
     }
 
     function getCurrentUser() {
@@ -493,33 +493,28 @@
       });
     }
 
-    async function resolveSheetName() {
-      const querySheet = getQuerySheetName();
-      if (querySheet) return querySheet;
+    async function resolveWarehouse() {
+      const queryWh = getQueryWarehouse();
+      if (queryWh && !queryWh.startsWith("ListEUPD")) return queryWh;
 
       const accessItems = await fetchUserSheetAccess();
       if (accessItems.length === 0) return "";
-      const first = accessItems[0]["Hak Akses Menu"] || accessItems[0]["hak akses menu"] || "";
+      const first = accessItems[0]["Nama Warehouse"] || accessItems[0]["Hak Akses Menu"] || "";
       return String(first).trim();
     }
 
-    function getSheetLabel(sheetName, accessItem = null) {
-      if (accessItem) {
-        return String(accessItem["Nama Warehouse"] || accessItem["nama warehouse"] || accessItem["Warehouse"] || accessItem["warehouse"] || "").trim() || sheetName.replace(/^ListEUPD/i, "").trim() || sheetName;
-      }
-      if (!sheetName) return "Daftar EUPD";
-      return sheetName.replace(/^ListEUPD/i, "").trim() || sheetName;
+    function getWarehouseLabel(warehouseName) {
+      return warehouseName || "Daftar EUPD";
     }
 
     function createWarehouseCard(item) {
-      const sheet = item["Hak Akses Menu"] || item["hak akses menu"] || "";
-      const warehouse = item["Nama Warehouse"] || item["nama warehouse"] || item["Warehouse"] || item["warehouse"] || sheet;
+      const warehouse = item["Nama Warehouse"] || item["nama warehouse"] || item["Warehouse"] || item["warehouse"] || item["Hak Akses Menu"] || "";
       const card = document.createElement("div");
       card.style = "border:1px solid var(--color-border); border-radius:12px; padding:1rem; margin-bottom:1rem; background:#FFFFFF; box-shadow:0 4px 12px rgba(15,23,42,0.04);";
       card.innerHTML = `
         <div style="font-weight:700; margin-bottom:0.45rem;">${warehouse}</div>
-        <div style="font-size:0.95rem; color:var(--color-text-secondary); margin-bottom:0.85rem;">Sheet: ${sheet}</div>
-        <button type="button" class="app-btn" style="padding:0.65rem 1rem; font-size:0.95rem;" onclick="selectWarehouse('${encodeURIComponent(sheet)}')">Pilih ${warehouse}</button>
+        <div style="font-size:0.95rem; color:var(--color-text-secondary); margin-bottom:0.85rem;">Warehouse: ${warehouse}</div>
+        <button type="button" class="app-btn" style="padding:0.65rem 1rem; font-size:0.95rem;" onclick="selectWarehouse('${encodeURIComponent(warehouse)}')">Pilih ${warehouse}</button>
       `;
       return card;
     }
@@ -536,7 +531,7 @@
       }
 
       if (items.length === 1) {
-        selectWarehouse(encodeURIComponent(items[0]["Hak Akses Menu"] || items[0]["hak akses menu"] || ""));
+        selectWarehouse(encodeURIComponent(items[0]["Nama Warehouse"] || items[0]["Hak Akses Menu"] || ""));
         return;
       }
 
@@ -544,11 +539,12 @@
       items.forEach(item => selector.appendChild(createWarehouseCard(item)));
     }
 
-    function selectWarehouse(encodedSheet) {
-      const sheetName = decodeURIComponent(encodedSheet);
+    function selectWarehouse(encodedWh) {
+      const warehouse = decodeURIComponent(encodedWh);
       const newUrl = new URL(window.location.href);
-      newUrl.searchParams.set("sheetName", sheetName);
-      newUrl.searchParams.set("returnPage", sheetName);
+      newUrl.searchParams.set("warehouse", warehouse);
+      newUrl.searchParams.set("returnPage", warehouse);
+      newUrl.searchParams.delete("sheetName");
       newUrl.searchParams.delete("sheet");
       window.location.href = newUrl.toString();
     }
@@ -797,21 +793,20 @@
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Database EUPD");
 
-      const sheetName = getQuerySheetName() || "EUPD";
+      const warehouse = getQueryWarehouse() || "EUPD";
       const timestamp = new Date().toISOString().slice(0, 10);
       
-      XLSX.writeFile(wb, `Database_${sheetName}_${timestamp}.xlsx`);
+      XLSX.writeFile(wb, `Database_${warehouse}_${timestamp}.xlsx`);
     }
 
-    // Handler functions for Edit/Lock/Unlock actions
     async function handleViewEUPD(noEUPD) {
-      const sheetName = getQuerySheetName();
-      window.location.href = `form-eupd.html?sheetName=${encodeURIComponent(sheetName)}&returnPage=${encodeURIComponent(sheetName)}&viewNo=${encodeURIComponent(noEUPD)}`;
+      const warehouse = getQueryWarehouse();
+      window.location.href = `form-eupd.html?warehouse=${encodeURIComponent(warehouse)}&returnPage=${encodeURIComponent(warehouse)}&viewNo=${encodeURIComponent(noEUPD)}`;
     }
 
     async function handleEditEUPD(noEUPD) {
-      const sheetName = getQuerySheetName();
-      window.location.href = `form-eupd.html?sheetName=${encodeURIComponent(sheetName)}&returnPage=${encodeURIComponent(sheetName)}&editNo=${encodeURIComponent(noEUPD)}`;
+      const warehouse = getQueryWarehouse();
+      window.location.href = `form-eupd.html?warehouse=${encodeURIComponent(warehouse)}&returnPage=${encodeURIComponent(warehouse)}&editNo=${encodeURIComponent(noEUPD)}`;
     }
 
     async function handleLockEUPD(noEUPD) {
@@ -825,13 +820,12 @@
     }
 
     async function updateEUPDStatus(noEUPD, newStatus) {
-      const sheetName = getQuerySheetName();
+      const warehouse = getQueryWarehouse();
       try {
         const res = await fetch(GAS_URL, {
           method: "POST",
           body: JSON.stringify({
             action: "updateEUPDStatus",
-            TargetSheet: sheetName,
             NoEUPD: noEUPD,
             NewStatus: newStatus
           })
@@ -839,7 +833,7 @@
         const result = await res.json();
         if (result.status === "success") {
           alert(`Status berhasil diubah menjadi ${newStatus}`);
-          await fetchAndRenderSheet(sheetName);
+          await fetchAndRenderSheet(warehouse);
         } else {
           alert("Gagal mengubah status: " + (result.message || "Unknown error"));
         }
@@ -849,27 +843,9 @@
       }
     }
 
-    async function fetchSheetData(sheetName) {
+    async function fetchSheetData(warehouse) {
       try {
-        // Check for preloaded data in localStorage first
-        const preloadedKey = `eupd_preload_${sheetName}`;
-        const preloadedData = localStorage.getItem(preloadedKey);
-
-        if (preloadedData) {
-          const parsed = JSON.parse(preloadedData);
-          // Check if data is less than 5 minutes old (300000 ms)
-          if (Date.now() - parsed.timestamp < 300000) {
-            console.log("Using preloaded data for", sheetName);
-            localStorage.removeItem(preloadedKey); // Clean up after use
-            return { status: "success", data: parsed.data };
-          } else {
-            // Data is stale, remove it
-            localStorage.removeItem(preloadedKey);
-          }
-        }
-
-        // Fetch fresh data if no preloaded data or data is stale
-        const res = await fetch(`${GAS_URL}?action=getData&sheet=${encodeURIComponent(sheetName)}`);
+        const res = await fetch(`${GAS_URL}?action=getData&sheet=${encodeURIComponent("ListEUPD")}&warehouse=${encodeURIComponent(warehouse)}`);
         return await res.json();
       } catch (err) {
         console.error(err);
@@ -904,15 +880,14 @@
       renderSheetResult(await fetchSheetData(sheetName));
     }
 
-    // Setup UI elements (header, button) berdasarkan sheet yang sudah ditentukan
-    function setupPageForSheet(currentSheet, returnPage) {
+    function setupPageForWarehouse(currentWh, returnWh) {
       const headerLabel = document.getElementById("sheet-label");
-      headerLabel.innerText = `Daftar EUPD: ${getSheetLabel(currentSheet)}`;
+      headerLabel.innerText = `Daftar EUPD: ${getWarehouseLabel(currentWh)}`;
 
       const createButton = document.getElementById("btn-create-new");
       if (createButton) {
-        const rp = returnPage || currentSheet;
-        createButton.href = `form-eupd.html?sheetName=${encodeURIComponent(currentSheet)}&returnPage=${encodeURIComponent(rp)}`;
+        const rp = returnWh || currentWh;
+        createButton.href = `form-eupd.html?warehouse=${encodeURIComponent(currentWh)}&returnPage=${encodeURIComponent(rp)}`;
         createButton.style.display = "inline-flex";
       }
 
@@ -925,21 +900,19 @@
     async function loadListEUPD() {
       const tbody = document.getElementById("table-body");
       const headerLabel = document.getElementById("sheet-label");
-      const sheetName = getQuerySheetName();
+      const warehouse = getQueryWarehouse();
       const returnPage = getQueryReturnPage();
 
-      // Mulai ambil akses fitur sejak awal, tapi jangan tahan request data list.
       const featureAccessPromise = fetchUserFeatureAccess();
 
-      // WAJIB cek hak akses user untuk keamanan
       const accessItems = await fetchUserSheetAccess();
-      const allowedSheets = accessItems.map(item => String(item["Hak Akses Menu"] || item["hak akses menu"] || "").trim().toLowerCase());
+      const allowedWarehouses = accessItems.map(item => String(item["Nama Warehouse"] || item["Hak Akses Menu"] || "").trim().toLowerCase());
 
       // Jika user mencoba akses URL langsung tapi tidak punya izin
-      if (sheetName && !allowedSheets.includes(sheetName.trim().toLowerCase())) {
+      if (warehouse && !allowedWarehouses.includes(warehouse.trim().toLowerCase())) {
         document.getElementById("warehouse-selector").innerHTML = `
           <div class="app-alert app-alert-error" style="margin-top:20px;">
-            Anda tidak memiliki hak akses untuk melihat data EUPD <b>${sheetName}</b>.
+            Anda tidak memiliki hak akses untuk melihat data EUPD <b>${warehouse}</b>.
           </div>
         `;
         document.getElementById("warehouse-selector").style.display = "block";
@@ -948,33 +921,34 @@
         return;
       }
 
-      // FAST PATH: sheetName sudah tersedia dari URL dan VALID
-      if (sheetName) {
-        setupPageForSheet(sheetName, returnPage);
-        const sheetDataPromise = fetchSheetData(sheetName);
+      // FAST PATH: warehouse sudah tersedia dari URL dan VALID
+      if (warehouse && !warehouse.startsWith("ListEUPD")) {
+        setupPageForWarehouse(warehouse, returnPage);
+        const sheetDataPromise = fetchSheetData(warehouse);
         const [, sheetResult] = await Promise.all([featureAccessPromise, sheetDataPromise]);
         renderSheetResult(sheetResult);
         return;
       }
 
-      // SLOW PATH: tidak ada sheetName di URL, tampilkan pilihan jika lebih dari 1
-      const currentSheet = (accessItems.length === 1 ? (accessItems[0]["Hak Akses Menu"] || accessItems[0]["hak akses menu"] || "") : "");
+      // SLOW PATH: tidak ada warehouse di URL, tampilkan pilihan jika lebih dari 1
+      const currentWh = (accessItems.length === 1 ? (accessItems[0]["Nama Warehouse"] || accessItems[0]["Hak Akses Menu"] || "") : "");
 
-      if (!currentSheet) {
+      if (!currentWh) {
         headerLabel.innerText = "Pilih Warehouse EUPD";
         showWarehouseSelection(accessItems);
         return;
       }
 
-      // User hanya punya 1 akses, langsung gunakan sheet tersebut
+      // User hanya punya 1 akses, langsung gunakan warehouse tersebut
       const newUrl = new URL(window.location.href);
-      newUrl.searchParams.set("sheetName", currentSheet);
-      newUrl.searchParams.set("returnPage", currentSheet);
+      newUrl.searchParams.set("warehouse", currentWh);
+      newUrl.searchParams.set("returnPage", currentWh);
+      newUrl.searchParams.delete("sheetName");
       newUrl.searchParams.delete("sheet");
       window.history.replaceState(null, "", newUrl.toString());
 
-      setupPageForSheet(currentSheet, currentSheet);
-      const sheetDataPromise = fetchSheetData(currentSheet);
+      setupPageForWarehouse(currentWh, currentWh);
+      const sheetDataPromise = fetchSheetData(currentWh);
       const [, sheetResult] = await Promise.all([featureAccessPromise, sheetDataPromise]);
       renderSheetResult(sheetResult);
     }
