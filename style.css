@@ -305,6 +305,7 @@ body {
 .app-sidebar-footer {
   padding: 1rem 0.75rem;
   border-top: 1px solid var(--color-border);
+  margin-top: auto;
 }
 
 .app-logout-btn {

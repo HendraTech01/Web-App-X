@@ -30,10 +30,14 @@
     .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
 
     .autocomplete-wrapper { position: relative; width: 100%; }
-    .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; z-index: 1000; background: white; border: 1px solid var(--color-primary); border-radius: 0 0 var(--radius-sm) var(--radius-sm); max-height: 200px; overflow-y: auto; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); display: none; }
-    .autocomplete-item { padding: 0.65rem 0.85rem; font-size: var(--font-sm); cursor: pointer; border-bottom: 1px solid #F1F5F9; }
-    .autocomplete-item:hover { background-color: var(--color-primary-light); color: var(--color-primary); font-weight: 600; }
-    .autocomplete-item .ac-sub { font-size: 11px; color: var(--color-text-secondary); font-weight: 400; }
+    .autocomplete-list { position: fixed; top: 0; left: 0; z-index: 10000; background: white; border: 1px solid var(--color-primary); border-radius: var(--radius-sm); max-height: 420px; overflow-y: auto; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); display: none; min-width: 320px; width: auto; }
+    .autocomplete-item { padding: 0.7rem 1rem; cursor: pointer; border-bottom: 1px solid #F1F5F9; display: flex; flex-direction: column; gap: 0.1rem; }
+    .autocomplete-item:hover { background-color: var(--color-primary-light); }
+    .autocomplete-item .ac-main { font-weight: 600; font-size: var(--font-sm); color: var(--color-text-primary); }
+    .autocomplete-item .ac-sub { font-size: 12px; color: var(--color-text-secondary); font-weight: 400; }
+    .autocomplete-list::-webkit-scrollbar { width: 6px; }
+    .autocomplete-list::-webkit-scrollbar-track { background: transparent; }
+    .autocomplete-list::-webkit-scrollbar-thumb { background: #CBD5E1; border-radius: 3px; }
 
     .info-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 0.4rem; margin-bottom: 0.75rem; }
     .info-grid .info-item { background: #F8FAFC; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.3rem 0.5rem; }
@@ -299,20 +303,53 @@
       div.className = 'autocomplete-item';
       var label = item[labelKey] || '';
       var sub = subKey ? (item[subKey] || '') : '';
-      div.innerText = label;
-      if (sub) {
-        var subEl = document.createElement('span');
+
+      // Split label at " - " to show multi-line if needed
+      var parts = label.split(' - ');
+      var mainEl = document.createElement('div');
+      mainEl.className = 'ac-main';
+      mainEl.innerText = parts[0];
+      div.appendChild(mainEl);
+      if (parts.length > 1) {
+        var subEl = document.createElement('div');
         subEl.className = 'ac-sub';
-        subEl.innerText = ' - ' + sub;
+        subEl.innerText = parts.slice(1).join(' - ');
+        div.appendChild(subEl);
+      } else if (sub) {
+        var subEl = document.createElement('div');
+        subEl.className = 'ac-sub';
+        subEl.innerText = sub;
         div.appendChild(subEl);
       }
-      div.onclick = function() {
+
+      div.addEventListener('mousedown', function(e) {
+        e.preventDefault();
         inputEl.value = label;
         listEl.style.display = 'none';
         if (typeof onSelect === 'function') onSelect(item, inputEl);
-      };
+      });
       listEl.appendChild(div);
     });
+
+    // Position dropdown relative to input using fixed positioning
+    var rect = inputEl.getBoundingClientRect();
+    var dropWidth = Math.max(rect.width, 360);
+    listEl.style.left = rect.left + 'px';
+    listEl.style.width = dropWidth + 'px';
+    listEl.style.bottom = 'auto';
+
+    var listHeight = Math.min(listEl.scrollHeight, 420);
+    var spaceBelow = window.innerHeight - rect.bottom - 8;
+    var spaceAbove = rect.top - 8;
+
+    if (spaceBelow >= listHeight || spaceBelow >= spaceAbove) {
+      listEl.style.top = (rect.bottom + 4) + 'px';
+      listEl.style.maxHeight = Math.min(420, Math.max(150, spaceBelow - 8)) + 'px';
+    } else {
+      var maxH = Math.min(420, spaceAbove - 8);
+      listEl.style.top = (rect.top - maxH) + 'px';
+      listEl.style.maxHeight = Math.max(150, maxH) + 'px';
+    }
     listEl.style.display = 'block';
   }
 
@@ -322,11 +359,18 @@
     });
   }
 
+  function closeAllAutocomplete() {
+    document.querySelectorAll('.autocomplete-list').forEach(function(l) { l.style.display = 'none'; });
+  }
+
   document.addEventListener('click', function(e) {
     if (!e.target.closest('.autocomplete-wrapper')) {
-      document.querySelectorAll('.autocomplete-list').forEach(function(l) { l.style.display = 'none'; });
+      closeAllAutocomplete();
     }
   });
+
+  window.addEventListener('scroll', closeAllAutocomplete, true);
+  window.addEventListener('resize', closeAllAutocomplete);
 
   // ---- Available EUPD filter (for autocomplete) ----
   function filterAvailableEUPD(inputEl, groupId) {
@@ -348,14 +392,42 @@
     filtered.forEach(function(item) {
       var div = document.createElement('div');
       div.className = 'autocomplete-item';
-      div.innerHTML = '<strong>' + (item.noPengajuan || '') + '</strong><span class="ac-sub"> - ' + (item.warehouse || '') + ' | ' + (item.driver || '') + '</span>';
-      div.onclick = function() {
+      var mainEl = document.createElement('div');
+      mainEl.className = 'ac-main';
+      mainEl.innerText = item.noPengajuan || '';
+      div.appendChild(mainEl);
+      var subEl = document.createElement('div');
+      subEl.className = 'ac-sub';
+      subEl.innerText = (item.warehouse || '') + ' | ' + (item.driver || '');
+      div.appendChild(subEl);
+      div.addEventListener('mousedown', function(e) {
+        e.preventDefault();
         inputEl.value = item.noPengajuan;
         listEl.style.display = 'none';
         onSelectPengajuan(item, groupId);
-      };
+      });
       listEl.appendChild(div);
     });
+
+    // Position dropdown relative to input using fixed positioning
+    var rect = inputEl.getBoundingClientRect();
+    var dropWidth = Math.max(rect.width, 360);
+    listEl.style.left = rect.left + 'px';
+    listEl.style.width = dropWidth + 'px';
+    listEl.style.bottom = 'auto';
+
+    var listHeight = Math.min(listEl.scrollHeight, 420);
+    var spaceBelow = window.innerHeight - rect.bottom - 8;
+    var spaceAbove = rect.top - 8;
+
+    if (spaceBelow >= listHeight || spaceBelow >= spaceAbove) {
+      listEl.style.top = (rect.bottom + 4) + 'px';
+      listEl.style.maxHeight = Math.min(420, Math.max(150, spaceBelow - 8)) + 'px';
+    } else {
+      var maxH = Math.min(420, spaceAbove - 8);
+      listEl.style.top = (rect.top - maxH) + 'px';
+      listEl.style.maxHeight = Math.max(150, maxH) + 'px';
+    }
     listEl.style.display = 'block';
   }
 
