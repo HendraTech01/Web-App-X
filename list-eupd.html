@@ -74,23 +74,23 @@
       align-items: center;
       justify-content: space-between;
       flex-wrap: wrap;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
+      gap: 0.75rem;
+      margin-bottom: 0.75rem;
     }
 
     .btn-create-new {
       width: auto;
       margin-top: 0;
-      padding: 0.65rem 1.25rem;
+      padding: 0.5rem 1rem;
       background-color: var(--color-primary);
       color: white;
       text-decoration: none;
       border-radius: var(--radius-sm);
       font-weight: 600;
-      font-size: var(--font-base);
+      font-size: var(--font-sm);
       display: inline-flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: 0.4rem;
       box-shadow: 0 4px 10px rgba(56, 130, 246, 0.2);
       transition: all 0.2s;
     }
@@ -100,12 +100,12 @@
       transform: translateY(-1px);
     }
 
-    /* Tabel / Daftar Card */
+    /* Compact Table & Layout */
     .table-container {
       background: white;
       border-radius: var(--radius-md);
       border: 1px solid var(--color-border);
-      overflow-x: auto;
+      overflow-x: hidden;
       box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03);
     }
 
@@ -113,12 +113,12 @@
       width: 100%;
       border-collapse: collapse;
       text-align: left;
-      font-size: var(--font-base);
+      font-size: var(--font-sm);
     }
 
     .eupd-table th {
       background-color: var(--color-background);
-      padding: 0.85rem 1rem;
+      padding: 0.5rem 0.6rem;
       font-weight: 600;
       color: var(--color-text-primary);
       border-bottom: 1px solid var(--color-border);
@@ -126,10 +126,12 @@
     }
 
     .eupd-table td {
-      padding: 0.85rem 1rem;
+      padding: 0.5rem 0.6rem;
       border-bottom: 1px solid var(--color-border);
       color: var(--color-text-primary);
-      white-space: nowrap;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: normal;
     }
 
     .eupd-table tr:last-child td {
@@ -143,16 +145,16 @@
     .badge-no {
       font-weight: 700;
       color: var(--color-primary);
+      word-break: break-all;
     }
 
-    /* Tambahan Pagination & Filter */
     .filter-bar {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.5rem;
       flex-wrap: wrap;
-      margin-bottom: 1rem;
-      padding: 1rem;
+      margin-bottom: 0.75rem;
+      padding: 0.65rem 0.85rem;
       background: white;
       border-radius: var(--radius-md);
       border: 1px solid var(--color-border);
@@ -161,43 +163,49 @@
     .filter-group {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      font-size: 0.9rem;
+      gap: 0.35rem;
+      font-size: var(--font-sm);
+    }
+
+    .filter-group label {
+      font-size: var(--font-sm);
+      white-space: nowrap;
     }
 
     .filter-group input {
-      padding: 0.4rem 0.6rem;
+      padding: 0.35rem 0.5rem;
       border: 1px solid var(--color-border);
       border-radius: 4px;
-      font-size: 0.9rem;
+      font-size: var(--font-sm);
       outline: none;
+      max-width: 140px;
     }
 
     .pagination-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 1rem 0;
+      padding: 0.65rem 0;
       flex-wrap: wrap;
-      gap: 1rem;
+      gap: 0.5rem;
     }
 
     .page-controls {
       display: flex;
       align-items: center;
-      gap: 0.25rem;
+      gap: 0.2rem;
     }
 
     .page-btn {
       background: white;
       border: 1px solid var(--color-border);
-      padding: 0.4rem 0.8rem;
+      padding: 0.3rem 0.6rem;
       border-radius: 4px;
       cursor: pointer;
       color: var(--color-text-primary);
       transition: 0.2s;
       font-weight: 500;
-      font-size: 0.9rem;
+      font-size: var(--font-sm);
     }
 
     .page-btn:hover:not(:disabled) {
@@ -218,23 +226,49 @@
     .page-jump {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      font-size: 0.9rem;
+      gap: 0.5rem;
+      font-size: var(--font-sm);
       white-space: nowrap;
     }
 
     .page-jump input {
-      width: 65px;
-      padding: 0.45rem;
+      width: 55px;
+      padding: 0.3rem;
       text-align: center;
       border: 1px solid var(--color-border);
       border-radius: 4px;
-      font-size: 0.95rem;
+      font-size: var(--font-sm);
     }
 
+    .action-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.2rem;
+      padding: 0.25rem 0.45rem;
+      border: none;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+    .btn-view { background: #E0F2FE; color: #0284C7; }
+    .btn-view:hover { background: #BAE6FD; }
+    .btn-edit { background: #FEF3C7; color: #D97706; }
+    .btn-edit:hover { background: #FDE68A; }
+    .btn-lock { background: #DBEAFE; color: #2563EB; }
+    .btn-lock:hover { background: #BFDBFE; }
+    .btn-unlock { background: #FEE2E2; color: #DC2626; }
+    .btn-unlock:hover { background: #FECACA; }
+
     @media (max-width: 1024px) {
-      .eupd-table th, .eupd-table td { padding: 0.5rem 0.5rem; font-size: var(--font-sm); }
-      .action-btn { font-size: 10px; padding: 0.2rem 0.35rem; }
+      .eupd-table th, .eupd-table td { padding: 0.35rem 0.4rem; font-size: 11px; }
+      .action-btn { font-size: 10px; padding: 0.2rem 0.3rem; }
+      .filter-bar { padding: 0.5rem 0.65rem; gap: 0.35rem; }
+      .page-header-bar { margin-bottom: 0.75rem; }
+      .app-content-body { padding: 0.75rem; }
+      .page-btn { padding: 0.25rem 0.4rem; font-size: 11px; }
     }
 
     @media (max-width: 768px) {
@@ -276,6 +310,9 @@
         justify-content: center;
         width: 100%;
       }
+
+      .filter-bar { flex-direction: column; align-items: stretch; }
+      .filter-group input { max-width: 100%; }
     }
   </style>
 </head>
@@ -302,10 +339,8 @@
       <main class="app-content-body">
         <div class="page-header-bar">
           <div>
-            <div class="app-title" style="text-align: left; font-size: 1.4rem;" id="sheet-label">Daftar Pengajuan EUPD
-            </div>
-            <p style="font-size: var(--font-sm); color: var(--color-text-secondary); margin-top: 0.2rem;">Riwayat
-              dokumen penugasan EUPD yang tersimpan di Google Sheets.</p>
+            <div class="app-title" style="text-align: left; font-size: 1.15rem;" id="sheet-label">Daftar Pengajuan EUPD</div>
+            <p style="font-size: 11px; color: var(--color-text-secondary); margin-top: 0.15rem;">Riwayat dokumen penugasan EUPD yang tersimpan di Google Sheets.</p>
           </div>
           <a href="form-eupd.html" id="btn-create-new" class="btn-create-new" style="display: none;">
             <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
@@ -603,19 +638,18 @@
         const canUnlock = hasFeaturePermission("Unlock");
 
         let actionButtons = "";
-        // View button for all users (works even for locked documents)
-        actionButtons += `<button type="button" class="app-btn" style="padding: 0.35rem 0.75rem; font-size: 12px; background: #E0F2FE; color: #0369A1;" onclick="handleViewEUPD('${row["Nomor Pengajuan EUPD"]}')">View</button>`;
+        actionButtons += `<button type="button" class="action-btn btn-view" onclick="handleViewEUPD('${row["Nomor Pengajuan EUPD"]}')">View</button>`;
         if (canEdit && status !== "Locked") {
-          actionButtons += `<button type="button" class="app-btn" style="padding: 0.35rem 0.75rem; font-size: 12px;" onclick="handleEditEUPD('${row["Nomor Pengajuan EUPD"]}')">Edit</button>`;
+          actionButtons += `<button type="button" class="action-btn btn-edit" onclick="handleEditEUPD('${row["Nomor Pengajuan EUPD"]}')">Edit</button>`;
         }
         if (canLock && status !== "Locked") {
-          actionButtons += `<button type="button" class="app-btn" style="padding: 0.35rem 0.75rem; font-size: 12px; background: #FEE2E2; color: #991B1B;" onclick="handleLockEUPD('${row["Nomor Pengajuan EUPD"]}')">Lock</button>`;
+          actionButtons += `<button type="button" class="action-btn btn-lock" onclick="handleLockEUPD('${row["Nomor Pengajuan EUPD"]}')">Lock</button>`;
         }
         if (canUnlock && status === "Locked") {
-          actionButtons += `<button type="button" class="app-btn" style="padding: 0.35rem 0.75rem; font-size: 12px; background: #D1FAE5; color: #065F46;" onclick="handleUnlockEUPD('${row["Nomor Pengajuan EUPD"]}')">Unlock</button>`;
+          actionButtons += `<button type="button" class="action-btn btn-unlock" onclick="handleUnlockEUPD('${row["Nomor Pengajuan EUPD"]}')">Unlock</button>`;
         }
         if (!actionButtons) {
-          actionButtons = "<span style='color: #94A3B8; font-size: 12px;'>-</span>";
+          actionButtons = "<span style='color: #94A3B8; font-size: 11px;'>-</span>";
         }
 
         tbody.innerHTML += `

@@ -47,7 +47,8 @@ body {
   align-items: center;
   justify-content: center;
   padding: 1rem;
-  overflow-x: hidden; /* Perlindungan mutlak anti horizontal scroll */
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 /* 3. KOMPONEN KARTU KONTEN (.app-card) */
@@ -114,6 +115,16 @@ body {
 .app-input::placeholder {
   color: var(--color-text-secondary);
   opacity: 0.6;
+}
+
+.app-input[type="date"] {
+  font-family: var(--font-family);
+}
+
+.app-input[type="date"]::-webkit-datetime-edit,
+.app-input[type="date"]::-webkit-inner-spin-button,
+.app-input[type="date"]::-webkit-clear-button {
+  font-family: var(--font-family);
 }
 
 /* 5. KOMPONEN TOMBOL UTAMA CORNERSTONE */
@@ -192,6 +203,8 @@ body {
   display: flex;
   width: 100%;
   min-height: 100vh;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 .app-sidebar-container {
@@ -213,10 +226,10 @@ body {
 }
 
 .app-sidebar-header {
-  padding: 1.5rem 1.25rem;
+  padding: 1rem 0.85rem;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 0.5rem;
   border-bottom: 1px solid var(--color-border);
   position: relative;
 }
@@ -320,16 +333,21 @@ body {
   display: flex;
   flex-direction: column;
   min-width: 0;
+  max-width: calc(100vw - 240px);
+}
+
+body.sidebar-collapsed .app-main-content {
+  max-width: 100vw;
 }
 
 .app-mobile-header {
   background-color: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
-  padding: 0.75rem 1rem;
+  padding: 0.5rem 0.75rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.5rem;
 }
 
 .app-mobile-header .app-title {
@@ -359,11 +377,18 @@ body.sidebar-collapsed .app-sidebar-container {
   min-width: 0 !important;
   overflow: hidden !important;
   border-right: none !important;
+  flex-basis: 0 !important;
 }
 
 body.sidebar-collapsed .app-main-content {
   width: 100% !important;
+  max-width: 100vw !important;
   margin-left: 0 !important;
+}
+
+body.sidebar-collapsed .app-layout-wrapper {
+  max-width: 100vw !important;
+  overflow-x: hidden !important;
 }
 
 .app-menu-close-btn {
@@ -380,9 +405,10 @@ body.sidebar-collapsed .app-main-content {
 }
 
 .app-content-body {
-  padding: 1.5rem;
+  padding: 1rem;
   overflow-y: auto;
   flex-grow: 1;
+  max-width: 100vw;
 }
 
 .menu-grid {
@@ -413,7 +439,7 @@ body.sidebar-collapsed .app-main-content {
 
 .app-page-title {
   text-align: left;
-  font-size: 1.4rem;
+  font-size: 1.15rem;
 }
 
 .page-subtitle {
@@ -433,6 +459,15 @@ body.sidebar-collapsed .app-main-content {
   color: var(--color-text-secondary);
   margin-top: 0.4rem;
   line-height: 1.4;
+}
+
+@media (max-width: 1024px) {
+  .app-sidebar-container {
+    width: 220px;
+  }
+  .app-content-body {
+    padding: 1rem;
+  }
 }
 
 @media (max-width: 768px) and (orientation: portrait) {
