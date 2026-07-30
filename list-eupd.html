@@ -267,6 +267,74 @@
     .sortable-th:hover { color: var(--color-primary); }
     .sort-arrow { margin-left: 0.2rem; font-size: 9px; color: var(--color-text-secondary); }
 
+    .wh-selector-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1.5rem;
+      width: 100%;
+      margin-top: 0.75rem;
+    }
+    .wh-card {
+      flex: 1 1 calc(33.333% - 1rem);
+      min-width: 250px;
+      background-color: var(--color-surface);
+      border-radius: var(--radius-md);
+      padding: var(--pad-card);
+      box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -1px rgba(15, 23, 42, 0.03);
+      border: 1px solid var(--color-border);
+      text-decoration: none;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      position: relative;
+    }
+    .wh-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.04);
+      border-color: var(--color-primary-light);
+    }
+    .wh-card:active {
+      transform: translateY(0);
+      background-color: #F8FAFC;
+    }
+    .wh-icon-wrapper {
+      background-color: var(--color-primary-light);
+      color: var(--color-primary);
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+    }
+    .wh-card-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: var(--color-text-primary);
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.01em;
+    }
+    .wh-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 0.5rem;
+      color: var(--color-primary);
+      font-weight: 600;
+      font-size: var(--font-sm);
+      margin-top: auto;
+      border-top: 1px solid var(--color-border);
+      padding-top: 1rem;
+    }
+    .wh-card-footer svg {
+      transition: transform 0.2s ease;
+    }
+    .wh-card:hover .wh-card-footer svg {
+      transform: translateX(4px);
+    }
+
     @media (max-width: 1024px) {
       .eupd-table th, .eupd-table td { padding: 0.35rem 0.4rem; font-size: 11px; }
       .action-btn { font-size: 10px; padding: 0.2rem 0.3rem; }
@@ -280,6 +348,11 @@
       .page-header-bar { margin-bottom: 0.75rem; }
       .app-content-body { padding: 0.75rem; }
       .page-btn { padding: 0.25rem 0.4rem; font-size: 11px; }
+      .wh-card { flex: 1 1 calc(50% - 1rem); min-width: 200px; }
+    }
+
+    @media (max-width: 600px) {
+      .wh-card { flex: 1 1 100%; min-width: 0; }
     }
 
     @media (max-width: 768px) {
@@ -553,14 +626,40 @@
       }
 
       if (items.length === 1) {
-        selectWarehouse(encodeURIComponent(items[0]["Nama Warehouse"] || items[0]["Hak Akses Menu"] || ""));
+        selectWarehouse(encodeURIComponent(items[0]["Nama Warehouse"] || ""));
         return;
       }
 
-      var html = '<div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;"><span style="font-weight:700; font-size:var(--font-sm); color:var(--color-text-secondary);">Pilih Warehouse:</span></div><div style="display:flex; flex-wrap:wrap; gap:0.4rem;">';
+      var html = `
+        <div style="margin-bottom:0.25rem;">
+          <div class="app-page-title" style="font-size:1.35rem; margin-bottom:0.15rem;">Pilih Warehouse</div>
+          <p class="page-subtitle" style="text-align:left; font-size:0.9rem; margin:0;">
+            Pilih warehouse untuk melihat daftar pengajuan EUPD.
+          </p>
+        </div>
+        <div class="wh-selector-container">
+      `;
       items.forEach(function(item) {
-        var wh = item["Nama Warehouse"] || item["nama warehouse"] || item["Warehouse"] || item["warehouse"] || item["Hak Akses Menu"] || "";
-        html += '<button type="button" class="app-btn" style="padding:0.45rem 0.9rem; font-size:var(--font-sm); font-weight:600;" onclick="selectWarehouse(\'' + encodeURIComponent(wh) + '\')">' + wh + '</button>';
+        var wh = item["Nama Warehouse"] || "";
+        if (!wh) return;
+        html += `
+          <div class="wh-card" onclick="selectWarehouse('${encodeURIComponent(wh)}')">
+            <div class="wh-icon-wrapper">
+              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                <circle cx="12" cy="10" r="3"></circle>
+              </svg>
+            </div>
+            <div class="wh-card-title">${wh}</div>
+            <div class="wh-card-footer">
+              <span>Lihat Pengajuan</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+                <polyline points="12 5 19 12 12 19"></polyline>
+              </svg>
+            </div>
+          </div>
+        `;
       });
       html += '</div>';
       selector.innerHTML = html;
