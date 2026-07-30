@@ -33,6 +33,7 @@
     .autocomplete-list { position: fixed; top: 0; left: 0; z-index: 10000; background: white; border: 1px solid var(--color-primary); border-radius: var(--radius-sm); max-height: 420px; overflow-y: auto; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); display: none; min-width: 320px; width: auto; }
     .autocomplete-item { padding: 0.7rem 1rem; cursor: pointer; border-bottom: 1px solid #F1F5F9; display: flex; flex-direction: column; gap: 0.1rem; }
     .autocomplete-item:hover { background-color: var(--color-primary-light); }
+    .autocomplete-item.ac-highlighted { background-color: var(--color-primary-light); }
     .autocomplete-item .ac-main { font-weight: 600; font-size: var(--font-sm); color: var(--color-text-primary); }
     .autocomplete-item .ac-sub { font-size: 12px; color: var(--color-text-secondary); font-weight: 400; }
     .autocomplete-list::-webkit-scrollbar { width: 6px; }
@@ -54,7 +55,8 @@
     .journal-table td input, .journal-table td select, .journal-table td textarea { width: 100%; box-sizing: border-box; padding: 0.25rem 0.35rem; border: none; border-radius: 0; font-size: var(--font-sm); background: transparent; color: var(--color-text-primary); font-family: inherit; }
     .journal-table td input:focus, .journal-table td textarea:focus { outline: none; background: var(--color-surface); }
     .journal-table td input[readonly] { background: transparent; cursor: default; }
-    .journal-table td .journal-nama-akun { word-wrap: break-word; overflow-wrap: break-word; white-space: normal; line-height: 1.3; }
+    .journal-table td .journal-nama-akun { width: 100%; box-sizing: border-box; padding: 0.25rem 0.35rem; border: none; border-radius: 0; font-size: var(--font-sm); background: transparent; color: var(--color-text-primary); font-family: inherit; resize: none; overflow: hidden; word-wrap: break-word; overflow-wrap: break-word; white-space: normal; line-height: 1.3; min-height: 1.5em; }
+    .journal-table td .journal-nama-akun:focus { outline: none; background: var(--color-surface); }
     .journal-table td textarea { resize: none; min-height: auto; overflow: hidden; line-height: 1.3; }
     .journal-table .btn-journal-remove { background: #FEE2E2; color: #EF4444; border: none; border-radius: 4px; padding: 0.25rem 0.4rem; font-size: 10px; font-weight: 600; cursor: pointer; white-space: nowrap; }
     .journal-table .btn-journal-remove:hover { background: #FECACA; }
@@ -363,14 +365,57 @@
     document.querySelectorAll('.autocomplete-list').forEach(function(l) { l.style.display = 'none'; });
   }
 
+  function selectAutocompleteItem(itemDiv) {
+    if (!itemDiv) return;
+    var mousedownEvent = new MouseEvent('mousedown', { bubbles: true, cancelable: true });
+    itemDiv.dispatchEvent(mousedownEvent);
+  }
+
   document.addEventListener('click', function(e) {
-    if (!e.target.closest('.autocomplete-wrapper')) {
+    if (!e.target.closest('.autocomplete-wrapper') && !e.target.closest('.autocomplete-list')) {
       closeAllAutocomplete();
     }
   });
 
-  window.addEventListener('scroll', closeAllAutocomplete, true);
+  window.addEventListener('scroll', function(e) {
+    if (!e.target.closest('.autocomplete-list')) {
+      closeAllAutocomplete();
+    }
+  }, true);
+
   window.addEventListener('resize', closeAllAutocomplete);
+
+  document.addEventListener('keydown', function(e) {
+    var visibleList = document.querySelector('.autocomplete-list[style*="display: block"]');
+    if (!visibleList) return;
+
+    var items = Array.from(visibleList.querySelectorAll('.autocomplete-item'));
+    if (!items.length) return;
+
+    var currentIndex = items.findIndex(function(el) { return el.classList.contains('ac-highlighted'); });
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      var nextIdx = currentIndex < 0 ? 0 : Math.min(currentIndex + 1, items.length - 1);
+      items.forEach(function(el) { el.classList.remove('ac-highlighted'); });
+      items[nextIdx].classList.add('ac-highlighted');
+      items[nextIdx].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      var prevIdx = currentIndex < 0 ? items.length - 1 : Math.max(currentIndex - 1, 0);
+      items.forEach(function(el) { el.classList.remove('ac-highlighted'); });
+      items[prevIdx].classList.add('ac-highlighted');
+      items[prevIdx].scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'Enter') {
+      if (currentIndex >= 0) {
+        e.preventDefault();
+        selectAutocompleteItem(items[currentIndex]);
+      }
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      closeAllAutocomplete();
+    }
+  });
 
   // ---- Available EUPD filter (for autocomplete) ----
   function filterAvailableEUPD(inputEl, groupId) {
@@ -598,7 +643,7 @@
     tr.innerHTML =
       '<td><textarea class="journal-keterangan" rows="1" placeholder="Keterangan..." oninput="autoHeight(this)">' + htmlEscape(defaultKeterangan) + '</textarea></td>' +
       '<td><div class="autocomplete-wrapper"><input type="text" class="app-input journal-no-akun" placeholder="Cari No Akun..." oninput="filterAkun(this, \'' + groupId + '\')"><div class="autocomplete-list"></div></div></td>' +
-      '<td><input type="text" class="journal-nama-akun" readonly style="background:#F1F5F9;" placeholder="Otomatis..."></td>' +
+      '<td><textarea class="journal-nama-akun" readonly style="background:#F1F5F9;" placeholder="Otomatis..." rows="1"></textarea></td>' +
       '<td><input type="text" class="journal-debit" value="' + (defaultDebit > 0 ? formatCurrency(defaultDebit) : '') + '" placeholder="0" style="font-weight:600;text-align:right;" oninput="cleanNumberInput(this);updateGroupTotals(\'' + groupId + '\');" onfocus="removeDecimalFormat(this)" onblur="formatDecimalDisplay(this)"></td>' +
       '<td><input type="text" class="journal-kredit" value="' + (defaultKredit > 0 ? formatCurrency(defaultKredit) : '') + '" placeholder="0" style="font-weight:600;text-align:right;" oninput="cleanNumberInput(this);updateGroupTotals(\'' + groupId + '\');" onfocus="removeDecimalFormat(this)" onblur="formatDecimalDisplay(this)"></td>' +
       '<td><button type="button" class="btn-journal-remove" onclick="removeJournalRow(this)">x</button></td>';
@@ -637,7 +682,9 @@
       var tr = el.closest('tr');
       if (tr) {
         tr.querySelector('.journal-no-akun').value = item.accountNumber;
-        tr.querySelector('.journal-nama-akun').value = item.accountName;
+        var namaAkunEl = tr.querySelector('.journal-nama-akun');
+        namaAkunEl.value = item.accountName;
+        setTimeout(function() { autoHeight(namaAkunEl); }, 10);
       }
     });
   }
@@ -916,7 +963,7 @@
         tr.innerHTML =
           '<td><textarea class="journal-keterangan" rows="1" placeholder="Keterangan..." oninput="autoHeight(this)">' + htmlEscape(keterangan) + '</textarea></td>' +
           '<td><div class="autocomplete-wrapper"><input type="text" class="app-input journal-no-akun" value="' + htmlEscape(noAkun) + '" placeholder="Cari No Akun..." oninput="filterAkun(this, \'' + group.dataset.groupId + '\')" ' + (isView ? 'readonly' : '') + '><div class="autocomplete-list"></div></div></td>' +
-          '<td><input type="text" class="journal-nama-akun" value="' + htmlEscape(namaAkun) + '" readonly style="background:#F1F5F9;" placeholder="Otomatis..."></td>' +
+          '<td><textarea class="journal-nama-akun" readonly style="background:#F1F5F9;" placeholder="Otomatis..." rows="1">' + htmlEscape(namaAkun) + '</textarea></td>' +
           '<td><input type="text" class="journal-debit" value="' + (debit > 0 ? formatCurrency(debit) : '') + '" placeholder="0" style="font-weight:600;text-align:right;" ' + (isView ? 'readonly' : 'oninput="cleanNumberInput(this);updateGroupTotals(\'' + group.dataset.groupId + '\');" onfocus="removeDecimalFormat(this)" onblur="formatDecimalDisplay(this)"') + '></td>' +
           '<td><input type="text" class="journal-kredit" value="' + (kredit > 0 ? formatCurrency(kredit) : '') + '" placeholder="0" style="font-weight:600;text-align:right;" ' + (isView ? 'readonly' : 'oninput="cleanNumberInput(this);updateGroupTotals(\'' + group.dataset.groupId + '\');" onfocus="removeDecimalFormat(this)" onblur="formatDecimalDisplay(this)"') + '></td>' +
           (isView ? '<td></td>' : '<td><button type="button" class="btn-journal-remove" onclick="removeJournalRow(this)">x</button></td>');
@@ -934,6 +981,8 @@
         // Auto height
         var ta = tr.querySelector('.journal-keterangan');
         if (ta) setTimeout(function() { autoHeight(ta); }, 10);
+        var na = tr.querySelector('.journal-nama-akun');
+        if (na) setTimeout(function() { autoHeight(na); }, 10);
       });
 
       updateGroupTotals(group.dataset.groupId);
