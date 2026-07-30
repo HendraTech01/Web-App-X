@@ -41,21 +41,21 @@
     .info-grid .info-item .info-value { font-size: var(--font-sm); font-weight: 600; color: var(--color-text-primary); word-break: break-word; }
     .info-grid .info-item.info-total-item { grid-column: span 2; }
 
-    .journal-table-wrap { overflow-x: auto; margin-top: 0.75rem; width: 100%; }
-    .journal-table { width: 100%; border-collapse: collapse; font-size: var(--font-sm); min-width: 750px; }
-    .journal-table th { background: var(--color-primary-light); color: var(--color-primary); font-weight: 600; padding: 0.5rem 0.6rem; text-align: left; font-size: 11px; white-space: nowrap; border: 1px solid var(--color-border); vertical-align: middle; }
-    .journal-table td { padding: 0.3rem 0.5rem; border: 1px solid var(--color-border); vertical-align: middle; }
+    .journal-table-wrap { overflow-x: auto; margin-top: 0.5rem; width: 100%; }
+    .journal-table { width: 100%; border-collapse: collapse; font-size: var(--font-sm); min-width: 600px; }
+    .journal-table th { background: var(--color-primary-light); color: var(--color-primary); font-weight: 600; padding: 0.4rem 0.5rem; text-align: left; font-size: 11px; white-space: nowrap; border: 1px solid var(--color-border); vertical-align: middle; }
+    .journal-table td { padding: 0.25rem 0.4rem; border: 1px solid var(--color-border); vertical-align: middle; }
     .journal-table td .autocomplete-wrapper { display: flex; width: 100%; }
-    .journal-table td .autocomplete-wrapper input { min-width: 110px; width: 100%; }
-    .journal-table td input, .journal-table td select, .journal-table td textarea { width: 100%; box-sizing: border-box; padding: 0.35rem 0.45rem; border: none; border-radius: 0; font-size: var(--font-sm); background: transparent; color: var(--color-text-primary); font-family: inherit; }
+    .journal-table td .autocomplete-wrapper input { min-width: 80px; width: 100%; }
+    .journal-table td input, .journal-table td select, .journal-table td textarea { width: 100%; box-sizing: border-box; padding: 0.25rem 0.35rem; border: none; border-radius: 0; font-size: var(--font-sm); background: transparent; color: var(--color-text-primary); font-family: inherit; }
     .journal-table td input:focus, .journal-table td textarea:focus { outline: none; background: var(--color-surface); }
     .journal-table td input[readonly] { background: transparent; cursor: default; }
-    .journal-table td .journal-nama-akun { word-wrap: break-word; overflow-wrap: break-word; white-space: normal; }
-    .journal-table td textarea { resize: none; min-height: 36px; overflow: hidden; line-height: 1.4; }
-    .journal-table .btn-journal-remove { background: #FEE2E2; color: #EF4444; border: none; border-radius: 4px; padding: 0.3rem 0.5rem; font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .journal-table td .journal-nama-akun { word-wrap: break-word; overflow-wrap: break-word; white-space: normal; line-height: 1.3; }
+    .journal-table td textarea { resize: none; min-height: auto; overflow: hidden; line-height: 1.3; }
+    .journal-table .btn-journal-remove { background: #FEE2E2; color: #EF4444; border: none; border-radius: 4px; padding: 0.25rem 0.4rem; font-size: 10px; font-weight: 600; cursor: pointer; white-space: nowrap; }
     .journal-table .btn-journal-remove:hover { background: #FECACA; }
 
-    .journal-totals { display: flex; gap: 1.5rem; justify-content: flex-end; margin-top: 0.75rem; padding: 0.5rem 0.75rem; background: #F8FAFC; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: var(--font-sm); font-weight: 600; flex-wrap: wrap; }
+    .journal-totals { display: flex; gap: 1rem; justify-content: flex-end; margin-top: 0.5rem; padding: 0.4rem 0.6rem; background: #F8FAFC; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: var(--font-sm); font-weight: 600; flex-wrap: wrap; }
     .journal-totals .total-label { color: var(--color-text-secondary); font-weight: 500; }
     .journal-totals .total-value { color: var(--color-text-primary); min-width: 100px; text-align: right; }
     .journal-totals .total-value.balance-ok { color: var(--color-success); }
@@ -532,6 +532,13 @@
       '<td><button type="button" class="btn-journal-remove" onclick="removeJournalRow(this)">x</button></td>';
 
     tbody.appendChild(tr);
+    
+    // Auto-height for keterangan textarea
+    var ta = tr.querySelector('.journal-keterangan');
+    if (ta) {
+      setTimeout(function() { autoHeight(ta); }, 10);
+    }
+    
     updateGroupTotals(groupId);
   }
 
