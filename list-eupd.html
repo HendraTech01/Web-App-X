@@ -270,7 +270,13 @@
     @media (max-width: 1024px) {
       .eupd-table th, .eupd-table td { padding: 0.35rem 0.4rem; font-size: 11px; }
       .action-btn { font-size: 10px; padding: 0.2rem 0.3rem; }
-      .filter-bar { padding: 0.5rem 0.65rem; gap: 0.35rem; }
+      .filter-bar { padding: 0.5rem 0.65rem; gap: 0.35rem; flex-wrap: nowrap; }
+      .filter-bar .filter-group { flex: 1 1 auto; min-width: 0; }
+      .filter-bar .filter-group input[type="date"] { max-width: 110px !important; width: 100%; }
+      .filter-bar .filter-group input[type="text"] { max-width: 110px !important; width: 100%; }
+      .filter-bar .filter-group label { font-size: 10px; }
+      .filter-bar > div:last-child { flex-shrink: 0; }
+      .filter-bar .app-btn { padding: 0.3rem 0.5rem; font-size: 0.8rem; }
       .page-header-bar { margin-bottom: 0.75rem; }
       .app-content-body { padding: 0.75rem; }
       .page-btn { padding: 0.25rem 0.4rem; font-size: 11px; }
@@ -523,9 +529,12 @@
       if (queryWh && !queryWh.startsWith("ListEUPD")) return queryWh;
 
       const accessItems = await fetchUserSheetAccess();
-      if (accessItems.length === 0) return "";
-      const first = accessItems[0]["Nama Warehouse"] || accessItems[0]["Hak Akses Menu"] || "";
-      return String(first).trim();
+      const eupdItems = accessItems.filter(item => {
+        const menu = String(item["Hak Akses Menu"] || "").trim().toLowerCase();
+        return menu === "listeupd";
+      });
+      if (eupdItems.length === 0) return "";
+      return String(eupdItems[0]["Nama Warehouse"] || "").trim();
     }
 
     function getWarehouseLabel(warehouseName) {
@@ -934,7 +943,11 @@
       const featureAccessPromise = fetchUserFeatureAccess();
 
       const accessItems = await fetchUserSheetAccess();
-      const allowedWarehouses = accessItems.map(item => String(item["Nama Warehouse"] || item["Hak Akses Menu"] || "").trim().toLowerCase());
+      const eupdAccessItems = accessItems.filter(item => {
+        const menu = String(item["Hak Akses Menu"] || "").trim().toLowerCase();
+        return menu === "listeupd";
+      });
+      const allowedWarehouses = eupdAccessItems.map(item => String(item["Nama Warehouse"] || "").trim().toLowerCase()).filter(Boolean);
 
       // Jika user mencoba akses URL langsung tapi tidak punya izin
       if (warehouse && !allowedWarehouses.includes(warehouse.trim().toLowerCase())) {
@@ -959,11 +972,11 @@
       }
 
       // SLOW PATH: tidak ada warehouse di URL, tampilkan pilihan jika lebih dari 1
-      const currentWh = (accessItems.length === 1 ? (accessItems[0]["Nama Warehouse"] || accessItems[0]["Hak Akses Menu"] || "") : "");
+      const currentWh = (eupdAccessItems.length === 1 ? (eupdAccessItems[0]["Nama Warehouse"] || "") : "");
 
       if (!currentWh) {
         headerLabel.innerText = "Pilih Warehouse EUPD";
-        showWarehouseSelection(accessItems);
+        showWarehouseSelection(eupdAccessItems);
         return;
       }
 
