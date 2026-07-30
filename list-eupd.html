@@ -224,22 +224,7 @@
       cursor: not-allowed;
     }
 
-    .page-jump {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      font-size: var(--font-sm);
-      white-space: nowrap;
-    }
 
-    .page-jump input {
-      width: 55px;
-      padding: 0.3rem;
-      text-align: center;
-      border: 1px solid var(--color-border);
-      border-radius: 4px;
-      font-size: var(--font-sm);
-    }
 
     .action-btn {
       display: inline-flex;
@@ -270,63 +255,44 @@
     .wh-selector-container {
       display: flex;
       flex-wrap: wrap;
-      gap: 1.5rem;
+      gap: 1rem;
       width: 100%;
-      margin-top: 0.75rem;
+      margin-top: 0.5rem;
     }
     .wh-card {
-      flex: 1 1 calc(33.333% - 1rem);
-      min-width: 250px;
+      flex: 1 1 calc(25% - 0.75rem);
+      min-width: 180px;
       background-color: var(--color-surface);
       border-radius: var(--radius-md);
-      padding: var(--pad-card);
+      padding: 1rem 1.1rem;
       box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.05), 0 2px 4px -1px rgba(15, 23, 42, 0.03);
       border: 1px solid var(--color-border);
-      text-decoration: none;
       display: flex;
       flex-direction: column;
-      transition: all 0.3s ease;
+      transition: all 0.25s ease;
       cursor: pointer;
-      position: relative;
     }
     .wh-card:hover {
-      transform: translateY(-4px);
+      transform: translateY(-3px);
       box-shadow: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.04);
       border-color: var(--color-primary-light);
     }
-    .wh-card:active {
-      transform: translateY(0);
-      background-color: #F8FAFC;
-    }
-    .wh-icon-wrapper {
-      background-color: var(--color-primary-light);
-      color: var(--color-primary);
-      width: 56px;
-      height: 56px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 1.25rem;
-    }
     .wh-card-title {
-      font-size: 1.2rem;
+      font-size: 1rem;
       font-weight: 700;
       color: var(--color-text-primary);
-      margin-bottom: 0.5rem;
-      letter-spacing: -0.01em;
+      margin-bottom: 0.4rem;
     }
     .wh-card-footer {
       display: flex;
       align-items: center;
-      justify-content: flex-start;
-      gap: 0.5rem;
+      gap: 0.35rem;
       color: var(--color-primary);
       font-weight: 600;
-      font-size: var(--font-sm);
+      font-size: 0.8rem;
       margin-top: auto;
       border-top: 1px solid var(--color-border);
-      padding-top: 1rem;
+      padding-top: 0.65rem;
     }
     .wh-card-footer svg {
       transition: transform 0.2s ease;
@@ -348,11 +314,11 @@
       .page-header-bar { margin-bottom: 0.75rem; }
       .app-content-body { padding: 0.75rem; }
       .page-btn { padding: 0.25rem 0.4rem; font-size: 11px; }
-      .wh-card { flex: 1 1 calc(50% - 1rem); min-width: 200px; }
+      .wh-card { flex: 1 1 calc(33.333% - 0.75rem); min-width: 150px; }
     }
 
     @media (max-width: 600px) {
-      .wh-card { flex: 1 1 100%; min-width: 0; }
+      .wh-card { flex: 1 1 calc(50% - 0.5rem); min-width: 0; }
     }
 
     @media (max-width: 768px) {
@@ -451,7 +417,7 @@
             <label style="font-weight:600; color:var(--color-text-secondary);">Cari:</label>
             <input type="text" id="filter-search" placeholder="Cari No. Pengajuan..." style="max-width:160px;" oninput="applyFilters()">
           </div>
-          <div style="display: flex; gap: 0.5rem; flex-wrap: nowrap;">
+          <div style="display: flex; align-items: center; gap: 0.5rem; flex-wrap: nowrap;">
             <button type="button" class="app-btn" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;" onclick="applyFilters()">Terapkan</button>
             <button type="button" class="app-btn" style="padding: 0.4rem 0.8rem; font-size: 0.9rem; background: #F1F5F9; color: #475569;" onclick="resetFilters()">Reset</button>
             <button type="button" class="app-btn" style="padding: 0.4rem 0.8rem; font-size: 0.9rem; background: #10B981; color: white; display: flex; align-items: center; gap: 0.3rem;" onclick="exportToExcel()">
@@ -488,12 +454,6 @@
           </div>
           <div class="page-controls" id="page-controls">
             <!-- Buttons injected here -->
-          </div>
-          <div class="page-jump">
-            <span style="font-weight:500;">Ke Hal</span>
-            <input type="number" id="jump-page-input" min="1" value="1"
-              onkeypress="if(event.key === 'Enter') jumpToPage()">
-            <button type="button" class="app-btn" style="padding: 0.4rem 0.5rem; font-size: 0.85rem;" onclick="jumpToPage()">Go</button>
           </div>
         </div>
       </main>
@@ -630,30 +590,16 @@
         return;
       }
 
-      var html = `
-        <div style="margin-bottom:0.25rem;">
-          <div class="app-page-title" style="font-size:1.35rem; margin-bottom:0.15rem;">Pilih Warehouse</div>
-          <p class="page-subtitle" style="text-align:left; font-size:0.9rem; margin:0;">
-            Pilih warehouse untuk melihat daftar pengajuan EUPD.
-          </p>
-        </div>
-        <div class="wh-selector-container">
-      `;
+      var html = `<div class="wh-selector-container">`;
       items.forEach(function(item) {
         var wh = item["Nama Warehouse"] || "";
         if (!wh) return;
         html += `
           <div class="wh-card" onclick="selectWarehouse('${encodeURIComponent(wh)}')">
-            <div class="wh-icon-wrapper">
-              <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                <circle cx="12" cy="10" r="3"></circle>
-              </svg>
-            </div>
             <div class="wh-card-title">${wh}</div>
             <div class="wh-card-footer">
               <span>Lihat Pengajuan</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="5" y1="12" x2="19" y2="12"></line>
                 <polyline points="12 5 19 12 12 19"></polyline>
               </svg>
@@ -803,7 +749,6 @@
       });
 
       document.getElementById("page-info").innerText = `Menampilkan ${startIndex + 1} - ${endIndex} dari ${filteredEUPDData.length} data`;
-      document.getElementById("jump-page-input").value = currentPage;
       renderPaginationUI(totalPages);
     }
 
@@ -829,7 +774,6 @@
       }
 
       controls.innerHTML += `<button class="page-btn" onclick="nextPage()" ${currentPage >= totalPages || totalPages === 0 ? 'disabled' : ''}>&#8250;</button>`;
-      document.getElementById("jump-page-input").max = Math.max(1, totalPages);
     }
 
     function nextPage() {
@@ -853,11 +797,6 @@
         currentPage = page;
         renderCurrentPage();
       }
-    }
-
-    function jumpToPage() {
-      const val = parseInt(document.getElementById("jump-page-input").value);
-      if (!isNaN(val)) goToPage(val);
     }
 
     function toggleSort(col) {
@@ -1074,7 +1013,8 @@
       const currentWh = (eupdAccessItems.length === 1 ? (eupdAccessItems[0]["Nama Warehouse"] || "") : "");
 
       if (!currentWh) {
-        headerLabel.innerText = "Pilih Warehouse EUPD";
+        headerLabel.innerText = "Pilih Warehouse";
+        document.querySelector(".page-header-bar p")?.style.setProperty("display", "none");
         showWarehouseSelection(eupdAccessItems);
         return;
       }
