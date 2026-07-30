@@ -345,9 +345,16 @@
     var pageData = filteredData.slice(start, end);
 
     pageData.forEach(function(item) {
-      var isLocked = String(item.status || "").trim() === "Locked";
       var rawNo = (item.noPembayaran || '');
       var noP = encodeURIComponent(rawNo);
+      var status = String(item.status || "").trim();
+      var actionsHtml = '<a href="form-pembayaran-eupd.html?viewNo=' + noP + '" class="action-btn btn-view">View</a>';
+      if (status === "Draft" || status === "Unlocked") {
+        actionsHtml += ' <a href="form-pembayaran-eupd.html?editNo=' + noP + '" class="action-btn btn-edit">Edit</a>';
+        actionsHtml += ' <button class="action-btn btn-lock" onclick="handleLock(\'' + rawNo.replace(/'/g, "\\'") + '\')">Lock</button>';
+      } else if (status === "Locked") {
+        actionsHtml += ' <button class="action-btn btn-unlock" onclick="handleUnlock(\'' + rawNo.replace(/'/g, "\\'") + '\')">Unlock</button>';
+      }
       var tr = document.createElement('tr');
       tr.innerHTML =
         '<td><strong style="color:var(--color-primary);">' + rawNo + '</strong></td>' +
@@ -358,11 +365,7 @@
         '<td>' + (item.tujuan || '-') + '</td>' +
         '<td style="text-align:right;font-weight:600;">' + formatCurrency(item.totalBiaya) + '</td>' +
         '<td>' + getStatusBadge(item.status) + '</td>' +
-        '<td style="white-space:nowrap;">' +
-          '<a href="form-pembayaran-eupd.html?viewNo=' + noP + '" class="action-btn btn-view">View</a> ' +
-          (!isLocked ? '<a href="form-pembayaran-eupd.html?editNo=' + noP + '" class="action-btn btn-edit">Edit</a> ' : '<span class="action-btn btn-edit" style="opacity:0.4;cursor:not-allowed;">Edit</span> ') +
-          (!isLocked ? '<button class="action-btn btn-lock" onclick="handleLock(\'' + rawNo.replace(/'/g, "\\'") + '\')">Lock</button> ' : '<button class="action-btn btn-unlock" onclick="handleUnlock(\'' + rawNo.replace(/'/g, "\\'") + '\')">Unlock</button>') +
-        '</td>';
+        '<td style="white-space:nowrap;">' + actionsHtml + '</td>';
       tbody.appendChild(tr);
     });
 
