@@ -208,7 +208,7 @@
 
   function formatCurrency(val) {
     var n = Number(val) || 0;
-    return 'Rp ' + n.toLocaleString('id-ID', {minimumFractionDigits:2, maximumFractionDigits:2});
+    return n.toLocaleString('id-ID', {minimumFractionDigits:2, maximumFractionDigits:2});
   }
 
   function getStatusBadge(status) {

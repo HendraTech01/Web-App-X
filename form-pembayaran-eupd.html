@@ -43,13 +43,14 @@
 
     .journal-table-wrap { overflow-x: auto; margin-top: 0.75rem; width: 100%; }
     .journal-table { width: 100%; border-collapse: collapse; font-size: var(--font-sm); min-width: 750px; }
-    .journal-table th { background: var(--color-primary-light); color: var(--color-primary); font-weight: 600; padding: 0.5rem 0.6rem; text-align: left; font-size: 11px; white-space: nowrap; border: 1px solid var(--color-border); }
-    .journal-table td { padding: 0.3rem 0.5rem; border: 1px solid var(--color-border); vertical-align: top; }
-    .journal-table td .autocomplete-wrapper { display: flex; }
-    .journal-table td .autocomplete-wrapper input { min-width: 110px; }
-    .journal-table td input, .journal-table td select, .journal-table td textarea { width: 100%; box-sizing: border-box; padding: 0.35rem 0.45rem; border: 1px solid var(--color-border); border-radius: 4px; font-size: var(--font-sm); background: var(--color-surface); color: var(--color-text-primary); font-family: inherit; }
-    .journal-table td input:focus, .journal-table td textarea:focus { outline: none; border-color: var(--color-primary); box-shadow: 0 0 0 2px var(--color-primary-light); }
-    .journal-table td input[readonly] { background: #F1F5F9; cursor: default; }
+    .journal-table th { background: var(--color-primary-light); color: var(--color-primary); font-weight: 600; padding: 0.5rem 0.6rem; text-align: left; font-size: 11px; white-space: nowrap; border: 1px solid var(--color-border); vertical-align: middle; }
+    .journal-table td { padding: 0.3rem 0.5rem; border: 1px solid var(--color-border); vertical-align: middle; }
+    .journal-table td .autocomplete-wrapper { display: flex; width: 100%; }
+    .journal-table td .autocomplete-wrapper input { min-width: 110px; width: 100%; }
+    .journal-table td input, .journal-table td select, .journal-table td textarea { width: 100%; box-sizing: border-box; padding: 0.35rem 0.45rem; border: none; border-radius: 0; font-size: var(--font-sm); background: transparent; color: var(--color-text-primary); font-family: inherit; }
+    .journal-table td input:focus, .journal-table td textarea:focus { outline: none; background: var(--color-surface); }
+    .journal-table td input[readonly] { background: transparent; cursor: default; }
+    .journal-table td .journal-nama-akun { word-wrap: break-word; overflow-wrap: break-word; white-space: normal; }
     .journal-table td textarea { resize: none; min-height: 36px; overflow: hidden; line-height: 1.4; }
     .journal-table .btn-journal-remove { background: #FEE2E2; color: #EF4444; border: none; border-radius: 4px; padding: 0.3rem 0.5rem; font-size: 11px; font-weight: 600; cursor: pointer; white-space: nowrap; }
     .journal-table .btn-journal-remove:hover { background: #FECACA; }
@@ -451,31 +452,31 @@
           '<div class="info-item"><div class="info-label">Kendaraan</div><div class="info-value info-kendaraan">-</div></div>' +
           '<div class="info-item"><div class="info-label">Pemesan</div><div class="info-value info-pemesan">-</div></div>' +
           '<div class="info-item"><div class="info-label">Tujuan</div><div class="info-value info-tujuan">-</div></div>' +
-          '<div class="info-item"><div class="info-label">Uang Makan</div><div class="info-value info-uang-makan">Rp 0</div></div>' +
-          '<div class="info-item"><div class="info-label">BBM</div><div class="info-value info-bbm">Rp 0</div></div>' +
-          '<div class="info-item"><div class="info-label">Penginapan</div><div class="info-value info-inap">Rp 0</div></div>' +
-          '<div class="info-item"><div class="info-label">Biaya Lain</div><div class="info-value info-biaya-lain">Rp 0</div></div>' +
-          '<div class="info-item info-total-item"><div class="info-label">Total Keseluruhan</div><div class="info-value info-total" style="font-weight:700;color:var(--color-primary);">Rp 0</div></div>' +
+          '<div class="info-item"><div class="info-label">Uang Makan</div><div class="info-value info-uang-makan">0</div></div>' +
+          '<div class="info-item"><div class="info-label">BBM</div><div class="info-value info-bbm">0</div></div>' +
+          '<div class="info-item"><div class="info-label">Penginapan</div><div class="info-value info-inap">0</div></div>' +
+          '<div class="info-item"><div class="info-label">Biaya Lain</div><div class="info-value info-biaya-lain">0</div></div>' +
+          '<div class="info-item info-total-item"><div class="info-label">Total Keseluruhan</div><div class="info-value info-total" style="font-weight:700;color:var(--color-primary);">0</div></div>' +
         '</div>' +
       '</div>' +
       '<div class="journal-section" style="display:none;">' +
         '<div class="journal-table-wrap">' +
           '<table class="journal-table">' +
             '<thead><tr>' +
-              '<th style="width:28%;">Keterangan</th>' +
-              '<th style="width:14%;">No Akun</th>' +
-              '<th style="width:18%;">Nama Akun</th>' +
-              '<th style="width:15%;">Debit</th>' +
-              '<th style="width:15%;">Kredit</th>' +
-              '<th style="width:1%;"></th>' +
+              '<th style="width:32%;">Keterangan</th>' +
+              '<th style="width:10%;">No Akun</th>' +
+              '<th style="width:20%;">Nama Akun</th>' +
+              '<th style="width:14%;">Debit</th>' +
+              '<th style="width:14%;">Kredit</th>' +
+              '<th style="width:4%;"></th>' +
             '</tr></thead>' +
             '<tbody class="journal-body"></tbody>' +
           '</table>' +
         '</div>' +
         '<button type="button" class="btn-add-journal" onclick="addJournalRow(\'' + groupId + '\')">+ Tambah Baris</button>' +
         '<div id="journal-totals-' + groupId + '" class="journal-totals">' +
-          '<span><span class="total-label">Total Debit:</span> <span class="total-value" id="total-debit-' + groupId + '">Rp 0,00</span></span>' +
-          '<span><span class="total-label">Total Kredit:</span> <span class="total-value" id="total-kredit-' + groupId + '">Rp 0,00</span></span>' +
+          '<span><span class="total-label">Total Debit:</span> <span class="total-value" id="total-debit-' + groupId + '">0,00</span></span>' +
+          '<span><span class="total-label">Total Kredit:</span> <span class="total-value" id="total-kredit-' + groupId + '">0,00</span></span>' +
           '<div class="balance-warning" id="balance-warning-' + groupId + '">Total Debit dan Kredit harus seimbang.</div>' +
         '</div>' +
       '</div>';
@@ -526,8 +527,8 @@
       '<td><textarea class="journal-keterangan" rows="1" placeholder="Keterangan..." oninput="autoHeight(this)">' + htmlEscape(defaultKeterangan) + '</textarea></td>' +
       '<td><div class="autocomplete-wrapper"><input type="text" class="app-input journal-no-akun" placeholder="Cari No Akun..." oninput="filterAkun(this, \'' + groupId + '\')"><div class="autocomplete-list"></div></div></td>' +
       '<td><input type="text" class="journal-nama-akun" readonly style="background:#F1F5F9;" placeholder="Otomatis..."></td>' +
-      '<td><input type="text" class="journal-debit" value="' + (defaultDebit > 0 ? formatCurrency(defaultDebit) : '') + '" placeholder="0" style="font-weight:600;text-align:right;" oninput="cleanNumberInput(this);formatDecimalDisplay(this);updateGroupTotals(\'' + groupId + '\');" onfocus="removeDecimalFormat(this)" onblur="formatDecimalDisplay(this)"></td>' +
-      '<td><input type="text" class="journal-kredit" value="' + (defaultKredit > 0 ? formatCurrency(defaultKredit) : '') + '" placeholder="0" style="font-weight:600;text-align:right;" oninput="cleanNumberInput(this);formatDecimalDisplay(this);updateGroupTotals(\'' + groupId + '\');" onfocus="removeDecimalFormat(this)" onblur="formatDecimalDisplay(this)"></td>' +
+      '<td><input type="text" class="journal-debit" value="' + (defaultDebit > 0 ? formatCurrency(defaultDebit) : '') + '" placeholder="0" style="font-weight:600;text-align:right;" oninput="cleanNumberInput(this);updateGroupTotals(\'' + groupId + '\');" onfocus="removeDecimalFormat(this)" onblur="formatDecimalDisplay(this)"></td>' +
+      '<td><input type="text" class="journal-kredit" value="' + (defaultKredit > 0 ? formatCurrency(defaultKredit) : '') + '" placeholder="0" style="font-weight:600;text-align:right;" oninput="cleanNumberInput(this);updateGroupTotals(\'' + groupId + '\');" onfocus="removeDecimalFormat(this)" onblur="formatDecimalDisplay(this)"></td>' +
       '<td><button type="button" class="btn-journal-remove" onclick="removeJournalRow(this)">x</button></td>';
 
     tbody.appendChild(tr);
@@ -579,8 +580,8 @@
       totalKredit += k;
     });
 
-    group.querySelector('#total-debit-' + groupId).innerText = 'Rp ' + formatCurrency(totalDebit);
-    group.querySelector('#total-kredit-' + groupId).innerText = 'Rp ' + formatCurrency(totalKredit);
+    group.querySelector('#total-debit-' + groupId).innerText = formatCurrency(totalDebit);
+    group.querySelector('#total-kredit-' + groupId).innerText = formatCurrency(totalKredit);
 
     var warning = group.querySelector('#balance-warning-' + groupId);
     var debitEl = group.querySelector('#total-debit-' + groupId);
@@ -837,8 +838,8 @@
           '<td><textarea class="journal-keterangan" rows="1" placeholder="Keterangan..." oninput="autoHeight(this)">' + htmlEscape(keterangan) + '</textarea></td>' +
           '<td><div class="autocomplete-wrapper"><input type="text" class="app-input journal-no-akun" value="' + htmlEscape(noAkun) + '" placeholder="Cari No Akun..." oninput="filterAkun(this, \'' + group.dataset.groupId + '\')" ' + (isView ? 'readonly' : '') + '><div class="autocomplete-list"></div></div></td>' +
           '<td><input type="text" class="journal-nama-akun" value="' + htmlEscape(namaAkun) + '" readonly style="background:#F1F5F9;" placeholder="Otomatis..."></td>' +
-          '<td><input type="text" class="journal-debit" value="' + (debit > 0 ? formatCurrency(debit) : '') + '" placeholder="0" style="font-weight:600;text-align:right;" ' + (isView ? 'readonly' : 'oninput="cleanNumberInput(this);formatDecimalDisplay(this);updateGroupTotals(\'' + group.dataset.groupId + '\');" onfocus="removeDecimalFormat(this)" onblur="formatDecimalDisplay(this)"') + '></td>' +
-          '<td><input type="text" class="journal-kredit" value="' + (kredit > 0 ? formatCurrency(kredit) : '') + '" placeholder="0" style="font-weight:600;text-align:right;" ' + (isView ? 'readonly' : 'oninput="cleanNumberInput(this);formatDecimalDisplay(this);updateGroupTotals(\'' + group.dataset.groupId + '\');" onfocus="removeDecimalFormat(this)" onblur="formatDecimalDisplay(this)"') + '></td>' +
+          '<td><input type="text" class="journal-debit" value="' + (debit > 0 ? formatCurrency(debit) : '') + '" placeholder="0" style="font-weight:600;text-align:right;" ' + (isView ? 'readonly' : 'oninput="cleanNumberInput(this);updateGroupTotals(\'' + group.dataset.groupId + '\');" onfocus="removeDecimalFormat(this)" onblur="formatDecimalDisplay(this)"') + '></td>' +
+          '<td><input type="text" class="journal-kredit" value="' + (kredit > 0 ? formatCurrency(kredit) : '') + '" placeholder="0" style="font-weight:600;text-align:right;" ' + (isView ? 'readonly' : 'oninput="cleanNumberInput(this);updateGroupTotals(\'' + group.dataset.groupId + '\');" onfocus="removeDecimalFormat(this)" onblur="formatDecimalDisplay(this)"') + '></td>' +
           (isView ? '<td></td>' : '<td><button type="button" class="btn-journal-remove" onclick="removeJournalRow(this)">x</button></td>');
 
         tbody.appendChild(tr);
