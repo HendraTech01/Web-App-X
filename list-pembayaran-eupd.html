@@ -68,10 +68,20 @@
       body.menu-mode-active .app-sidebar-container { display: flex !important; width: 100vw !important; height: 100vh !important; position: fixed; top: 0; left: 0; z-index: 9999; }
       body.menu-mode-active .app-main-content { display: none !important; }
       body.menu-mode-active .app-menu-close-btn { display: flex; position: absolute; right: 1rem; top: 1.5rem; background: none; border: none; color: var(--color-text-secondary); cursor: pointer; }
-      .filter-bar { flex-direction: column; align-items: stretch; }
-      .filter-bar .app-input { min-width: auto; }
+      .filter-bar { flex-wrap: wrap; align-items: stretch; }
+      .filter-bar .app-input { min-width: auto; width: 100%; }
+      .filter-bar .app-input-group { min-width: 140px; flex: 1 1 auto; }
       .page-header-bar .btn-create-new { width: 100%; justify-content: center; }
+      .page-header-bar { flex-direction: column; align-items: flex-start; }
       .action-btn { font-size: 10px; padding: 0.25rem 0.4rem; }
+      .app-content-body { padding: 1rem; }
+      .pagination-bar { flex-direction: column; align-items: stretch; gap: 0.75rem; }
+      .page-btn-group { justify-content: center; flex-wrap: wrap; }
+    }
+
+    @media (max-width: 480px) {
+      .filter-bar .app-input-group { min-width: 100%; }
+      .page-btn { padding: 0.35rem 0.5rem; font-size: 12px; }
     }
   </style>
 </head>
@@ -95,7 +105,6 @@
           <p style="font-size:var(--font-sm);color:var(--color-text-secondary);margin-top:0.25rem;">Daftar transaksi pembayaran pengajuan EUPD.</p>
         </div>
         <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
-          <button type="button" class="btn-export" onclick="exportToExcel()">Export Excel</button>
           <a href="pembayaran-eupd.html" class="btn-create-new">+ Tambah Pembayaran</a>
         </div>
       </div>
@@ -111,6 +120,7 @@
         </div>
         <button type="button" class="filter-btn" onclick="applyFilters()">Filter</button>
         <button type="button" class="filter-reset" onclick="resetFilters()">Reset</button>
+        <button type="button" class="btn-export" onclick="exportToExcel()">Export Excel</button>
       </div>
 
       <div class="table-container">
@@ -151,7 +161,7 @@
   let allData = [];
   let filteredData = [];
   let currentPage = 1;
-  const PER_PAGE = 20;
+  const PER_PAGE = 10;
   let sortColumn = "";
   let sortDirection = "";
 
@@ -159,11 +169,20 @@
 
   function formatTanggal(val) {
     if (!val) return "-";
+    if (typeof val === 'object' && typeof val.getMonth === 'function') {
+      var dd = String(val.getDate()); while (dd.length < 2) dd = "0" + dd;
+      var mm = String(val.getMonth() + 1); while (mm.length < 2) mm = "0" + mm;
+      var yyyy = val.getFullYear();
+      return dd + '/' + mm + '/' + yyyy;
+    }
     var s = String(val);
-    if (s.includes('/')) return s;
-    if (s.includes('-')) {
+    if (s.indexOf('/') !== -1) return s;
+    if (s.indexOf('-') !== -1) {
       var p = s.split('-');
-      return p[2] + '/' + p[1] + '/' + p[0];
+      if (p.length === 3) {
+        if (p[0].length === 4) return p[2] + '/' + p[1] + '/' + p[0];
+        return p[2] + '/' + p[1] + '/' + p[0];
+      }
     }
     return s;
   }
@@ -198,23 +217,39 @@
     } finally { showLoading(false); }
   }
 
+  function getDateStr(val) {
+    if (!val) return "";
+    if (typeof val === 'object' && typeof val.getMonth === 'function') {
+      var y = val.getFullYear();
+      var m = String(val.getMonth() + 1); while (m.length < 2) m = "0" + m;
+      var d = String(val.getDate()); while (d.length < 2) d = "0" + d;
+      return y + '-' + m + '-' + d;
+    }
+    var s = String(val);
+    if (s.indexOf('/') !== -1) {
+      var p = s.split('/');
+      if (p.length === 3) return p[2] + '-' + p[1] + '-' + p[0];
+    }
+    if (s.indexOf('-') !== -1) {
+      var p = s.split('-');
+      if (p.length === 3) {
+        if (p[0].length === 4) return s;
+        return p[2] + '-' + p[1] + '-' + p[0];
+      }
+    }
+    return s.substring(0, 10);
+  }
+
   function applyFilters() {
     var tglAwal = document.getElementById('filterTglAwal').value;
     var tglAkhir = document.getElementById('filterTglAkhir').value;
 
     filteredData = allData.filter(function(item) {
-      if (tglAwal && item.tanggal) {
-        var d = item.tanggal.split('/');
-        if (d.length === 3) {
-          var itemDate = d[2] + '-' + d[1] + '-' + d[0];
-          if (itemDate < tglAwal) return false;
-        }
-      }
-      if (tglAkhir && item.tanggal) {
-        var d = item.tanggal.split('/');
-        if (d.length === 3) {
-          var itemDate = d[2] + '-' + d[1] + '-' + d[0];
-          if (itemDate > tglAkhir) return false;
+      if (tglAwal || tglAkhir) {
+        var dateStr = getDateStr(item.tanggal);
+        if (dateStr) {
+          if (tglAwal && dateStr < tglAwal) return false;
+          if (tglAkhir && dateStr > tglAkhir) return false;
         }
       }
       return true;
@@ -243,11 +278,16 @@
     if (arrow) arrow.innerText = sortDirection === 'asc' ? '▲' : '▼';
 
     filteredData.sort(function(a, b) {
-      var va = (a[col] || '').toString().toLowerCase();
-      var vb = (b[col] || '').toString().toLowerCase();
+      var va, vb;
       if (col === 'totalBiaya') {
         va = Number(a[col]) || 0;
         vb = Number(b[col]) || 0;
+      } else if (col === 'tanggal') {
+        va = getDateStr(a[col]);
+        vb = getDateStr(b[col]);
+      } else {
+        va = (a[col] || '').toString().toLowerCase();
+        vb = (b[col] || '').toString().toLowerCase();
       }
       if (va < vb) return sortDirection === 'asc' ? -1 : 1;
       if (va > vb) return sortDirection === 'asc' ? 1 : -1;
@@ -312,7 +352,7 @@
     group.innerHTML = '';
     var prev = document.createElement('button');
     prev.className = 'page-btn';
-    prev.innerText = '‹';
+    prev.innerText = 'Previous';
     prev.disabled = currentPage <= 1;
     prev.onclick = function() { if (currentPage > 1) { currentPage--; renderTable(); } };
     group.appendChild(prev);
@@ -329,7 +369,7 @@
 
     var next = document.createElement('button');
     next.className = 'page-btn';
-    next.innerText = '›';
+    next.innerText = 'Next';
     next.disabled = currentPage >= totalPages;
     next.onclick = function() { if (currentPage < totalPages) { currentPage++; renderTable(); } };
     group.appendChild(next);
