@@ -346,10 +346,11 @@
 
     pageData.forEach(function(item) {
       var isLocked = String(item.status || "").trim() === "Locked";
-      var noP = encodeURIComponent(item.noPembayaran || '');
+      var rawNo = (item.noPembayaran || '');
+      var noP = encodeURIComponent(rawNo);
       var tr = document.createElement('tr');
       tr.innerHTML =
-        '<td><strong style="color:var(--color-primary);">' + (item.noPembayaran || '-') + '</strong></td>' +
+        '<td><strong style="color:var(--color-primary);">' + rawNo + '</strong></td>' +
         '<td>' + formatTanggal(item.tanggal) + '</td>' +
         '<td>' + (item.nomorPengajuan || '-') + '</td>' +
         '<td>' + (item.whAwal || '-') + '</td>' +
@@ -360,7 +361,7 @@
         '<td style="white-space:nowrap;">' +
           '<a href="form-pembayaran-eupd.html?viewNo=' + noP + '" class="action-btn btn-view">View</a> ' +
           (!isLocked ? '<a href="form-pembayaran-eupd.html?editNo=' + noP + '" class="action-btn btn-edit">Edit</a> ' : '<span class="action-btn btn-edit" style="opacity:0.4;cursor:not-allowed;">Edit</span> ') +
-          (!isLocked ? '<button class="action-btn btn-lock" onclick="handleLock(\'' + noP + '\')">Lock</button> ' : '<button class="action-btn btn-unlock" onclick="handleUnlock(\'' + noP + '\')">Unlock</button>') +
+          (!isLocked ? '<button class="action-btn btn-lock" onclick="handleLock(\'' + rawNo.replace(/'/g, "\\'") + '\')">Lock</button> ' : '<button class="action-btn btn-unlock" onclick="handleUnlock(\'' + rawNo.replace(/'/g, "\\'") + '\')">Unlock</button>') +
         '</td>';
       tbody.appendChild(tr);
     });
