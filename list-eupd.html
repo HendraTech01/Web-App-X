@@ -261,6 +261,7 @@
     .btn-lock:hover { background: #BFDBFE; }
     .btn-unlock { background: #FEE2E2; color: #DC2626; }
     .btn-unlock:hover { background: #FECACA; }
+    .badge-paid { background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 12px; font-weight: 600; white-space: nowrap; }
 
     @media (max-width: 1024px) {
       .eupd-table th, .eupd-table td { padding: 0.35rem 0.4rem; font-size: 11px; }
@@ -629,6 +630,8 @@
           statusBadge = '<span style="background: #FEE2E2; color: #991B1B; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 12px; font-weight: 600;">Locked</span>';
         } else if (status === "Unlocked") {
           statusBadge = '<span style="background: #D1FAE5; color: #065F46; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 12px; font-weight: 600;">Unlocked</span>';
+        } else if (status === "Paid") {
+          statusBadge = '<span class="badge-paid">Paid</span>';
         } else {
           statusBadge = `<span style="background: #F1F5F9; color: #475569; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 12px; font-weight: 600;">${status}</span>`;
         }
@@ -637,12 +640,14 @@
         const canLock = hasFeaturePermission("Lock");
         const canUnlock = hasFeaturePermission("Unlock");
 
+        const isEditable = status === "Draft" || status === "Unlocked";
+
         let actionButtons = "";
         actionButtons += `<button type="button" class="action-btn btn-view" onclick="handleViewEUPD('${row["Nomor Pengajuan EUPD"]}')">View</button>`;
-        if (canEdit && status !== "Locked") {
+        if (canEdit && isEditable) {
           actionButtons += `<button type="button" class="action-btn btn-edit" onclick="handleEditEUPD('${row["Nomor Pengajuan EUPD"]}')">Edit</button>`;
         }
-        if (canLock && status !== "Locked") {
+        if (canLock && isEditable) {
           actionButtons += `<button type="button" class="action-btn btn-lock" onclick="handleLockEUPD('${row["Nomor Pengajuan EUPD"]}')">Lock</button>`;
         }
         if (canUnlock && status === "Locked") {
