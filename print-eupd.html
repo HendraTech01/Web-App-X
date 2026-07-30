@@ -184,7 +184,8 @@
         font-size: 11px;
       }
 
-      .print-container {
+    #print-alert { display: none; text-align: center; padding: 2rem; font-size: 14px; color: #DC2626; background: #FEF2F2; border: 1px solid #FECACA; border-radius: 8px; margin: 2rem; }
+    .print-container {
         box-shadow: none;
         padding: 0;
         max-width: none;
@@ -289,6 +290,7 @@
     <button onclick="window.close()" style="padding: 10px 20px; font-size: 14px; background: #6b7280; color: white; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">✖️ Tutup</button>
   </div>
 
+  <div id="print-alert"></div>
   <div class="print-container" id="print-content">
     <div class="print-header">
       <img src="" alt="Header Logo" id="header-logo" style="display: none;">
@@ -477,11 +479,16 @@
       });
     }
 
+    function showPrintError(msg) {
+      var el = document.getElementById("print-alert");
+      if (el) { el.innerText = msg; el.style.display = "block"; }
+    }
+
     async function loadEUPDData() {
       const noEUPD = getQueryParam("noEUPD");
 
       if (!noEUPD) {
-        alert("Parameter noEUPD diperlukan");
+        showPrintError("Parameter noEUPD diperlukan");
         return;
       }
 
@@ -490,14 +497,14 @@
         const json = await res.json();
 
         if (json.status !== "success" || !json.data || !Array.isArray(json.data.rows)) {
-          alert("Gagal memuat data EUPD");
+          showPrintError("Gagal memuat data EUPD");
           return;
         }
 
         populatePrintData(json.data.rows);
       } catch (err) {
         console.error("Gagal memuat data:", err);
-        alert("Gagal terhubung ke server");
+        showPrintError("Gagal terhubung ke server");
       }
     }
 

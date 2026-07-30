@@ -8,6 +8,7 @@
   <link rel="stylesheet" href="style.css">
   <script src="app.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
     body {
       padding: 0 !important;
@@ -262,6 +263,9 @@
     .btn-unlock { background: #FEE2E2; color: #DC2626; }
     .btn-unlock:hover { background: #FECACA; }
     .badge-paid { background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+    .sortable-th { cursor: pointer; user-select: none; }
+    .sortable-th:hover { color: var(--color-primary); }
+    .sort-arrow { margin-left: 0.2rem; font-size: 9px; color: var(--color-text-secondary); }
 
     @media (max-width: 1024px) {
       .eupd-table th, .eupd-table td { padding: 0.35rem 0.4rem; font-size: 11px; }
@@ -364,6 +368,10 @@
             <span style="color:#94A3B8; font-weight:600;">s/d</span>
             <input type="date" id="filter-end-date">
           </div>
+          <div class="filter-group">
+            <label style="font-weight:600; color:var(--color-text-secondary);">Cari:</label>
+            <input type="text" id="filter-search" placeholder="Cari No. Pengajuan..." style="max-width:160px;" oninput="applyFilters()">
+          </div>
           <div style="display: flex; gap: 0.5rem; flex-wrap: nowrap;">
             <button type="button" class="app-btn" style="padding: 0.4rem 0.8rem; font-size: 0.9rem;" onclick="applyFilters()">Terapkan</button>
             <button type="button" class="app-btn" style="padding: 0.4rem 0.8rem; font-size: 0.9rem; background: #F1F5F9; color: #475569;" onclick="resetFilters()">Reset</button>
@@ -378,13 +386,13 @@
           <table class="eupd-table">
             <thead>
               <tr>
-                <th>No. Pengajuan EUPD</th>
-                <th>Tanggal Dokumen</th>
-                <th>Pembuat</th>
-                <th>Nama Tujuan</th>
-                <th>Kendaraan</th>
-                <th>Total Biaya</th>
-                <th>Status</th>
+                <th data-sort="Nomor Pengajuan EUPD" class="sortable-th" onclick="toggleSort('Nomor Pengajuan EUPD')">No. Pengajuan EUPD <span class="sort-arrow"></span></th>
+                <th data-sort="Tanggal Dokumen" class="sortable-th" onclick="toggleSort('Tanggal Dokumen')">Tanggal Dokumen <span class="sort-arrow"></span></th>
+                <th data-sort="Pembuat Dokumen" class="sortable-th" onclick="toggleSort('Pembuat Dokumen')">Pembuat <span class="sort-arrow"></span></th>
+                <th data-sort="Nama Tujuan" class="sortable-th" onclick="toggleSort('Nama Tujuan')">Nama Tujuan <span class="sort-arrow"></span></th>
+                <th data-sort="No Kendaraan" class="sortable-th" onclick="toggleSort('No Kendaraan')">Kendaraan <span class="sort-arrow"></span></th>
+                <th data-sort="Total Biaya Keseluruhan" class="sortable-th" onclick="toggleSort('Total Biaya Keseluruhan')">Total Biaya <span class="sort-arrow"></span></th>
+                <th data-sort="Status" class="sortable-th" onclick="toggleSort('Status')">Status <span class="sort-arrow"></span></th>
                 <th>Aksi</th>
               </tr>
             </thead>
@@ -422,6 +430,8 @@
     let rawDatabaseData = [];
     let currentPage = 1;
     const itemsPerPage = 20;
+    let sortColumn = "";
+    let sortDirection = "";
 
     function getQueryWarehouse() {
       const params = new URLSearchParams(window.location.search);
@@ -435,6 +445,21 @@
 
     function getCurrentUser() {
       return localStorage.getItem("wax_logged_user") || "";
+    }
+
+    function showNotification(type, message) {
+      const alertEl = document.getElementById("list-alert");
+      alertEl.className = "app-alert app-alert-" + type;
+      alertEl.innerText = message;
+      alertEl.style.display = "block";
+      if (type === "success") {
+        setTimeout(function() { alertEl.style.display = "none"; }, 3000);
+      }
+    }
+
+    async function showConfirm(title, text) {
+      var result = await Swal.fire({ title: title, text: text, icon: "warning", showCancelButton: true, confirmButtonText: "Ya", cancelButtonText: "Batal" });
+      return result.isConfirmed;
     }
 
     async function fetchUserSheetAccess() {
@@ -507,18 +532,6 @@
       return warehouseName || "Daftar EUPD";
     }
 
-    function createWarehouseCard(item) {
-      const warehouse = item["Nama Warehouse"] || item["nama warehouse"] || item["Warehouse"] || item["warehouse"] || item["Hak Akses Menu"] || "";
-      const card = document.createElement("div");
-      card.style = "border:1px solid var(--color-border); border-radius:12px; padding:1rem; margin-bottom:1rem; background:#FFFFFF; box-shadow:0 4px 12px rgba(15,23,42,0.04);";
-      card.innerHTML = `
-        <div style="font-weight:700; margin-bottom:0.45rem;">${warehouse}</div>
-        <div style="font-size:0.95rem; color:var(--color-text-secondary); margin-bottom:0.85rem;">Warehouse: ${warehouse}</div>
-        <button type="button" class="app-btn" style="padding:0.65rem 1rem; font-size:0.95rem;" onclick="selectWarehouse('${encodeURIComponent(warehouse)}')">Pilih ${warehouse}</button>
-      `;
-      return card;
-    }
-
     function showWarehouseSelection(items) {
       const selector = document.getElementById("warehouse-selector");
       selector.innerHTML = "";
@@ -535,8 +548,13 @@
         return;
       }
 
-      selector.innerHTML = '<div style="font-size:1rem; font-weight:700; margin-bottom:1rem;">Pilih warehouse terlebih dahulu untuk melihat daftar EUPD</div>';
-      items.forEach(item => selector.appendChild(createWarehouseCard(item)));
+      var html = '<div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.75rem;"><span style="font-weight:700; font-size:var(--font-sm); color:var(--color-text-secondary);">Pilih Warehouse:</span></div><div style="display:flex; flex-wrap:wrap; gap:0.4rem;">';
+      items.forEach(function(item) {
+        var wh = item["Nama Warehouse"] || item["nama warehouse"] || item["Warehouse"] || item["warehouse"] || item["Hak Akses Menu"] || "";
+        html += '<button type="button" class="app-btn" style="padding:0.45rem 0.9rem; font-size:var(--font-sm); font-weight:600;" onclick="selectWarehouse(\'' + encodeURIComponent(wh) + '\')">' + wh + '</button>';
+      });
+      html += '</div>';
+      selector.innerHTML = html;
     }
 
     function selectWarehouse(encodedWh) {
@@ -549,40 +567,49 @@
       window.location.href = newUrl.toString();
     }
 
-    // Sistem Filter Tanggal
-    function resetFilters() {
-      document.getElementById("filter-start-date").value = "";
-      document.getElementById("filter-end-date").value = "";
-      applyFilters();
-    }
-
     function applyFilters() {
       const startDateStr = document.getElementById("filter-start-date").value;
       const endDateStr = document.getElementById("filter-end-date").value;
+      const searchStr = document.getElementById("filter-search").value.trim().toLowerCase();
 
       let startD = startDateStr ? new Date(startDateStr) : null;
       let endD = endDateStr ? new Date(endDateStr) : null;
       if (startD) startD.setHours(0, 0, 0, 0);
       if (endD) endD.setHours(23, 59, 59, 999);
 
-      if (!startD && !endD) {
-        filteredEUPDData = [...allEUPDData];
-      } else {
-        filteredEUPDData = allEUPDData.filter(row => {
+      filteredEUPDData = allEUPDData.filter(row => {
+        // Date filter
+        if (startD || endD) {
           let tglStr = row["Tanggal Dokumen"];
           if (!tglStr) return false;
           let rowDate = new Date(tglStr);
           if (isNaN(rowDate)) return false;
           rowDate.setHours(12, 0, 0, 0);
-
           if (startD && rowDate < startD) return false;
           if (endD && rowDate > endD) return false;
-          return true;
-        });
+        }
+        // Search filter
+        if (searchStr) {
+          var no = String(row["Nomor Pengajuan EUPD"] || "").toLowerCase();
+          if (no.indexOf(searchStr) === -1) return false;
+        }
+        return true;
+      });
+
+      // Apply sort
+      if (sortColumn) {
+        sortData();
       }
 
       currentPage = 1;
       renderCurrentPage();
+    }
+
+    function resetFilters() {
+      document.getElementById("filter-start-date").value = "";
+      document.getElementById("filter-end-date").value = "";
+      document.getElementById("filter-search").value = "";
+      applyFilters();
     }
 
     // Render tabel berdasarkan Pagination
@@ -725,78 +752,77 @@
       if (!isNaN(val)) goToPage(val);
     }
 
-    // Fungsi Export ke Excel (.xlsx modern)
+    function toggleSort(col) {
+      if (sortColumn === col) {
+        sortDirection = sortDirection === "asc" ? "desc" : "asc";
+      } else {
+        sortColumn = col;
+        sortDirection = "asc";
+      }
+      document.querySelectorAll(".sort-arrow").forEach(function(el) { el.innerText = ""; });
+      var arrow = document.querySelector('th[data-sort="' + col + '"] .sort-arrow');
+      if (arrow) arrow.innerText = sortDirection === "asc" ? "▲" : "▼";
+      sortData();
+      renderCurrentPage();
+    }
+
+    function sortData() {
+      if (!sortColumn) return;
+      filteredEUPDData.sort(function(a, b) {
+        var va, vb;
+        if (sortColumn === "Total Biaya Keseluruhan") {
+          va = Number(a[sortColumn]) || 0;
+          vb = Number(b[sortColumn]) || 0;
+        } else if (sortColumn === "Tanggal Dokumen") {
+          va = a[sortColumn] || "";
+          vb = b[sortColumn] || "";
+        } else {
+          va = (a[sortColumn] || "").toString().toLowerCase();
+          vb = (b[sortColumn] || "").toString().toLowerCase();
+        }
+        if (va < vb) return sortDirection === "asc" ? -1 : 1;
+        if (va > vb) return sortDirection === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
+
     function exportToExcel() {
-      if (rawDatabaseData.length === 0) {
-        alert("Tidak ada data di database untuk diexport.");
-        return;
-      }
-
       if (typeof XLSX === 'undefined') {
-        alert("Library Excel belum termuat sepenuhnya. Pastikan koneksi internet stabil lalu coba lagi.");
+        showNotification("error", "Library Excel belum termuat sepenuhnya. Pastikan koneksi internet stabil lalu coba lagi.");
         return;
       }
 
-      // Ambil nilai filter tanggal saat ini
-      const startDateStr = document.getElementById("filter-start-date").value;
-      const endDateStr = document.getElementById("filter-end-date").value;
-      
-      let startD = startDateStr ? new Date(startDateStr) : null;
-      let endD = endDateStr ? new Date(endDateStr) : null;
-      if (startD) startD.setHours(0,0,0,0);
-      if (endD) endD.setHours(23,59,59,999);
-
-      let dataToExport = rawDatabaseData;
-
-      // Filter berdasarkan tanggal jika ada (memakai kolom "Tanggal Dokumen")
-      if (startD || endD) {
-        dataToExport = rawDatabaseData.filter(row => {
-          let tglStr = row["Tanggal Dokumen"];
-          if (!tglStr) return false;
-          let rowDate = new Date(tglStr);
-          if (isNaN(rowDate)) return false;
-          rowDate.setHours(12,0,0,0);
-
-          if (startD && rowDate < startD) return false;
-          if (endD && rowDate > endD) return false;
-          return true;
-        });
-      }
-
+      var dataToExport = filteredEUPDData;
       if (dataToExport.length === 0) {
-        alert("Tidak ada data pada periode tersebut.");
+        showNotification("error", "Tidak ada data untuk diexport.");
         return;
       }
 
-      // Format data untuk SheetJS (Biarkan semua kolom apa adanya, rapikan format tanggal ke dd/mm/yyyy)
-      const formattedData = dataToExport.map(row => {
-        let newRow = { ...row };
-        Object.keys(newRow).forEach(key => {
-          let val = String(newRow[key] || "");
-          // Deteksi jika val berbentuk string tanggal ISO (YYYY-MM-DDTHH:mm:ss.sssZ)
+      var formattedData = dataToExport.map(function(row, idx) {
+        var newRow = {};
+        Object.keys(row).forEach(function(key) {
+          var val = String(row[key] || "");
           if (val.includes("T") && /^\d{4}-\d{2}-\d{2}T/.test(val)) {
-            let datePart = val.split("T")[0];
-            let parts = datePart.split("-");
+            var datePart = val.split("T")[0];
+            var parts = datePart.split("-");
             if (parts.length === 3) {
-               // Konversi menjadi dd/mm/yyyy (parts: 0=yyyy, 1=mm, 2=dd)
-               newRow[key] = `${parts[2]}/${parts[1]}/${parts[0]}`;
+              val = parts[2] + "/" + parts[1] + "/" + parts[0];
             }
           }
+          newRow[key] = val;
         });
+        // Replace ID with sequential number
+        newRow["ID"] = idx + 1;
         return newRow;
       });
 
-      // Konversi JSON ke Sheet
-      const ws = XLSX.utils.json_to_sheet(formattedData);
-
-      // Buat Workbook dan simpan sebagai .xlsx
-      const wb = XLSX.utils.book_new();
+      var ws = XLSX.utils.json_to_sheet(formattedData);
+      var wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Database EUPD");
 
-      const warehouse = getQueryWarehouse() || "EUPD";
-      const timestamp = new Date().toISOString().slice(0, 10);
-      
-      XLSX.writeFile(wb, `Database_${warehouse}_${timestamp}.xlsx`);
+      var warehouse = getQueryWarehouse() || "EUPD";
+      var timestamp = new Date().toISOString().slice(0, 10);
+      XLSX.writeFile(wb, "Database_" + warehouse + "_" + timestamp + ".xlsx");
     }
 
     async function handleViewEUPD(noEUPD) {
@@ -810,12 +836,14 @@
     }
 
     async function handleLockEUPD(noEUPD) {
-      if (!confirm("Apakah Anda yakin ingin mengunci dokumen EUPD ini? Dokumen yang terkunci tidak dapat diedit.")) return;
+      var confirmed = await showConfirm("Konfirmasi Lock", "Apakah Anda yakin ingin mengunci dokumen EUPD ini? Dokumen yang terkunci tidak dapat diedit.");
+      if (!confirmed) return;
       await updateEUPDStatus(noEUPD, "Locked");
     }
 
     async function handleUnlockEUPD(noEUPD) {
-      if (!confirm("Apakah Anda yakin ingin membuka kunci dokumen EUPD ini?")) return;
+      var confirmed = await showConfirm("Konfirmasi Unlock", "Apakah Anda yakin ingin membuka kunci dokumen EUPD ini?");
+      if (!confirmed) return;
       await updateEUPDStatus(noEUPD, "Unlocked");
     }
 
@@ -832,13 +860,13 @@
         });
         const result = await res.json();
         if (result.status === "success") {
-          alert(`Status berhasil diubah menjadi ${newStatus}`);
+          showNotification("success", "Status berhasil diubah menjadi " + newStatus);
           await fetchAndRenderSheet(warehouse);
         } else {
-          alert("Gagal mengubah status: " + (result.message || "Unknown error"));
+          showNotification("error", "Gagal mengubah status: " + (result.message || "Unknown error"));
         }
       } catch (err) {
-        alert("Gagal terhubung ke server.");
+        showNotification("error", "Gagal terhubung ke server.");
         console.error(err);
       }
     }
