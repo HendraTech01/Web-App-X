@@ -878,7 +878,6 @@
   // ---- Init ----
   async function initPage() {
     try {
-      await loadSidebar();
       showLoading(true);
 
       var mode = getMode();
@@ -901,52 +900,55 @@
         document.getElementById('btn-simpan').innerText = 'Update Pembayaran EUPD';
       }
 
-      // Fetch available EUPD (locked)
-      var eupdRes = await fetch(GAS_URL + '?action=getAvailableEUPD');
-      var eupdJson = await eupdRes.json();
-      if (eupdJson.status === 'success') {
-        availableEUPDList = eupdJson.data || [];
-      }
+      // Run independent fetches in parallel
+      var sidebarPromise = loadSidebar();
 
-      // Fetch posting accounts
-      var accRes = await fetch(GAS_URL + '?action=getPostingAccounts');
-      var accJson = await accRes.json();
-      if (accJson.status === 'success') {
-        postingAccounts = (accJson.data || []).map(function(a) {
-          return {
-            accountNumber: a.accountNumber,
-            accountName: a.accountName,
-            displayLabel: a.accountNumber + ' - ' + a.accountName
-          };
-        });
+      var masterDataPromise = (isView)
+        ? Promise.resolve(null) // View mode: no need for availableEUPD or postingAccounts
+        : Promise.all([
+            fetch(GAS_URL + '?action=getAvailableEUPD').then(function(r) { return r.json(); }),
+            fetch(GAS_URL + '?action=getPostingAccounts').then(function(r) { return r.json(); })
+          ]);
+
+      var detailPromise = (isEdit || isView)
+        ? fetch(GAS_URL + '?action=getPembayaranEUPDByID&noPembayaran=' + encodeURIComponent(modeNo)).then(function(r) { return r.json(); })
+        : Promise.resolve(null);
+
+      await sidebarPromise;
+
+      var masterResult = await masterDataPromise;
+      if (!isView && masterResult) {
+        var eupdJson = masterResult[0];
+        if (eupdJson.status === 'success') {
+          availableEUPDList = eupdJson.data || [];
+        }
+        var accJson = masterResult[1];
+        if (accJson.status === 'success') {
+          postingAccounts = (accJson.data || []).map(function(a) {
+            return { accountNumber: a.accountNumber, accountName: a.accountName, displayLabel: a.accountNumber + ' - ' + a.accountName };
+          });
+        }
       }
 
       if (isEdit || isView) {
-        // Set payment number in readonly field
         document.getElementById('noPembayaran').value = modeNo;
         document.getElementById('noPembayaran').style.fontStyle = 'normal';
         document.getElementById('noPembayaran').style.fontWeight = '700';
         document.getElementById('noPembayaran').style.color = 'var(--color-primary)';
 
-        // Fetch existing data
-        var detailRes = await fetch(GAS_URL + '?action=getPembayaranEUPDByID&noPembayaran=' + encodeURIComponent(modeNo));
-        var detailJson = await detailRes.json();
-
-        if (detailJson.status === 'success' && detailJson.data && detailJson.data.length > 0) {
+        var detailJson = await detailPromise;
+        if (detailJson && detailJson.status === 'success' && detailJson.data && detailJson.data.length > 0) {
           var firstRow = detailJson.data[0];
-          // Set date
           var tgl = String(firstRow['Tanggal'] || firstRow['tanggal'] || '');
           if (tgl) {
             document.getElementById('tanggalPembayaran').value = formatTanggalDisplay(tgl);
             document.getElementById('tanggalPembayaran').type = 'text';
           }
-          // Populate groups
           populateFromData(detailJson.data);
         } else {
           showAlert('error', 'Data tidak ditemukan.');
         }
       } else {
-        // Create mode: add first empty group
         addGroup();
       }
 
