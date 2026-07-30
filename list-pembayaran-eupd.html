@@ -117,7 +117,7 @@
           <p style="font-size:var(--font-sm);color:var(--color-text-secondary);margin-top:0.25rem;">Daftar transaksi pembayaran pengajuan EUPD.</p>
         </div>
         <div style="display:flex;gap:0.75rem;flex-wrap:wrap;">
-          <a href="pembayaran-eupd.html" class="btn-create-new">+ Tambah Pembayaran</a>
+          <a href="form-pembayaran-eupd.html" class="btn-create-new">+ Tambah Pembayaran</a>
         </div>
       </div>
 
@@ -360,8 +360,8 @@
         '<td style="text-align:right;font-weight:600;">' + formatCurrency(item.totalBiaya) + '</td>' +
         '<td>' + getStatusBadge(item.status) + '</td>' +
         '<td style="white-space:nowrap;">' +
-          '<a href="pembayaran-eupd.html?viewNo=' + noP + '" class="action-btn btn-view">View</a> ' +
-          (!isLocked ? '<a href="pembayaran-eupd.html?editNo=' + noP + '" class="action-btn btn-edit">Edit</a> ' : '<span class="action-btn btn-edit" style="opacity:0.4;cursor:not-allowed;">Edit</span> ') +
+          '<a href="form-pembayaran-eupd.html?viewNo=' + noP + '" class="action-btn btn-view">View</a> ' +
+          (!isLocked ? '<a href="form-pembayaran-eupd.html?editNo=' + noP + '" class="action-btn btn-edit">Edit</a> ' : '<span class="action-btn btn-edit" style="opacity:0.4;cursor:not-allowed;">Edit</span> ') +
           (!isLocked ? '<button class="action-btn btn-lock" onclick="handleLock(\'' + noP + '\')">Lock</button> ' : '<button class="action-btn btn-unlock" onclick="handleUnlock(\'' + noP + '\')">Unlock</button>') +
         '</td>';
       tbody.appendChild(tr);
