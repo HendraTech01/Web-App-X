@@ -95,6 +95,12 @@
       .filter-bar .app-input-group { min-width: 100%; }
       .page-btn { padding: 0.35rem 0.5rem; font-size: 12px; }
     }
+
+    @media (max-width: 1024px) {
+      .data-table th, .data-table td { padding: 0.5rem 0.5rem; font-size: var(--font-sm); }
+      .action-btn { font-size: 10px; padding: 0.2rem 0.35rem; }
+      .filter-bar .app-input { min-width: 130px; }
+    }
   </style>
 </head>
 <body class="dashboard-page">
@@ -459,43 +465,48 @@
     });
   }
 
-  function exportToExcel() {
-    var data = filteredData.length > 0 ? filteredData : allData;
-    if (data.length === 0) {
-      Swal.fire({ icon: 'info', title: 'Tidak ada data', text: 'Tidak ada data untuk diexport.' });
-      return;
-    }
-
-    var wb = XLSX.utils.book_new();
-    var wsData = [['No Pembayaran EUPD', 'Tanggal', 'Nomor Pengajuan EUPD', 'WH Awal', 'Nama Driver', 'Tujuan', 'Total Biaya Keseluruhan', 'Status']];
-    data.forEach(function(item) {
-      wsData.push([
-        item.noPembayaran || '',
-        formatTanggal(item.tanggal),
-        item.nomorPengajuan || '',
-        item.whAwal || '',
-        item.namaDriver || '',
-        item.tujuan || '',
-        Number(item.totalBiaya) || 0,
-        item.status || ''
-      ]);
-    });
-
-    var ws = XLSX.utils.aoa_to_sheet(wsData);
-    ws['!cols'] = [
-      { wch: 25 }, { wch: 12 }, { wch: 22 }, { wch: 10 }, { wch: 20 }, { wch: 20 }, { wch: 18 }, { wch: 10 }
-    ];
-
-    // Format currency column
-    for (var i = 1; i < wsData.length; i++) {
-      var cellRef = 'G' + (i + 1);
-      if (ws[cellRef]) {
-        ws[cellRef].z = '#,##0.00';
+  async function exportToExcel() {
+    showLoading(true);
+    try {
+      var res = await fetch(GAS_URL + '?action=getPembayaranEUPDList');
+      var json = await res.json();
+      if (json.status !== 'success' || !json.data || json.data.length === 0) {
+        Swal.fire({ icon: 'info', title: 'Tidak ada data', text: 'Tidak ada data untuk diexport.' });
+        return;
       }
-    }
+      var data = json.data;
 
-    XLSX.utils.book_append_sheet(wb, ws, 'PembayaranEUPD');
-    XLSX.writeFile(wb, 'Pembayaran_EUPD.xlsx');
+      var wb = XLSX.utils.book_new();
+      var wsData = [['No Pembayaran EUPD', 'Tanggal', 'Nomor Pengajuan EUPD', 'WH Awal', 'Nama Driver', 'Tujuan', 'Total Biaya Keseluruhan', 'Status']];
+      data.forEach(function(item) {
+        wsData.push([
+          item.noPembayaran || '',
+          formatTanggal(item.tanggal),
+          item.nomorPengajuan || '',
+          item.whAwal || '',
+          item.namaDriver || '',
+          item.tujuan || '',
+          Number(item.totalBiaya) || 0,
+          item.status || ''
+        ]);
+      });
+
+      var ws = XLSX.utils.aoa_to_sheet(wsData);
+      ws['!cols'] = [
+        { wch: 25 }, { wch: 12 }, { wch: 22 }, { wch: 10 }, { wch: 20 }, { wch: 20 }, { wch: 18 }, { wch: 10 }
+      ];
+
+      for (var i = 1; i < wsData.length; i++) {
+        var cellRef = 'G' + (i + 1);
+        if (ws[cellRef]) ws[cellRef].z = '#,##0.00';
+      }
+
+      XLSX.utils.book_append_sheet(wb, ws, 'PembayaranEUPD');
+      XLSX.writeFile(wb, 'Pembayaran_EUPD.xlsx');
+    } catch (err) {
+      console.error(err);
+      Swal.fire({ icon: 'error', title: 'Kesalahan', text: 'Gagal mengambil data untuk export.' });
+    } finally { showLoading(false); }
   }
 
   document.addEventListener('DOMContentLoaded', async function() {
