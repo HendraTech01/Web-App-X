@@ -618,7 +618,7 @@
       if (firstRow["No Kendaraan"]) document.getElementById("No Kendaraan").value = firstRow["No Kendaraan"];
       if (firstRow["Jenis Kendaraan"]) document.getElementById("Jenis Kendaraan").value = firstRow["Jenis Kendaraan"];
       document.getElementById("Jadwal Berangkat").value = parseDateToInput(firstRow["Jadwal Berangkat"]);
-      document.getElementById("Jadwal Sampai").value = parseDateToInput(firstRow["Jadwal Sampai"]);
+      document.getElementById("Jadwal Sampai").value = parseDateToInput(firstRow["Jadwal Pulang"]);
       if (firstRow["Jumlah Karyawan"]) document.getElementById("Jumlah Karyawan").value = firstRow["Jumlah Karyawan"];
       if (firstRow["Jumlah Hari"]) document.getElementById("Jumlah Hari").value = firstRow["Jumlah Hari"];
       if (firstRow["Uang Makan Per Hari"]) {
@@ -1183,7 +1183,7 @@
         "No Kendaraan": document.getElementById("No Kendaraan").value,
         "Jenis Kendaraan": document.getElementById("Jenis Kendaraan").value,
         "Jadwal Berangkat": formatDateForSheet(document.getElementById("Jadwal Berangkat").value),
-        "Jadwal Sampai": formatDateForSheet(document.getElementById("Jadwal Sampai").value),
+        "Jadwal Pulang": formatDateForSheet(document.getElementById("Jadwal Sampai").value),
         "Jumlah Karyawan": document.getElementById("Jumlah Karyawan").value,
         "Jumlah Hari": document.getElementById("Jumlah Hari").value,
         "Uang Makan Per Hari": getRawValue(document.getElementById("Uang Makan Per Hari").value),

@@ -524,7 +524,7 @@
       document.getElementById("print-driver").textContent = drivers.length > 0 ? drivers.join(", ") : "-";
 
       document.getElementById("print-tgl-berangkat").textContent = formatDate(getValue(mainData, ["Jadwal Berangkat", "Tanggal Berangkat"]));
-      document.getElementById("print-tgl-pulang").textContent = formatDate(getValue(mainData, ["Jadwal Sampai", "Tanggal Pulang"]));
+      document.getElementById("print-tgl-pulang").textContent = formatDate(getValue(mainData, ["Jadwal Pulang", "Tanggal Pulang"]));
       document.getElementById("print-jml-hari").textContent = mainData["Jumlah Hari"] || "-";
 
       // Tujuan table - tampilkan semua baris tujuan yang tersimpan.

@@ -841,13 +841,40 @@
         return;
       }
 
-      var dataToExport = filteredEUPDData;
-      if (dataToExport.length === 0) {
+      // Export berdasarkan data database (bukan hasil filter/sort tampilan),
+      // satu baris per Nomor Pengajuan EUPD, ID dihitung ulang mulai dari 1.
+      // Database tidak diubah (hanya salinan in-memory).
+      var sourceData = (rawDatabaseData && rawDatabaseData.length > 0) ? rawDatabaseData : filteredEUPDData;
+      if (!sourceData || sourceData.length === 0) {
         showNotification("error", "Tidak ada data untuk diexport.");
         return;
       }
 
-      var formattedData = dataToExport.map(function(row, idx) {
+      var uniqueEUPDExport = {};
+      sourceData.forEach(function(row) {
+        if (!row) return;
+
+        // Lewati baris yang seluruhnya kosong
+        var allEmpty = Object.keys(row).every(function(key) {
+          var v = row[key];
+          return v === "" || v === null || v === undefined;
+        });
+        if (allEmpty) return;
+
+        var no = String(row["Nomor Pengajuan EUPD"] || "").trim();
+        if (!no) return;
+        if (!uniqueEUPDExport[no]) {
+          uniqueEUPDExport[no] = row;
+        }
+      });
+
+      var rowsToExport = Object.values(uniqueEUPDExport);
+      if (rowsToExport.length === 0) {
+        showNotification("error", "Tidak ada data untuk diexport.");
+        return;
+      }
+
+      var formattedData = rowsToExport.map(function(row, idx) {
         var newRow = {};
         Object.keys(row).forEach(function(key) {
           var val = String(row[key] || "");
@@ -860,7 +887,7 @@
           }
           newRow[key] = val;
         });
-        // Replace ID with sequential number
+        // Replace ID dengan nomor urut mulai dari 1 (hanya pada file export)
         newRow["ID"] = idx + 1;
         return newRow;
       });
@@ -938,7 +965,7 @@
         
         const uniqueEUPD = {};
         result.data.forEach(row => {
-          const no = row["Nomor Pengajuan EUPD"];
+          const no = String(row["Nomor Pengajuan EUPD"] || "").trim();
           if (no && !uniqueEUPD[no]) {
             uniqueEUPD[no] = row;
           }
