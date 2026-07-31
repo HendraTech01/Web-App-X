@@ -534,7 +534,7 @@
 
       // Always fetch fresh data from server to ensure permissions are up to date
       try {
-        const res = await fetch(`${GAS_URL}?action=getData&sheet=FiturListEUPD`);
+        const res = await fetch(`${GAS_URL}?action=getData&sheet=HakAksiUser`);
         const json = await res.json();
         if (json.status !== "success" || !Array.isArray(json.data)) return [];
 
@@ -554,7 +554,7 @@
     function hasFeaturePermission(featureName) {
       const featureAccess = JSON.parse(localStorage.getItem("wax_feature_access_data") || "[]");
       return featureAccess.some(item => {
-        const feature = String(item["Fitur List EUPD"] || item["fitur list eupd"] || "").trim();
+        const feature = String(item["Hak Aksi User"] || item["hak aksi user"] || "").trim();
         return feature.toLowerCase() === featureName.toLowerCase();
       });
     }
