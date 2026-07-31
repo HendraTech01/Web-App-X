@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form Laporan UPD - Web App X</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    .app-content-body { max-width: 1200px; margin: 0 auto; width: 100%; box-sizing: border-box; }
+
+    .form-laporan-header { margin-bottom: 1.5rem; }
+    .form-laporan-header .top-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 0.5rem; }
+    .form-laporan-header .back-btn { display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; color: var(--color-text-secondary); font-size: var(--font-sm); font-weight: 600; padding: 0.4rem 0.75rem; background: #FFF; border: 1px solid var(--color-border); border-radius: var(--radius-sm); transition: all 0.2s; }
+    .form-laporan-header .back-btn:hover { background: var(--color-primary-light); color: var(--color-primary); }
+
+    .info-bar { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; width: 100%; box-sizing: border-box; }
+    .info-bar .app-input-group { margin-bottom: 0; flex: 1; min-width: 150px; max-width: 250px; }
+    .info-bar .app-input-group .app-input { width: 100%; min-width: auto; }
+    .info-bar .app-input-group label { white-space: nowrap; }
+
+    .form-section-card { background: white; border-radius: var(--radius-md); border: 1px solid var(--color-border); padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.02); width: 100%; box-sizing: border-box; }
+    .section-header { font-size: 1.1rem; font-weight: 700; color: var(--color-primary); margin-bottom: 1.25rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--color-primary-light); display: flex; align-items: center; gap: 0.5rem; justify-content: space-between; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1rem; }
+    .biaya-row .app-input { text-align: right; font-weight: 600; }
+
+    .summary-bar { display: flex; gap: 1rem; justify-content: flex-end; margin-top: 0.75rem; padding: 0.6rem 0.85rem; background: #F8FAFC; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: var(--font-sm); font-weight: 600; flex-wrap: wrap; }
+    .summary-bar .total-label { color: var(--color-text-secondary); font-weight: 500; }
+    .summary-bar .total-value { color: var(--color-primary); min-width: 120px; text-align: right; font-size: 1rem; }
+
+    .sj-select-bar { display: flex; align-items: flex-end; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .sj-select-bar .app-input-group { flex: 1 1 260px; margin-bottom: 0; }
+    .btn-outline-primary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.65rem 1rem; background: transparent; color: var(--color-primary); border: 1px dashed var(--color-primary); border-radius: var(--radius-sm); font-size: var(--font-sm); font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+    .btn-outline-primary:hover { background: var(--color-primary-light); }
+    .btn-outline-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .table-wrap { overflow-x: auto; width: 100%; margin-top: 0.5rem; }
+    .journal-table { width: 100%; border-collapse: collapse; font-size: var(--font-sm); min-width: 860px; }
+    .journal-table th { background: var(--color-primary-light); color: var(--color-primary); font-weight: 600; padding: 0.4rem 0.5rem; text-align: left; font-size: 11px; white-space: nowrap; border: 1px solid var(--color-border); vertical-align: middle; }
+    .journal-table td { padding: 0.35rem 0.45rem; border: 1px solid var(--color-border); vertical-align: middle; word-break: break-word; }
+    .journal-table .btn-journal-remove { background: #FEE2E2; color: #EF4444; border: none; border-radius: 4px; padding: 0.25rem 0.4rem; font-size: 10px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .journal-table .btn-journal-remove:hover { background: #FECACA; }
+
+    .allocation-bar { display: flex; gap: 1rem; justify-content: flex-end; align-items: center; margin-top: 0.75rem; padding: 0.6rem 0.85rem; background: #F8FAFC; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: var(--font-sm); font-weight: 600; flex-wrap: wrap; }
+    .allocation-bar .total-label { color: var(--color-text-secondary); font-weight: 500; }
+    .allocation-bar .total-value { color: var(--color-primary); min-width: 120px; text-align: right; }
+    .alloc-msg { padding: 0.25rem 0.6rem; border-radius: 4px; font-size: 11px; font-weight: 600; }
+    .alloc-ok { background: #D1FAE5; color: #059669; }
+    .alloc-error { background: #FEE2E2; color: #EF4444; }
+    .alloc-warn { background: #FEF3C7; color: #D97706; }
+
+    .bottom-actions { display: flex; gap: 1rem; justify-content: flex-end; align-items: center; margin-top: 1.5rem; flex-wrap: wrap; }
+    .bottom-actions .app-btn { width: auto; padding: 0.75rem 2rem; margin-top: 0; }
+
+    .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.5); z-index: 9999; align-items: center; justify-content: center; }
+    .loading-overlay.active { display: flex; }
+    .spinner { width: 40px; height: 40px; border: 4px solid var(--color-primary-light); border-top: 4px solid var(--color-primary); border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    @media (max-width: 1400px) {
+      .app-content-body { max-width: 100%; padding: 0 1rem; }
+    }
+
+    @media (max-width: 1024px) {
+      .grid-4 { grid-template-columns: 1fr 1fr; }
+    }
+
+    @media (max-width: 768px) and (orientation: portrait) {
+      .app-sidebar-container { display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important; bottom: 0 !important; width: 280px !important; max-width: 85vw !important; height: 100vh !important; z-index: 9999 !important; transform: translateX(-100%); transition: transform 0.25s ease; }
+      body.menu-mode-active .app-sidebar-container { transform: translateX(0); }
+      body.menu-mode-active .app-menu-close-btn { display: flex; position: absolute; right: 1rem; top: 1.5rem; background: none; border: none; color: var(--color-text-secondary); cursor: pointer; }
+      .grid-2, .grid-4 { grid-template-columns: 1fr !important; gap: 0.75rem; }
+      .info-bar { flex-direction: column; align-items: stretch; }
+      .info-bar .app-input-group { min-width: auto; max-width: none; }
+      .bottom-actions { flex-direction: column; }
+      .bottom-actions .app-btn { width: 100%; }
+      .app-content-body { padding: 1rem; }
+      .sj-select-bar { align-items: stretch; }
+      .sj-select-bar .app-input-group { flex: 1 1 100%; }
+      .sj-select-bar .btn-outline-primary { width: 100%; }
+    }
+
+    @media (max-width: 480px) {
+      .section-header { flex-direction: column; align-items: flex-start; gap: 0.5rem; }
+    }
+  </style>
+</head>
+<body class="dashboard-page">
+
+<script>
+  if (!localStorage.getItem("wax_logged_user")) {
+    window.location.replace("login.html");
+  }
+</script>
+
+<div class="app-layout-wrapper">
+  <div class="app-sidebar-container">
+    <div id="sidebar-slot"></div>
+  </div>
+
+  <div class="app-main-content">
+    <header class="app-mobile-header">
+      <button type="button" class="app-hamburger-btn" onclick="toggleMobileMenu()" title="Buka Menu">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="app-title">Form Laporan UPD</div>
+    </header>
+
+    <main class="app-content-body">
+
+      <div class="form-laporan-header">
+        <div class="top-bar">
+          <a href="list-laporan-upd.html" class="back-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+            Kembali
+          </a>
+          <h1 class="app-page-title" style="font-size:1.4rem;margin:0;">Laporan UPD</h1>
+        </div>
+        <p style="font-size:var(--font-sm);color:var(--color-text-secondary);margin-top:0.25rem;">Laporan realisasi biaya perjalanan dinas dari pengajuan EUPD berstatus Paid.</p>
+      </div>
+
+      <div id="access-denied" style="display:none;">
+        <div class="app-alert app-alert-error" style="margin-top:20px;">Anda tidak memiliki hak akses ke modul Laporan UPD. Hubungi admin.</div>
+      </div>
+
+      <div id="page-content" style="display:none;">
+        <div id="form-alert" class="app-alert"></div>
+
+        <div class="info-bar">
+          <div class="app-input-group">
+            <label>Nomor Laporan UPD</label>
+            <input type="text" id="noLaporan" class="app-input" readonly style="background:#F1F5F9;font-style:italic;font-size:12px;" value="Generate otomatis saat disimpan">
+          </div>
+          <div class="app-input-group">
+            <label>Tanggal Dokumen <span style="color:var(--color-danger);">*</span></label>
+            <input type="date" id="tanggalDokumen" class="app-input">
+          </div>
+          <div class="app-input-group">
+            <label>Tanggal PD</label>
+            <input type="date" id="tanggalPD" class="app-input">
+          </div>
+          <div class="app-input-group">
+            <label>Nomor Pengajuan EUPD</label>
+            <input type="text" id="noEUPD" class="app-input" readonly>
+          </div>
+          <div class="app-input-group">
+            <label>Nama Driver</label>
+            <input type="text" id="namaDriver" class="app-input" readonly>
+          </div>
+          <div class="app-input-group">
+            <label>Nama Tujuan</label>
+            <input type="text" id="namaTujuan" class="app-input" readonly>
+          </div>
+          <div class="app-input-group">
+            <label>Tanggal Pulang</label>
+            <input type="text" id="tanggalPulang" class="app-input" readonly>
+          </div>
+        </div>
+
+        <div class="form-section-card">
+          <div class="section-header"><span>Detail Biaya Perjalanan</span></div>
+          <div class="grid-4" id="biaya-container">
+            <div class="app-input-group biaya-row" data-tipe="Uang Makan">
+              <label>Uang Makan</label>
+              <input type="text" class="app-input biaya-jumlah" placeholder="0" onfocus="removeDecimalFormat(this)" oninput="cleanNumberInput(this);recalcAllocation()" onblur="formatDecimalDisplay(this);recalcAllocation()">
+            </div>
+            <div class="app-input-group biaya-row" data-tipe="BBM">
+              <label>BBM</label>
+              <input type="text" class="app-input biaya-jumlah" placeholder="0" onfocus="removeDecimalFormat(this)" oninput="cleanNumberInput(this);recalcAllocation()" onblur="formatDecimalDisplay(this);recalcAllocation()">
+            </div>
+            <div class="app-input-group biaya-row" data-tipe="Penginapan">
+              <label>Penginapan</label>
+              <input type="text" class="app-input biaya-jumlah" placeholder="0" onfocus="removeDecimalFormat(this)" oninput="cleanNumberInput(this);recalcAllocation()" onblur="formatDecimalDisplay(this);recalcAllocation()">
+            </div>
+            <div class="app-input-group biaya-row" data-tipe="Biaya Lainnya">
+              <label>Biaya Lainnya</label>
+              <input type="text" class="app-input biaya-jumlah" placeholder="0" onfocus="removeDecimalFormat(this)" oninput="cleanNumberInput(this);recalcAllocation()" onblur="formatDecimalDisplay(this);recalcAllocation()">
+            </div>
+          </div>
+          <div class="app-input-group" style="margin-top:1rem;margin-bottom:0;">
+            <label>Keterangan</label>
+            <textarea id="keterangan" class="app-input" rows="2" placeholder="Keterangan laporan..."></textarea>
+          </div>
+          <div class="summary-bar">
+            <span><span class="total-label">Total Keseluruhan:</span> <span class="total-value" id="total-keseluruhan">0,00</span></span>
+          </div>
+        </div>
+
+        <div class="form-section-card">
+          <div class="section-header"><span>Surat Jalan (ListDOCPA)</span></div>
+          <div class="sj-select-bar">
+            <div class="app-input-group">
+              <label>Pilih Surat Jalan</label>
+              <select id="select-surat-jalan" class="app-input"></select>
+            </div>
+            <button type="button" class="btn-outline-primary" id="btn-add-product" onclick="addProduct()">+ Tambah Surat Jalan</button>
+          </div>
+          <div class="table-wrap">
+            <table class="journal-table">
+              <thead>
+                <tr>
+                  <th>No Surat Jalan</th>
+                  <th>Tanggal SJ</th>
+                  <th>Pemesan</th>
+                  <th>Nama Tujuan</th>
+                  <th>Nama Barang</th>
+                  <th>Jml Satuan Dasar</th>
+                  <th>Jml Satuan Induk</th>
+                  <th>Biaya per Satuan Induk</th>
+                  <th>Total Biaya per Produk</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody id="products-body"></tbody>
+            </table>
+          </div>
+          <div class="allocation-bar">
+            <span><span class="total-label">Total Biaya Produk per Perjalanan:</span> <span class="total-value" id="total-produk">0,00</span></span>
+            <span class="alloc-msg alloc-warn" id="alloc-msg">Belum ada surat jalan yang ditambahkan.</span>
+          </div>
+        </div>
+
+        <div class="bottom-actions">
+          <button type="button" class="app-btn" onclick="handleSimpan()" id="btn-simpan" style="width:auto;padding:0.75rem 2rem;">Simpan Laporan UPD</button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
+</div>
+
+<script>
+  const GAS_URL = window.GAS_URL || "https://script.google.com/macros/s/AKfycbwf5oEpUkMp65-aTQ77PIj6CEhQV64yXjBqJMiBrkacXed5AbRYimF_Cb9qTa5mczLa/exec";
+
+  let availableSuratJalan = [];
+  let currentStatus = '';
+
+  function showLoading(show) {
+    const el = document.getElementById('loadingOverlay');
+    el.classList.toggle('active', show);
+  }
+
+  function showAlert(type, msg) {
+    const el = document.getElementById('form-alert');
+    el.className = 'app-alert app-alert-' + type;
+    el.innerText = msg;
+    el.style.display = 'block';
+    setTimeout(function() { el.style.display = 'none'; }, 5000);
+  }
+
+  function esc(v) {
+    return String(v == null ? "" : v)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  function getMode() {
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('viewNo')) return 'view';
+    if (params.get('editNo')) return 'edit';
+    return 'create';
+  }
+
+  function getModeNo() {
+    var params = new URLSearchParams(window.location.search);
+    return params.get('viewNo') || params.get('editNo') || '';
+  }
+
+  function formatTanggal(val) {
+    if (!val) return '-';
+    if (typeof val === 'object' && typeof val.getMonth === 'function') {
+      var dd = String(val.getDate()); while (dd.length < 2) dd = "0" + dd;
+      var mm = String(val.getMonth() + 1); while (mm.length < 2) mm = "0" + mm;
+      return dd + '/' + mm + '/' + val.getFullYear();
+    }
+    var s = String(val);
+    if (s.indexOf('/') !== -1) return s;
+    if (s.indexOf('T') !== -1) {
+      var datePart = s.split('T')[0];
+      var p = datePart.split('-');
+      if (p.length === 3 && p[0].length === 4) return p[2] + '/' + p[1] + '/' + p[0];
+    }
+    if (s.indexOf('-') !== -1) {
+      var p2 = s.split('-');
+      if (p2.length === 3) return p2[2] + '/' + p2[1] + '/' + p2[0];
+    }
+    return s;
+  }
+
+  function formatCurrency(n) {
+    n = Number(n) || 0;
+    return n.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function formatQty(n) {
+    n = Number(n) || 0;
+    return n.toLocaleString('id-ID', { maximumFractionDigits: 2 });
+  }
+
+  function getTodayDateInputISO() {
+    var d = new Date();
+    var dd = String(d.getDate()); while (dd.length < 2) dd = "0" + dd;
+    var mm = String(d.getMonth() + 1); while (mm.length < 2) mm = "0" + mm;
+    return d.getFullYear() + '-' + mm + '-' + dd;
+  }
+
+  function cleanNumberInput(el) {
+    if (el.readOnly || el.disabled) return;
+    if (el.value.includes(',')) return;
+    el.value = el.value.replace(/[^0-9]/g, '');
+  }
+
+  function formatDecimalDisplay(el) {
+    var v = el.value.replace(/\./g, '').replace(/,/g, '.');
+    var n = parseFloat(v) || 0;
+    el.value = n > 0 ? n.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
+  }
+
+  function removeDecimalFormat(el) {
+    if (el.readOnly || el.disabled) return;
+    var v = el.value.replace(/\./g, '').replace(/,/g, '.');
+    var n = parseFloat(v) || 0;
+    el.value = n > 0 ? Math.floor(n).toString() : '';
+  }
+
+  function getRawValue(valStr) {
+    if (!valStr) return 0;
+    return parseFloat(String(valStr).replace(/\./g, '').replace(/,/g, '.')) || 0;
+  }
+
+  function loadFeatureAccess() {
+    const user = localStorage.getItem("wax_logged_user") || "";
+    if (!user) return Promise.resolve([]);
+    const cached = localStorage.getItem("wax_laporan_access_data");
+    if (cached) {
+      try { return Promise.resolve(JSON.parse(cached)); } catch (e) { /* ignore */ }
+    }
+    return fetch(GAS_URL + '?action=getData&sheet=HakAksiUser')
+      .then(function(res) { return res.json(); })
+      .then(function(json) {
+        if (json.status !== "success" || !Array.isArray(json.data)) return [];
+        const userRows = json.data.filter(function(item) {
+          return String(item["Username"] || item["username"] || "").trim().toLowerCase() === user.toLowerCase();
+        });
+        localStorage.setItem("wax_laporan_access_data", JSON.stringify(userRows));
+        return userRows;
+      })
+      .catch(function(err) {
+        console.error("Gagal memuat hak aksi user:", err);
+        return [];
+      });
+  }
+
+  function hasPermission(action) {
+    var rows = [];
+    try { rows = JSON.parse(localStorage.getItem("wax_laporan_access_data") || "[]"); } catch (e) { rows = []; }
+    if (rows.length === 0) return true;
+    var a = String(action).toLowerCase();
+    return rows.some(function(item) {
+      var v = String(item["Hak Aksi User"] || item["hak aksi user"] || "").trim();
+      return v.toLowerCase().split(/[,;|/]+/).map(function(s) { return s.trim(); }).filter(Boolean)
+        .some(function(p) { return p.indexOf(a) !== -1; });
+    });
+  }
+
+  function getBiayaList() {
+    var list = [];
+    document.querySelectorAll('.biaya-row').forEach(function(row) {
+      var jumlah = getRawValue(row.querySelector('.biaya-jumlah').value);
+      if (jumlah > 0) list.push({ tipe: row.dataset.tipe, jumlah: jumlah });
+    });
+    return list;
+  }
+
+  function getTotalKeseluruhan() {
+    var total = 0;
+    getBiayaList().forEach(function(b) { total += b.jumlah; });
+    return total;
+  }
+
+  function getProducts() {
+    var prods = [];
+    document.querySelectorAll('#products-body tr').forEach(function(tr) {
+      prods.push({
+        nomorSuratJalan: tr.dataset.noSJ,
+        tanggalSuratJalan: tr.dataset.tglSJ || '',
+        pemesan: tr.dataset.pemesan || '',
+        namaTujuan: tr.dataset.tujuan || '',
+        namaBarang: tr.dataset.barang || '',
+        jumlahSatuanDasar: Number(tr.dataset.dasar) || 0,
+        jumlahSatuanInduk: Number(tr.dataset.induk) || 0,
+        biayaPerSatuanInduk: Number(tr.dataset.biayaPerInduk) || 0,
+        totalBiayaPerProduk: Number(tr.dataset.totalBiaya) || 0
+      });
+    });
+    return prods;
+  }
+
+  function populateSJSelect() {
+    var sel = document.getElementById('select-surat-jalan');
+    sel.innerHTML = '';
+    var opt0 = document.createElement('option');
+    opt0.value = '';
+    opt0.innerText = 'Pilih surat jalan...';
+    sel.appendChild(opt0);
+    availableSuratJalan.forEach(function(s) {
+      var opt = document.createElement('option');
+      opt.value = s.nomorSuratJalan;
+      opt.innerText = s.nomorSuratJalan + ' | ' + (s.namaBarang || '') + ' | ' + (s.namaTujuan || '');
+      sel.appendChild(opt);
+    });
+  }
+
+  function addProduct() {
+    var sel = document.getElementById('select-surat-jalan');
+    var noSJ = sel.value;
+    if (!noSJ) { showAlert('error', 'Pilih surat jalan terlebih dahulu.'); return; }
+    var exists = getProducts().some(function(p) { return p.nomorSuratJalan === noSJ; });
+    if (exists) { showAlert('error', 'Surat jalan ' + noSJ + ' sudah ditambahkan.'); return; }
+    var item = null;
+    for (var i = 0; i < availableSuratJalan.length; i++) {
+      if (availableSuratJalan[i].nomorSuratJalan === noSJ) { item = availableSuratJalan[i]; break; }
+    }
+    if (!item) return;
+    addProductRow(item, false);
+    sel.value = '';
+    recalcAllocation();
+  }
+
+  function addProductRow(p, readonly) {
+    var tbody = document.getElementById('products-body');
+    var tr = document.createElement('tr');
+    tr.dataset.noSJ = p.nomorSuratJalan;
+    tr.dataset.tglSJ = p.tanggalSuratJalan || '';
+    tr.dataset.pemesan = p.pemesan || '';
+    tr.dataset.tujuan = p.namaTujuan || '';
+    tr.dataset.barang = p.namaBarang || '';
+    tr.dataset.dasar = Number(p.jumlahSatuanDasar) || 0;
+    tr.dataset.induk = Number(p.jumlahSatuanInduk) || 0;
+    tr.dataset.biayaPerInduk = Number(p.biayaPerSatuanInduk) || 0;
+    tr.dataset.totalBiaya = Number(p.totalBiayaPerProduk) || 0;
+
+    tr.innerHTML =
+      '<td><strong>' + esc(p.nomorSuratJalan) + '</strong></td>' +
+      '<td>' + formatTanggal(p.tanggalSuratJalan) + '</td>' +
+      '<td>' + esc(p.pemesan || '-') + '</td>' +
+      '<td>' + esc(p.namaTujuan || '-') + '</td>' +
+      '<td>' + esc(p.namaBarang || '-') + '</td>' +
+      '<td style="text-align:right;">' + formatQty(p.jumlahSatuanDasar) + '</td>' +
+      '<td style="text-align:right;">' + formatQty(p.jumlahSatuanInduk) + '</td>' +
+      '<td class="cell-biaya-per-induk" style="text-align:right;">' + formatCurrency(Number(p.biayaPerSatuanInduk) || 0) + '</td>' +
+      '<td class="cell-total-produk" style="text-align:right;font-weight:600;">' + formatCurrency(Number(p.totalBiayaPerProduk) || 0) + '</td>' +
+      (readonly ? '<td></td>' : '<td><button type="button" class="btn-journal-remove" onclick="removeProduct(this)">x</button></td>');
+    tbody.appendChild(tr);
+  }
+
+  function removeProduct(btn) {
+    var tr = btn.closest('tr');
+    tr.remove();
+    recalcAllocation();
+  }
+
+  function round2(n) {
+    return Math.round((n + Number.EPSILON) * 100) / 100;
+  }
+
+  function recalcAllocation() {
+    var total = getTotalKeseluruhan();
+    document.getElementById('total-keseluruhan').innerText = formatCurrency(total);
+
+    var prods = getProducts();
+    var sumInduk = 0;
+    var sumDasar = 0;
+    prods.forEach(function(p) { sumInduk += p.jumlahSatuanInduk; sumDasar += p.jumlahSatuanDasar; });
+
+    var EPS = 1e-9;
+    var ratiosEqual = prods.length > 0 && sumInduk > 0;
+    var prevRatio = null;
+    for (var i = 0; i < prods.length; i++) {
+      var p = prods[i];
+      if (p.jumlahSatuanInduk <= 0) { ratiosEqual = false; break; }
+      var r = p.jumlahSatuanDasar / p.jumlahSatuanInduk;
+      if (prevRatio === null) prevRatio = r;
+      else if (Math.abs(r - prevRatio) > EPS) { ratiosEqual = false; break; }
+    }
+
+    if (ratiosEqual) {
+      var rate = sumInduk > 0 ? total / sumInduk : 0;
+      prods.forEach(function(p) {
+        p.biayaPerSatuanInduk = rate;
+        p.totalBiayaPerProduk = p.jumlahSatuanInduk * rate;
+      });
+    } else {
+      prods.forEach(function(p) {
+        var persen = sumDasar > 0 ? p.jumlahSatuanDasar / sumDasar : 0;
+        p.totalBiayaPerProduk = persen * total;
+        p.biayaPerSatuanInduk = p.jumlahSatuanInduk > 0 ? p.totalBiayaPerProduk / p.jumlahSatuanInduk : 0;
+      });
+    }
+
+    var sumRounded = 0;
+    prods.forEach(function(p) { p.totalBiayaPerProduk = round2(p.totalBiayaPerProduk); sumRounded += p.totalBiayaPerProduk; });
+    var diff = round2(total - sumRounded);
+    if (prods.length > 0 && Math.abs(diff) > 0.001) {
+      var last = prods[prods.length - 1];
+      last.totalBiayaPerProduk = round2(last.totalBiayaPerProduk + diff);
+    }
+    prods.forEach(function(p) {
+      p.biayaPerSatuanInduk = p.jumlahSatuanInduk > 0 ? round2(p.totalBiayaPerProduk / p.jumlahSatuanInduk) : 0;
+    });
+
+    var rows = document.querySelectorAll('#products-body tr');
+    for (var j = 0; j < rows.length; j++) {
+      var item = prods[j];
+      if (!item) break;
+      rows[j].dataset.biayaPerInduk = item.biayaPerSatuanInduk;
+      rows[j].dataset.totalBiaya = item.totalBiayaPerProduk;
+      var cbi = rows[j].querySelector('.cell-biaya-per-induk');
+      var ctp = rows[j].querySelector('.cell-total-produk');
+      if (cbi) cbi.innerText = formatCurrency(item.biayaPerSatuanInduk);
+      if (ctp) ctp.innerText = formatCurrency(item.totalBiayaPerProduk);
+    }
+
+    var sumProduk = 0;
+    prods.forEach(function(p) { sumProduk += p.totalBiayaPerProduk; });
+    document.getElementById('total-produk').innerText = formatCurrency(sumProduk);
+
+    var msgEl = document.getElementById('alloc-msg');
+    if (prods.length === 0) {
+      msgEl.innerText = 'Belum ada surat jalan yang ditambahkan.';
+      msgEl.className = 'alloc-msg alloc-warn';
+    } else if (Math.abs(sumProduk - total) <= 0.001) {
+      msgEl.innerText = 'Alokasi biaya selesai.';
+      msgEl.className = 'alloc-msg alloc-ok';
+    } else {
+      msgEl.innerText = 'Alokasi biaya belum seimbang.';
+      msgEl.className = 'alloc-msg alloc-error';
+    }
+  }
+
+  function setFormReadOnly(readonly) {
+    document.querySelectorAll('.biaya-jumlah').forEach(function(inp) { inp.readOnly = readonly; });
+    document.getElementById('tanggalDokumen').readOnly = readonly;
+    document.getElementById('tanggalPD').readOnly = readonly;
+    document.getElementById('keterangan').readOnly = readonly;
+    document.getElementById('select-surat-jalan').disabled = readonly;
+    document.getElementById('btn-add-product').style.display = readonly ? 'none' : '';
+  }
+
+  function populateFromDetail(d, isView) {
+    currentStatus = String(d.status || 'Reported').trim() || 'Reported';
+    document.getElementById('noLaporan').value = d.noLaporan;
+    document.getElementById('noLaporan').style.fontStyle = 'normal';
+    document.getElementById('noLaporan').style.fontWeight = '700';
+    document.getElementById('noLaporan').style.color = 'var(--color-primary)';
+    if (d.tanggalDokumen) document.getElementById('tanggalDokumen').value = d.tanggalDokumen;
+    if (d.tanggalPD) document.getElementById('tanggalPD').value = d.tanggalPD;
+    document.getElementById('noEUPD').value = d.noEUPD || '';
+    document.getElementById('namaDriver').value = d.namaDriver || '';
+    document.getElementById('keterangan').value = d.keterangan || '';
+
+    var tujuanSet = {};
+    (d.products || []).forEach(function(p) { if (p.namaTujuan) tujuanSet[p.namaTujuan] = true; });
+    document.getElementById('namaTujuan').value = Object.keys(tujuanSet).join(', ') || '-';
+    document.getElementById('tanggalPulang').value = '-';
+
+    (d.biaya || []).forEach(function(b) {
+      document.querySelectorAll('.biaya-row').forEach(function(row) {
+        if (row.dataset.tipe === b.tipe) {
+          row.querySelector('.biaya-jumlah').value = formatCurrency(Number(b.jumlah) || 0);
+        }
+      });
+    });
+
+    (d.products || []).forEach(function(p) {
+      addProductRow(p, isView);
+    });
+  }
+
+  async function handleSimpan() {
+    var mode = getMode();
+    if (mode === 'view') return;
+
+    var tanggalDokumen = document.getElementById('tanggalDokumen').value;
+    if (!tanggalDokumen) { showAlert('error', 'Tanggal Dokumen wajib diisi.'); return; }
+    var noEUPD = document.getElementById('noEUPD').value.trim();
+    if (!noEUPD) { showAlert('error', 'Nomor Pengajuan EUPD belum tersedia.'); return; }
+    var biaya = getBiayaList();
+    if (biaya.length === 0) { showAlert('error', 'Minimal satu tipe biaya harus diisi.'); return; }
+
+    recalcAllocation();
+    var products = getProducts();
+    if (products.length === 0) { showAlert('error', 'Minimal satu surat jalan harus dipilih.'); return; }
+
+    var total = getTotalKeseluruhan();
+    var sumProduk = 0;
+    products.forEach(function(p) { sumProduk += p.totalBiayaPerProduk; });
+    if (Math.abs(sumProduk - total) > 0.001) { showAlert('error', 'Alokasi biaya belum seimbang.'); return; }
+
+    var payload = {
+      action: mode === 'edit' ? 'updateLaporanUPD' : 'saveLaporanUPD',
+      noLaporan: mode === 'edit' ? getModeNo() : '',
+      noEUPD: noEUPD,
+      tanggalDokumen: tanggalDokumen,
+      tanggalPD: document.getElementById('tanggalPD').value,
+      keterangan: document.getElementById('keterangan').value.trim(),
+      totalKeseluruhan: total,
+      totalBiayaProdukPerPerjalanan: sumProduk,
+      namaDriver: document.getElementById('namaDriver').value.trim(),
+      status: currentStatus || 'Reported',
+      biaya: biaya,
+      products: products
+    };
+
+    var btn = document.getElementById('btn-simpan');
+    btn.disabled = true;
+    btn.innerText = 'Menyimpan...';
+    showLoading(true);
+
+    try {
+      var res = await fetch(GAS_URL, { method: 'POST', body: JSON.stringify(payload) });
+      var result = await res.json();
+      if (result.status === 'success') {
+        Swal.fire({
+          icon: 'success',
+          title: 'Berhasil!',
+          text: 'Laporan UPD berhasil ' + (mode === 'edit' ? 'diperbarui.' : 'disimpan. No: ' + result.noLaporan),
+          confirmButtonText: 'OK'
+        }).then(function() {
+          window.location.href = 'list-laporan-upd.html';
+        });
+      } else {
+        Swal.fire({ icon: 'error', title: 'Gagal', text: result.message || 'Gagal menyimpan data.', confirmButtonText: 'Tutup' });
+      }
+    } catch (err) {
+      console.error(err);
+      Swal.fire({ icon: 'error', title: 'Kesalahan', text: 'Gagal terhubung ke server: ' + err.message, confirmButtonText: 'Tutup' });
+    } finally {
+      btn.disabled = false;
+      btn.innerText = mode === 'edit' ? 'Update Laporan UPD' : 'Simpan Laporan UPD';
+      showLoading(false);
+    }
+  }
+
+  async function initPage() {
+    showLoading(true);
+    try {
+      var mode = getMode();
+      var noLaporan = getModeNo();
+      var isView = mode === 'view';
+      var isEdit = mode === 'edit';
+      var isCreate = mode === 'create';
+
+      await loadSidebar();
+
+      var accessRows = await loadFeatureAccess();
+      if (accessRows.length === 0) {
+        document.getElementById('access-denied').style.display = 'block';
+        showLoading(false);
+        return;
+      }
+      if (isEdit && !hasPermission('edit')) mode = 'view';
+      isView = mode === 'view';
+      isEdit = mode === 'edit';
+      isCreate = mode === 'create';
+
+      document.getElementById('page-content').style.display = 'block';
+      document.querySelector('h1.app-page-title').innerText = isView ? 'View Laporan UPD' : (isEdit ? 'Edit Laporan UPD' : 'Laporan UPD');
+      if (isView) {
+        document.getElementById('btn-simpan').style.display = 'none';
+        setFormReadOnly(true);
+      } else if (isEdit) {
+        document.getElementById('btn-simpan').innerText = 'Update Laporan UPD';
+      }
+
+      var sjUrl = GAS_URL + '?action=getAvailableSuratJalan';
+      if (isEdit) sjUrl += '&excludeNoLaporan=' + encodeURIComponent(noLaporan);
+      var sjRes = await fetch(sjUrl);
+      var sjJson = await sjRes.json();
+      if (sjJson.status === 'success') {
+        availableSuratJalan = sjJson.data || [];
+        populateSJSelect();
+      }
+
+      if (isCreate) {
+        var params = new URLSearchParams(window.location.search);
+        var noEUPD = params.get('noEUPD') || '';
+        var namaDriver = params.get('namaDriver') || '';
+        var namaTujuan = params.get('namaTujuan') || '';
+        var tanggalPulang = params.get('tanggalPulang') || '';
+
+        if (!noEUPD) { showAlert('error', 'Nomor Pengajuan EUPD tidak ditemukan pada URL.'); return; }
+
+        document.getElementById('noEUPD').value = noEUPD;
+        document.getElementById('namaDriver').value = namaDriver;
+        document.getElementById('namaTujuan').value = namaTujuan || '-';
+        document.getElementById('tanggalPulang').value = formatTanggal(tanggalPulang);
+        document.getElementById('tanggalDokumen').value = getTodayDateInputISO();
+
+        var infoRes = await fetch(GAS_URL + '?action=getEUPDInfo&noEUPD=' + encodeURIComponent(noEUPD));
+        var infoJson = await infoRes.json();
+        if (infoJson.status === 'success' && infoJson.data) {
+          var info = infoJson.data;
+          document.getElementById('namaDriver').value = info.namaDriver || namaDriver;
+          document.getElementById('namaTujuan').value = info.namaTujuan || namaTujuan || '-';
+          if (info.jadwalPulang) document.getElementById('tanggalPulang').value = formatTanggal(info.jadwalPulang);
+        }
+      } else {
+        document.getElementById('noLaporan').value = noLaporan;
+        var detailRes = await fetch(GAS_URL + '?action=getLaporanUPDDetail&noLaporan=' + encodeURIComponent(noLaporan));
+        var detailJson = await detailRes.json();
+        if (detailJson.status !== 'success' || !detailJson.data) {
+          showAlert('error', detailJson.message || 'Data tidak ditemukan.');
+          return;
+        }
+        if (isEdit && String(detailJson.data.status || "").trim() === "Locked") {
+          mode = 'view';
+          isView = true;
+          isEdit = false;
+          document.querySelector('h1.app-page-title').innerText = 'View Laporan UPD';
+          document.getElementById('btn-simpan').style.display = 'none';
+          setFormReadOnly(true);
+        }
+        populateFromDetail(detailJson.data, isView);
+      }
+
+      recalcAllocation();
+    } catch (err) {
+      console.error('Init error:', err);
+      showAlert('error', 'Gagal memuat data. Periksa koneksi.');
+    } finally {
+      showLoading(false);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', initPage);
+</script>
+
+</body>
+</html>

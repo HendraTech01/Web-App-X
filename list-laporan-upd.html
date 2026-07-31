@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>List Laporan UPD - Web App X</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <style>
+    .app-content-body { max-width: 100%; width: 100%; box-sizing: border-box; }
+
+    .page-header-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; margin-bottom: 1rem; }
+
+    .card-title { font-size: 1rem; font-weight: 700; color: var(--color-text-primary); margin: 0 0 0.25rem; }
+    .card-subtitle { font-size: var(--font-sm); color: var(--color-text-secondary); margin: 0 0 0.75rem; }
+
+    .filter-bar { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; background: white; border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 0.65rem 0.85rem; margin-bottom: 0.75rem; width: 100%; box-sizing: border-box; }
+    .filter-bar .app-input-group { margin-bottom: 0; flex: 0 1 auto; min-width: 100px; max-width: 170px; }
+    .filter-bar .app-input-group label { font-size: var(--font-sm); }
+    .filter-bar .app-input { width: 100%; min-width: auto; padding: 0.35rem 0.5rem; font-size: var(--font-sm); }
+    .filter-bar input[type="date"] { width: 100%; min-width: auto; }
+    .filter-bar input[type="text"] { max-width: 240px !important; }
+    .filter-btn { padding: 0.35rem 0.7rem; background: var(--color-primary); color: white; border: none; border-radius: var(--radius-sm); font-weight: 600; font-size: var(--font-sm); cursor: pointer; white-space: nowrap; }
+    .filter-btn:hover { background: var(--color-primary-hover); }
+    .filter-reset { padding: 0.35rem 0.7rem; background: transparent; color: var(--color-text-secondary); border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-weight: 600; font-size: var(--font-sm); cursor: pointer; }
+    .filter-reset:hover { background: #F1F5F9; }
+
+    .table-container { background: white; border-radius: var(--radius-md); border: 1px solid var(--color-border); overflow-x: hidden; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.03); max-width: 100%; width: 100%; box-sizing: border-box; margin-bottom: 2rem; }
+    .table-scroll { overflow-x: auto; }
+    .data-table { width: 100%; border-collapse: collapse; text-align: left; font-size: var(--font-sm); min-width: 600px; }
+    .data-table th { background: var(--color-background); padding: 0.5rem 0.6rem; font-weight: 600; color: var(--color-text-primary); border-bottom: 1px solid var(--color-border); white-space: nowrap; cursor: pointer; user-select: none; }
+    .data-table th:hover { color: var(--color-primary); }
+    .data-table th .sort-arrow { margin-left: 0.2rem; font-size: 9px; color: var(--color-text-secondary); }
+    .data-table td { padding: 0.5rem 0.6rem; border-bottom: 1px solid var(--color-border); color: var(--color-text-primary); word-wrap: break-word; overflow-wrap: break-word; white-space: normal; }
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: #F8FAFC; }
+
+    .badge-paid { background: #D1FAE5; color: #059669; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+    .badge-reported { background: #E0F2FE; color: #0284C7; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+    .badge-locked { background: #DBEAFE; color: #2563EB; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+
+    .action-btn { display: inline-flex; align-items: center; gap: 0.2rem; padding: 0.25rem 0.45rem; border: none; border-radius: 4px; font-size: 10px; font-weight: 600; cursor: pointer; text-decoration: none; white-space: nowrap; }
+    .btn-lapor { background: #10B981; color: white; }
+    .btn-lapor:hover { background: #059669; }
+    .btn-view { background: #E0F2FE; color: #0284C7; }
+    .btn-view:hover { background: #BAE6FD; }
+    .btn-edit { background: #FEF3C7; color: #D97706; }
+    .btn-edit:hover { background: #FDE68A; }
+    .btn-lock { background: #DBEAFE; color: #2563EB; }
+    .btn-lock:hover { background: #BFDBFE; }
+    .btn-unlock { background: #FEE2E2; color: #DC2626; }
+    .btn-unlock:hover { background: #FECACA; }
+
+    .pagination-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; padding: 0.65rem 0.75rem; border-top: 1px solid var(--color-border); }
+    .pagination-bar .page-info { font-size: var(--font-sm); color: var(--color-text-secondary); }
+    .page-btn-group { display: flex; gap: 0.2rem; }
+    .page-btn { padding: 0.3rem 0.55rem; border: 1px solid var(--color-border); background: white; border-radius: 4px; font-size: var(--font-sm); cursor: pointer; font-weight: 500; }
+    .page-btn:hover { background: var(--color-primary-light); color: var(--color-primary); }
+    .page-btn.active { background: var(--color-primary); color: white; border-color: var(--color-primary); }
+    .page-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .empty-state { text-align: center; padding: 2rem 1rem; color: var(--color-text-secondary); }
+    .empty-state p { font-size: var(--font-sm); }
+
+    .loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15,23,42,0.5); z-index: 9999; align-items: center; justify-content: center; }
+    .loading-overlay.active { display: flex; }
+    .spinner { width: 40px; height: 40px; border: 4px solid var(--color-primary-light); border-top: 4px solid var(--color-primary); border-radius: 50%; animation: spin 1s linear infinite; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+    @media (max-width: 1024px) {
+      .data-table th, .data-table td { padding: 0.35rem 0.4rem; font-size: 11px; }
+      .action-btn { font-size: 10px; padding: 0.2rem 0.3rem; }
+      .filter-bar { padding: 0.5rem 0.65rem; }
+      .filter-bar .app-input-group { min-width: 90px; max-width: 140px; }
+      .filter-bar input[type="text"] { max-width: 170px !important; }
+      .app-content-body { padding: 0.75rem; }
+      .page-btn { padding: 0.25rem 0.4rem; font-size: 11px; }
+      .table-container { margin-bottom: 1.5rem; }
+    }
+
+    @media (max-width: 768px) and (orientation: portrait) {
+      .app-sidebar-container { display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important; bottom: 0 !important; width: 280px !important; max-width: 85vw !important; height: 100vh !important; z-index: 9999 !important; transform: translateX(-100%); transition: transform 0.25s ease; }
+      body.menu-mode-active .app-sidebar-container { transform: translateX(0); }
+      body.menu-mode-active .app-menu-close-btn { display: flex; position: absolute; right: 1rem; top: 1.5rem; background: none; border: none; color: var(--color-text-secondary); cursor: pointer; }
+      .filter-bar { flex-wrap: wrap; align-items: stretch; }
+      .filter-bar .app-input { min-width: auto; width: 100%; }
+      .filter-bar .app-input-group { min-width: 100%; max-width: 100%; }
+      .page-header-bar { flex-direction: column; align-items: stretch; }
+      .action-btn { font-size: 10px; padding: 0.2rem 0.35rem; }
+      .app-content-body { padding: 0.75rem; }
+      .pagination-bar { flex-direction: column; align-items: stretch; gap: 0.5rem; }
+      .page-btn-group { justify-content: center; flex-wrap: wrap; }
+    }
+  </style>
+</head>
+<body class="dashboard-page">
+<script>if (!localStorage.getItem("wax_logged_user")) window.location.replace("login.html");</script>
+
+<div class="app-layout-wrapper">
+  <div class="app-sidebar-container"><div id="sidebar-slot"></div></div>
+  <div class="app-main-content">
+    <header class="app-mobile-header">
+      <button type="button" class="app-hamburger-btn" onclick="toggleMobileMenu()">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      </button>
+      <div class="app-title">List Laporan UPD</div>
+    </header>
+    <main class="app-content-body">
+
+      <div class="page-header-bar">
+        <div>
+          <h1 class="app-page-title" style="margin:0;font-size:1.15rem;">Laporan UPD <span style="font-size:12px;color:var(--color-text-secondary);font-weight:500;">(Laporan Realisasi Perjalanan Dinas)</span></h1>
+          <p style="font-size:11px;color:var(--color-text-secondary);margin-top:0.15rem;">Laporan realisasi biaya perjalanan dinas dari pengajuan EUPD yang telah dibayarkan (Paid).</p>
+        </div>
+      </div>
+
+      <div id="access-denied" style="display:none;">
+        <div class="app-alert app-alert-error" style="margin-top:20px;">Anda tidak memiliki hak akses ke modul Laporan UPD. Hubungi admin.</div>
+      </div>
+
+      <div id="page-content" style="display:none;">
+
+        <!-- TABEL 1: PENGAJUAN EUPD BELUM DILAPORKAN -->
+        <div class="table-container">
+          <div style="padding:0.85rem 0.85rem 0;">
+            <h2 class="card-title">Pengajuan EUPD Belum Dilaporkan</h2>
+            <p class="card-subtitle">Pengajuan berstatus Paid yang belum dibuat Laporan UPD.</p>
+          </div>
+          <div class="filter-bar" style="border:none;border-radius:0;box-shadow:none;margin-bottom:0;">
+            <div class="app-input-group" style="flex:1 1 auto;min-width:200px;max-width:none;">
+              <label>Cari</label>
+              <input type="text" id="search-unreported" class="app-input" placeholder="Cari No Pengajuan, Driver, atau Tujuan..." oninput="applyUnreportedFilters()">
+            </div>
+          </div>
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th onclick="sortUnreported('noEUPD')">Nomor Pengajuan EUPD <span class="sort-arrow" id="sortu-noEUPD"></span></th>
+                  <th onclick="sortUnreported('namaDriver')">Nama Driver <span class="sort-arrow" id="sortu-namaDriver"></span></th>
+                  <th onclick="sortUnreported('namaTujuan')">Nama Tujuan <span class="sort-arrow" id="sortu-namaTujuan"></span></th>
+                  <th onclick="sortUnreported('jadwalPulang')">Jadwal Pulang <span class="sort-arrow" id="sortu-jadwalPulang"></span></th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="table-unreported-body"></tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="empty-unreported" style="display:none;">
+            <p>Semua pengajuan EUPD Paid sudah dilaporkan.</p>
+          </div>
+          <div class="pagination-bar" id="pagination-unreported" style="display:none;">
+            <span class="page-info" id="page-info-unreported"></span>
+            <div class="page-btn-group" id="page-btns-unreported"></div>
+          </div>
+        </div>
+
+        <!-- TABEL 2: LAPORAN REALISASI UPD -->
+        <div class="table-container">
+          <div style="padding:0.85rem 0.85rem 0;">
+            <h2 class="card-title">Laporan Realisasi UPD</h2>
+            <p class="card-subtitle">Daftar laporan realisasi perjalanan dinas yang sudah dibuat.</p>
+          </div>
+          <div class="filter-bar" style="border:none;border-radius:0;box-shadow:none;margin-bottom:0;">
+            <div class="app-input-group">
+              <label>Tanggal Awal</label>
+              <input type="date" id="filter-tgl-awal" class="app-input">
+            </div>
+            <div class="app-input-group">
+              <label>Tanggal Akhir</label>
+              <input type="date" id="filter-tgl-akhir" class="app-input">
+            </div>
+            <div class="app-input-group" style="flex:1 1 auto;min-width:160px;max-width:none;">
+              <label>Cari</label>
+              <input type="text" id="search-reports" class="app-input" placeholder="Cari No Laporan, Driver, atau Tujuan..." oninput="applyReportFilters()">
+            </div>
+            <button type="button" class="filter-btn" onclick="applyReportFilters()">Filter</button>
+            <button type="button" class="filter-reset" onclick="resetReportFilters()">Reset</button>
+          </div>
+          <div class="table-scroll">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th onclick="sortReports('noLaporan')">Nomor Laporan UPD <span class="sort-arrow" id="sortr-noLaporan"></span></th>
+                  <th onclick="sortReports('tanggalDokumen')">Tanggal Dokumen <span class="sort-arrow" id="sortr-tanggalDokumen"></span></th>
+                  <th onclick="sortReports('namaDriver')">Nama Driver <span class="sort-arrow" id="sortr-namaDriver"></span></th>
+                  <th onclick="sortReports('namaTujuan')">Nama Tujuan <span class="sort-arrow" id="sortr-namaTujuan"></span></th>
+                  <th onclick="sortReports('totalBiaya')">Total Biaya <span class="sort-arrow" id="sortr-totalBiaya"></span></th>
+                  <th onclick="sortReports('status')">Status <span class="sort-arrow" id="sortr-status"></span></th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="table-reports-body"></tbody>
+            </table>
+          </div>
+          <div class="empty-state" id="empty-reports" style="display:none;">
+            <p>Tidak ada data Laporan Realisasi UPD.</p>
+          </div>
+          <div class="pagination-bar" id="pagination-reports" style="display:none;">
+            <span class="page-info" id="page-info-reports"></span>
+            <div class="page-btn-group" id="page-btns-reports"></div>
+          </div>
+        </div>
+
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay"><div class="spinner"></div></div>
+
+<script>
+  const GAS_URL = window.GAS_URL || "https://script.google.com/macros/s/AKfycbwf5oEpUkMp65-aTQ77PIj6CEhQV64yXjBqJMiBrkacXed5AbRYimF_Cb9qTa5mczLa/exec";
+
+  const PER_PAGE = 10;
+
+  let unreportedData = [];
+  let filteredUnreported = [];
+  let currentPageU = 1;
+  let sortColumnU = "jadwalPulang";
+  let sortDirectionU = "asc";
+
+  let reportsData = [];
+  let filteredReports = [];
+  let currentPageR = 1;
+  let sortColumnR = "tanggalDokumen";
+  let sortDirectionR = "desc";
+
+  function getCurrentUser() { return localStorage.getItem("wax_logged_user") || ""; }
+  function showLoading(show) { document.getElementById('loadingOverlay').classList.toggle('active', show); }
+  function esc(v) {
+    return String(v == null ? "" : v)
+      .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+
+  function formatTanggal(val) {
+    if (!val) return "-";
+    if (typeof val === 'object' && typeof val.getMonth === 'function') {
+      var dd = String(val.getDate()); while (dd.length < 2) dd = "0" + dd;
+      var mm = String(val.getMonth() + 1); while (mm.length < 2) mm = "0" + mm;
+      return dd + '/' + mm + '/' + val.getFullYear();
+    }
+    var s = String(val);
+    if (s.indexOf('/') !== -1) return s;
+    if (s.indexOf('T') !== -1) {
+      var datePart = s.split('T')[0];
+      var p = datePart.split('-');
+      if (p.length === 3 && p[0].length === 4) return p[2] + '/' + p[1] + '/' + p[0];
+    }
+    if (s.indexOf('-') !== -1) {
+      var p2 = s.split('-');
+      if (p2.length === 3) return p2[2] + '/' + p2[1] + '/' + p2[0];
+    }
+    return s;
+  }
+
+  function formatCurrency(val) {
+    var n = Number(val) || 0;
+    return n.toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  }
+
+  function getDateStr(val) {
+    if (!val) return "";
+    if (typeof val === 'object' && typeof val.getMonth === 'function') {
+      var y = val.getFullYear();
+      var m = String(val.getMonth() + 1); while (m.length < 2) m = "0" + m;
+      var d = String(val.getDate()); while (d.length < 2) d = "0" + d;
+      return y + '-' + m + '-' + d;
+    }
+    var s = String(val);
+    if (s.indexOf('T') !== -1) {
+      var datePart = s.split('T')[0];
+      if (datePart.length === 10) return datePart;
+    }
+    if (s.indexOf('/') !== -1) {
+      var p = s.split('/');
+      if (p.length === 3) return p[2] + '-' + p[1] + '-' + p[0];
+    }
+    if (s.indexOf('-') !== -1) {
+      var p2 = s.split('-');
+      if (p2.length === 3) return p2[0].length === 4 ? s : p2[2] + '-' + p2[1] + '-' + p2[0];
+    }
+    return s.substring(0, 10);
+  }
+
+  function getStatusBadgeReported(status) {
+    var s = String(status || "").trim();
+    if (s === "Reported") return '<span class="badge-reported">Reported</span>';
+    if (s === "Locked") return '<span class="badge-locked">Locked</span>';
+    return '<span>' + esc(s) + '</span>';
+  }
+
+  // ---------- HAK AKSI USER ----------
+  async function loadFeatureAccess() {
+    const user = getCurrentUser();
+    if (!user) return [];
+    const cached = localStorage.getItem("wax_laporan_access_data");
+    if (cached) {
+      try { return JSON.parse(cached); } catch (e) { /* ignore */ }
+    }
+    try {
+      const res = await fetch(`${GAS_URL}?action=getData&sheet=HakAksiUser`);
+      const json = await res.json();
+      if (json.status !== "success" || !Array.isArray(json.data)) return [];
+      const userRows = json.data.filter(function(item) {
+        return String(item["Username"] || item["username"] || "").trim().toLowerCase() === user.toLowerCase();
+      });
+      localStorage.setItem("wax_laporan_access_data", JSON.stringify(userRows));
+      return userRows;
+    } catch (err) {
+      console.error("Gagal memuat hak aksi user:", err);
+      return [];
+    }
+  }
+
+  function hasPermission(action) {
+    const rows = JSON.parse(localStorage.getItem("wax_laporan_access_data") || "[]");
+    if (rows.length === 0) return true;
+    const a = String(action).toLowerCase();
+    return rows.some(function(item) {
+      const v = String(item["Hak Aksi User"] || item["hak aksi user"] || "").trim();
+      return v.toLowerCase().split(/[,;|/]+/).map(function(s) { return s.trim(); }).filter(Boolean)
+        .some(function(p) { return p.indexOf(a) !== -1; });
+    });
+  }
+
+  // ---------- DATA ----------
+  async function fetchData() {
+    showLoading(true);
+    try {
+      const accessRows = await loadFeatureAccess();
+      if (accessRows.length === 0) {
+        document.getElementById("access-denied").style.display = "block";
+        showLoading(false);
+        return;
+      }
+      document.getElementById("page-content").style.display = "block";
+
+      var res = await fetch(GAS_URL + '?action=getLaporanUPDPage');
+      var json = await res.json();
+      if (json.status === 'success') {
+        unreportedData = json.unreported || [];
+        reportsData = json.reports || [];
+        applyUnreportedFilters();
+        applyReportFilters();
+      } else {
+        Swal.fire({ icon: 'error', title: 'Gagal', text: json.message || 'Gagal memuat data.' });
+      }
+    } catch (err) {
+      console.error(err);
+      Swal.fire({ icon: 'error', title: 'Kesalahan', text: 'Gagal terhubung ke server.' });
+    } finally { showLoading(false); }
+  }
+
+  // ---------- TABEL 1 ----------
+  function applyUnreportedFilters() {
+    var q = document.getElementById('search-unreported').value.trim().toLowerCase();
+    filteredUnreported = unreportedData.filter(function(item) {
+      if (!q) return true;
+      return String(item.noEUPD || "").toLowerCase().indexOf(q) !== -1 ||
+             String(item.namaDriver || "").toLowerCase().indexOf(q) !== -1 ||
+             String(item.namaTujuan || "").toLowerCase().indexOf(q) !== -1;
+    });
+    sortUnreportedData();
+    currentPageU = 1;
+    renderUnreported();
+  }
+
+  function sortUnreported(col) {
+    if (sortColumnU === col) {
+      sortDirectionU = sortDirectionU === 'asc' ? 'desc' : 'asc';
+    } else {
+      sortColumnU = col;
+      sortDirectionU = col === 'jadwalPulang' ? 'asc' : 'asc';
+    }
+    document.querySelectorAll('#table-unreported-body').length; // noop
+    document.querySelectorAll('.sort-arrow').forEach(function(el) {
+      if (el.id && el.id.indexOf('sortu-') === 0) el.innerText = '';
+    });
+    var arrow = document.getElementById('sortu-' + col);
+    if (arrow) arrow.innerText = sortDirectionU === 'asc' ? '▲' : '▼';
+    sortUnreportedData();
+    currentPageU = 1;
+    renderUnreported();
+  }
+
+  function sortUnreportedData() {
+    filteredUnreported.sort(function(a, b) {
+      var va, vb;
+      if (sortColumnU === 'jadwalPulang') {
+        va = getDateStr(a.jadwalPulang);
+        vb = getDateStr(b.jadwalPulang);
+      } else {
+        va = (a[sortColumnU] || '').toString().toLowerCase();
+        vb = (b[sortColumnU] || '').toString().toLowerCase();
+      }
+      if (va < vb) return sortDirectionU === 'asc' ? -1 : 1;
+      if (va > vb) return sortDirectionU === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
+  function renderUnreported() {
+    var tbody = document.getElementById('table-unreported-body');
+    var empty = document.getElementById('empty-unreported');
+    var pagination = document.getElementById('pagination-unreported');
+    tbody.innerHTML = '';
+
+    if (filteredUnreported.length === 0) {
+      empty.style.display = 'block';
+      pagination.style.display = 'none';
+      return;
+    }
+    empty.style.display = 'none';
+    pagination.style.display = 'flex';
+
+    var totalPages = Math.ceil(filteredUnreported.length / PER_PAGE);
+    if (currentPageU > totalPages) currentPageU = totalPages;
+    var start = (currentPageU - 1) * PER_PAGE;
+    var end = Math.min(start + PER_PAGE, filteredUnreported.length);
+    var pageData = filteredUnreported.slice(start, end);
+
+    pageData.forEach(function(item) {
+      var params = new URLSearchParams({
+        noEUPD: item.noEUPD || '',
+        namaDriver: item.namaDriver || '',
+        namaTujuan: item.namaTujuan || '',
+        tanggalPulang: item.jadwalPulang || ''
+      }).toString();
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td><strong style="color:var(--color-primary);">' + esc(item.noEUPD) + '</strong></td>' +
+        '<td>' + esc(item.namaDriver || '-') + '</td>' +
+        '<td>' + esc(item.namaTujuan || '-') + '</td>' +
+        '<td>' + formatTanggal(item.jadwalPulang) + '</td>' +
+        '<td><span class="badge-paid">Paid</span></td>' +
+        '<td style="white-space:nowrap;"><a href="form-laporan-upd.html?' + params + '" class="action-btn btn-lapor">Lapor</a></td>';
+      tbody.appendChild(tr);
+    });
+
+    renderPaginationU(totalPages);
+  }
+
+  function renderPaginationU(totalPages) {
+    var info = document.getElementById('page-info-unreported');
+    var group = document.getElementById('page-btns-unreported');
+    info.innerText = 'Halaman ' + currentPageU + ' dari ' + totalPages + ' (' + filteredUnreported.length + ' data)';
+    group.innerHTML = '';
+    var prev = document.createElement('button');
+    prev.className = 'page-btn'; prev.innerHTML = '&#8249;';
+    prev.disabled = currentPageU <= 1;
+    prev.onclick = function() { if (currentPageU > 1) { currentPageU--; renderUnreported(); } };
+    group.appendChild(prev);
+    var startP = Math.max(1, currentPageU - 2);
+    var endP = Math.min(totalPages, currentPageU + 2);
+    for (var i = startP; i <= endP; i++) {
+      (function(p) {
+        var btn = document.createElement('button');
+        btn.className = 'page-btn' + (p === currentPageU ? ' active' : '');
+        btn.innerText = p;
+        btn.onclick = function() { currentPageU = p; renderUnreported(); };
+        group.appendChild(btn);
+      })(i);
+    }
+    var next = document.createElement('button');
+    next.className = 'page-btn'; next.innerHTML = '&#8250;';
+    next.disabled = currentPageU >= totalPages;
+    next.onclick = function() { if (currentPageU < totalPages) { currentPageU++; renderUnreported(); } };
+    group.appendChild(next);
+  }
+
+  // ---------- TABEL 2 ----------
+  function applyReportFilters() {
+    var q = document.getElementById('search-reports').value.trim().toLowerCase();
+    var tglAwal = document.getElementById('filter-tgl-awal').value;
+    var tglAkhir = document.getElementById('filter-tgl-akhir').value;
+    filteredReports = reportsData.filter(function(item) {
+      if (q) {
+        var hay = String(item.noLaporan || "").toLowerCase() + ' ' +
+                  String(item.namaDriver || "").toLowerCase() + ' ' +
+                  String(item.namaTujuan || "").toLowerCase();
+        if (hay.indexOf(q) === -1) return false;
+      }
+      if (tglAwal || tglAkhir) {
+        var dateStr = getDateStr(item.tanggalDokumen);
+        if (dateStr) {
+          if (tglAwal && dateStr < tglAwal) return false;
+          if (tglAkhir && dateStr > tglAkhir) return false;
+        }
+      }
+      return true;
+    });
+    sortReportsData();
+    currentPageR = 1;
+    renderReports();
+  }
+
+  function resetReportFilters() {
+    document.getElementById('filter-tgl-awal').value = '';
+    document.getElementById('filter-tgl-akhir').value = '';
+    document.getElementById('search-reports').value = '';
+    applyReportFilters();
+  }
+
+  function sortReports(col) {
+    if (sortColumnR === col) {
+      sortDirectionR = sortDirectionR === 'asc' ? 'desc' : 'asc';
+    } else {
+      sortColumnR = col;
+      sortDirectionR = col === 'tanggalDokumen' ? 'desc' : 'asc';
+    }
+    document.querySelectorAll('.sort-arrow').forEach(function(el) {
+      if (el.id && el.id.indexOf('sortr-') === 0) el.innerText = '';
+    });
+    var arrow = document.getElementById('sortr-' + col);
+    if (arrow) arrow.innerText = sortDirectionR === 'asc' ? '▲' : '▼';
+    sortReportsData();
+    currentPageR = 1;
+    renderReports();
+  }
+
+  function sortReportsData() {
+    filteredReports.sort(function(a, b) {
+      var va, vb;
+      if (sortColumnR === 'totalBiaya') {
+        va = Number(a[sortColumnR]) || 0;
+        vb = Number(b[sortColumnR]) || 0;
+      } else if (sortColumnR === 'tanggalDokumen') {
+        va = getDateStr(a[sortColumnR]);
+        vb = getDateStr(b[sortColumnR]);
+      } else {
+        va = (a[sortColumnR] || '').toString().toLowerCase();
+        vb = (b[sortColumnR] || '').toString().toLowerCase();
+      }
+      if (va < vb) return sortDirectionR === 'asc' ? -1 : 1;
+      if (va > vb) return sortDirectionR === 'asc' ? 1 : -1;
+      return 0;
+    });
+  }
+
+  function renderReports() {
+    var tbody = document.getElementById('table-reports-body');
+    var empty = document.getElementById('empty-reports');
+    var pagination = document.getElementById('pagination-reports');
+    tbody.innerHTML = '';
+
+    if (filteredReports.length === 0) {
+      empty.style.display = 'block';
+      pagination.style.display = 'none';
+      return;
+    }
+    empty.style.display = 'none';
+    pagination.style.display = 'flex';
+
+    var totalPages = Math.ceil(filteredReports.length / PER_PAGE);
+    if (currentPageR > totalPages) currentPageR = totalPages;
+    var start = (currentPageR - 1) * PER_PAGE;
+    var end = Math.min(start + PER_PAGE, filteredReports.length);
+    var pageData = filteredReports.slice(start, end);
+
+    pageData.forEach(function(item) {
+      var rawNo = item.noLaporan || '';
+      var noLapEnc = encodeURIComponent(rawNo);
+      var noEUPDEnc = encodeURIComponent(item.noEUPD || '');
+      var status = String(item.status || "").trim();
+
+      var actions = '';
+      if (hasPermission('view')) {
+        actions += '<a href="form-laporan-upd.html?viewNo=' + noLapEnc + '" class="action-btn btn-view">View</a> ';
+      }
+      if (status !== "Locked" && hasPermission('edit')) {
+        actions += '<a href="form-laporan-upd.html?editNo=' + noLapEnc + '" class="action-btn btn-edit">Edit</a> ';
+      }
+      if (status !== "Locked" && hasPermission('lock')) {
+        actions += '<button class="action-btn btn-lock" onclick="handleLock(\'' + rawNo.replace(/'/g, "\\'") + '\')">Lock</button> ';
+      }
+      if (status === "Locked" && hasPermission('unlock')) {
+        actions += '<button class="action-btn btn-unlock" onclick="handleUnlock(\'' + rawNo.replace(/'/g, "\\'") + '\')">Unlock</button>';
+      }
+
+      var tr = document.createElement('tr');
+      tr.innerHTML =
+        '<td><strong style="color:var(--color-primary);">' + esc(rawNo) + '</strong></td>' +
+        '<td>' + formatTanggal(item.tanggalDokumen) + '</td>' +
+        '<td>' + esc(item.namaDriver || '-') + '</td>' +
+        '<td>' + esc(item.namaTujuan || '-') + '</td>' +
+        '<td style="text-align:right;font-weight:600;">' + formatCurrency(item.totalBiaya) + '</td>' +
+        '<td>' + getStatusBadgeReported(item.status) + '</td>' +
+        '<td style="white-space:nowrap;">' + actions + '</td>';
+      tbody.appendChild(tr);
+    });
+
+    renderPaginationR(totalPages);
+  }
+
+  function renderPaginationR(totalPages) {
+    var info = document.getElementById('page-info-reports');
+    var group = document.getElementById('page-btns-reports');
+    info.innerText = 'Halaman ' + currentPageR + ' dari ' + totalPages + ' (' + filteredReports.length + ' data)';
+    group.innerHTML = '';
+    var prev = document.createElement('button');
+    prev.className = 'page-btn'; prev.innerHTML = '&#8249;';
+    prev.disabled = currentPageR <= 1;
+    prev.onclick = function() { if (currentPageR > 1) { currentPageR--; renderReports(); } };
+    group.appendChild(prev);
+    var startP = Math.max(1, currentPageR - 2);
+    var endP = Math.min(totalPages, currentPageR + 2);
+    for (var i = startP; i <= endP; i++) {
+      (function(p) {
+        var btn = document.createElement('button');
+        btn.className = 'page-btn' + (p === currentPageR ? ' active' : '');
+        btn.innerText = p;
+        btn.onclick = function() { currentPageR = p; renderReports(); };
+        group.appendChild(btn);
+      })(i);
+    }
+    var next = document.createElement('button');
+    next.className = 'page-btn'; next.innerHTML = '&#8250;';
+    next.disabled = currentPageR >= totalPages;
+    next.onclick = function() { if (currentPageR < totalPages) { currentPageR++; renderReports(); } };
+    group.appendChild(next);
+  }
+
+  // ---------- LOCK / UNLOCK ----------
+  function handleLock(noLaporan) {
+    Swal.fire({
+      title: 'Konfirmasi Lock',
+      text: 'Apakah Anda yakin ingin mengunci laporan ini? Laporan yang terkunci tidak dapat diedit.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Ya, Lock',
+      cancelButtonText: 'Batal'
+    }).then(async function(res) {
+      if (!res.isConfirmed) return;
+      showLoading(true);
+      try {
+        var result = await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'updateLaporanUPDStatus', NoLaporan: noLaporan, NewStatus: 'Locked' })
+        });
+        var json = await result.json();
+        if (json.status === 'success') {
+          Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Laporan berhasil dikunci.', timer: 1500, showConfirmButton: false });
+          fetchData();
+        } else {
+          Swal.fire({ icon: 'error', title: 'Gagal', text: json.message });
+        }
+      } catch (err) {
+        Swal.fire({ icon: 'error', title: 'Kesalahan', text: err.message });
+      } finally { showLoading(false); }
+    });
+  }
+
+  function handleUnlock(noLaporan) {
+    Swal.fire({
+      title: 'Konfirmasi Unlock',
+      text: 'Apakah Anda yakin ingin membuka kunci laporan ini? Laporan dapat diedit kembali.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Ya, Unlock',
+      cancelButtonText: 'Batal'
+    }).then(async function(res) {
+      if (!res.isConfirmed) return;
+      showLoading(true);
+      try {
+        var result = await fetch(GAS_URL, {
+          method: 'POST',
+          body: JSON.stringify({ action: 'updateLaporanUPDStatus', NoLaporan: noLaporan, NewStatus: 'Reported' })
+        });
+        var json = await result.json();
+        if (json.status === 'success') {
+          Swal.fire({ icon: 'success', title: 'Berhasil', text: 'Laporan berhasil dibuka kuncinya.', timer: 1500, showConfirmButton: false });
+          fetchData();
+        } else {
+          Swal.fire({ icon: 'error', title: 'Gagal', text: json.message });
+        }
+      } catch (err) {
+        Swal.fire({ icon: 'error', title: 'Kesalahan', text: err.message });
+      } finally { showLoading(false); }
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', async function() {
+    await loadSidebar();
+    fetchData();
+  });
+</script>
+
+</body>
+</html>
