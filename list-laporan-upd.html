@@ -37,6 +37,7 @@
     .data-table tr:hover td { background: #F8FAFC; }
 
     .badge-paid { background: #D1FAE5; color: #059669; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 10px; font-weight: 600; white-space: nowrap; }
+    .badge-draft { background: #F1F5F9; color: #475569; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 10px; font-weight: 600; white-space: nowrap; }
     .badge-reported { background: #E0F2FE; color: #0284C7; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 10px; font-weight: 600; white-space: nowrap; }
     .badge-locked { background: #DBEAFE; color: #2563EB; padding: 0.15rem 0.4rem; border-radius: 4px; font-size: 10px; font-weight: 600; white-space: nowrap; }
 
@@ -289,6 +290,7 @@
 
   function getStatusBadgeReported(status) {
     var s = String(status || "").trim();
+    if (s === "Draft") return '<span class="badge-draft">Draft</span>';
     if (s === "Reported") return '<span class="badge-reported">Reported</span>';
     if (s === "Locked") return '<span class="badge-locked">Locked</span>';
     return '<span>' + esc(s) + '</span>';
@@ -669,7 +671,7 @@
       try {
         var result = await fetch(GAS_URL, {
           method: 'POST',
-          body: JSON.stringify({ action: 'updateLaporanUPDStatus', NoLaporan: noLaporan, NewStatus: 'Reported' })
+          body: JSON.stringify({ action: 'updateLaporanUPDStatus', NoLaporan: noLaporan, NewStatus: 'Draft' })
         });
         var json = await result.json();
         if (json.status === 'success') {

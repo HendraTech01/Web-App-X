@@ -15,35 +15,65 @@
     .form-laporan-header .back-btn { display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; color: var(--color-text-secondary); font-size: var(--font-sm); font-weight: 600; padding: 0.4rem 0.75rem; background: #FFF; border: 1px solid var(--color-border); border-radius: var(--radius-sm); transition: all 0.2s; }
     .form-laporan-header .back-btn:hover { background: var(--color-primary-light); color: var(--color-primary); }
 
+    /* SECTION 1 - INFORMASI DOKUMEN */
     .info-bar { display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-end; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-md); padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; width: 100%; box-sizing: border-box; }
-    .info-bar .app-input-group { margin-bottom: 0; flex: 1; min-width: 150px; max-width: 250px; }
+    .info-bar .app-input-group { margin-bottom: 0; flex: 1; min-width: 220px; max-width: 460px; }
     .info-bar .app-input-group .app-input { width: 100%; min-width: auto; }
     .info-bar .app-input-group label { white-space: nowrap; }
 
     .form-section-card { background: white; border-radius: var(--radius-md); border: 1px solid var(--color-border); padding: 1.5rem; margin-bottom: 1.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.02); width: 100%; box-sizing: border-box; }
-    .section-header { font-size: 1.1rem; font-weight: 700; color: var(--color-primary); margin-bottom: 1.25rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--color-primary-light); display: flex; align-items: center; gap: 0.5rem; justify-content: space-between; }
+    .section-header { font-size: 1.05rem; font-weight: 700; color: var(--color-primary); margin-bottom: 1.25rem; padding-bottom: 0.5rem; border-bottom: 2px solid var(--color-primary-light); display: flex; align-items: center; gap: 0.5rem; justify-content: space-between; flex-wrap: wrap; }
 
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    .grid-4 { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 1rem; }
-    .biaya-row .app-input { text-align: right; font-weight: 600; }
+    /* FIELD READONLY TAMPAK BERBEDA */
+    .app-input[readonly], .app-input:read-only {
+      background-color: #F1F5F9 !important;
+      color: var(--color-text-primary);
+      cursor: default;
+      border-color: var(--color-border);
+      opacity: 1;
+    }
+    .app-input[readonly]:focus, .app-input:read-only:focus { box-shadow: none; border-color: var(--color-border); }
 
-    .summary-bar { display: flex; gap: 1rem; justify-content: flex-end; margin-top: 0.75rem; padding: 0.6rem 0.85rem; background: #F8FAFC; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: var(--font-sm); font-weight: 600; flex-wrap: wrap; }
+    /* SECTION 2 - AUTOCOMPLETE & INFO CARD */
+    .autocomplete-wrapper { position: relative; width: 100%; }
+    .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; z-index: 1000; background: white; border: 1px solid var(--color-primary); border-radius: 0 0 var(--radius-sm) var(--radius-sm); max-height: 220px; overflow-y: auto; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1); display: none; }
+    .autocomplete-item { padding: 0.6rem 0.85rem; cursor: pointer; border-bottom: 1px solid #F1F5F9; }
+    .autocomplete-item:hover, .autocomplete-item.ac-active { background-color: var(--color-primary-light); }
+    .autocomplete-item .ac-main { font-weight: 600; font-size: var(--font-sm); color: var(--color-text-primary); }
+    .autocomplete-item .ac-sub { font-size: 12px; color: var(--color-text-secondary); }
+    .eupd-sub { font-size: 12px; color: var(--color-text-secondary); margin-top: 0.35rem; min-height: 16px; font-weight: 500; }
+
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .info-item { background: #F8FAFC; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.55rem 0.8rem; min-height: 68px; display: flex; flex-direction: column; justify-content: center; }
+    .info-item .info-label { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 0.15rem; }
+    .info-item .info-value { font-size: var(--font-base); font-weight: 600; color: var(--color-text-primary); word-break: break-word; }
+    .info-value-currency { text-align: right; font-variant-numeric: tabular-nums; }
+    .info-value-primary { color: var(--color-primary); font-size: 1.05rem; }
+    .info-item-wide { grid-column: span 2; }
+
+    /* SECTION 3 - TABEL BIAYA AKTUAL */
+    .biaya-table { width: 100%; border-collapse: collapse; font-size: var(--font-sm); min-width: 760px; }
+    .biaya-table th { background: var(--color-primary-light); color: var(--color-primary); font-weight: 600; padding: 0.4rem 0.5rem; text-align: left; font-size: 11px; white-space: nowrap; border: 1px solid var(--color-border); vertical-align: middle; }
+    .biaya-table td { padding: 0.3rem 0.4rem; border: 1px solid var(--color-border); vertical-align: middle; }
+    .biaya-table .biaya-jumlah { text-align: right; font-weight: 600; }
+    .biaya-table select.app-input { padding: 0.45rem 0.5rem; }
+    .td-remove { text-align: center; width: 44px; }
+    .btn-journal-remove { background: #FEE2E2; color: #EF4444; border: none; border-radius: 4px; padding: 0.25rem 0.45rem; font-size: 10px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .btn-journal-remove:hover { background: #FECACA; }
+    .summary-bar { display: flex; gap: 1rem; justify-content: flex-end; margin-top: 0.75rem; padding: 0.6rem 0.85rem; background: #F8FAFC; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: var(--font-sm); font-weight: 600; flex-wrap: wrap; align-items: center; }
     .summary-bar .total-label { color: var(--color-text-secondary); font-weight: 500; }
-    .summary-bar .total-value { color: var(--color-primary); min-width: 120px; text-align: right; font-size: 1rem; }
-
-    .sj-select-bar { display: flex; align-items: flex-end; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; }
-    .sj-select-bar .app-input-group { flex: 1 1 260px; margin-bottom: 0; }
+    .summary-bar .total-value { color: var(--color-primary); min-width: 130px; text-align: right; font-size: 1rem; }
     .btn-outline-primary { display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; padding: 0.65rem 1rem; background: transparent; color: var(--color-primary); border: 1px dashed var(--color-primary); border-radius: var(--radius-sm); font-size: var(--font-sm); font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
     .btn-outline-primary:hover { background: var(--color-primary-light); }
     .btn-outline-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
+    /* SURAT JALAN (ListDOCPA) */
+    .sj-select-bar { display: flex; align-items: flex-end; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1rem; }
+    .sj-select-bar .app-input-group { flex: 1 1 300px; margin-bottom: 0; }
     .table-wrap { overflow-x: auto; width: 100%; margin-top: 0.5rem; }
     .journal-table { width: 100%; border-collapse: collapse; font-size: var(--font-sm); min-width: 860px; }
     .journal-table th { background: var(--color-primary-light); color: var(--color-primary); font-weight: 600; padding: 0.4rem 0.5rem; text-align: left; font-size: 11px; white-space: nowrap; border: 1px solid var(--color-border); vertical-align: middle; }
     .journal-table td { padding: 0.35rem 0.45rem; border: 1px solid var(--color-border); vertical-align: middle; word-break: break-word; }
-    .journal-table .btn-journal-remove { background: #FEE2E2; color: #EF4444; border: none; border-radius: 4px; padding: 0.25rem 0.4rem; font-size: 10px; font-weight: 600; cursor: pointer; white-space: nowrap; }
-    .journal-table .btn-journal-remove:hover { background: #FECACA; }
-
     .allocation-bar { display: flex; gap: 1rem; justify-content: flex-end; align-items: center; margin-top: 0.75rem; padding: 0.6rem 0.85rem; background: #F8FAFC; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: var(--font-sm); font-weight: 600; flex-wrap: wrap; }
     .allocation-bar .total-label { color: var(--color-text-secondary); font-weight: 500; }
     .allocation-bar .total-value { color: var(--color-primary); min-width: 120px; text-align: right; }
@@ -51,6 +81,27 @@
     .alloc-ok { background: #D1FAE5; color: #059669; }
     .alloc-error { background: #FEE2E2; color: #EF4444; }
     .alloc-warn { background: #FEF3C7; color: #D97706; }
+
+    /* SECTION 4 - SUMMARY BIAYA */
+    .summary-table { width: 100%; border-collapse: collapse; font-size: var(--font-sm); }
+    .summary-table th, .summary-table td { border: 1px solid var(--color-border); padding: 0.5rem 0.6rem; }
+    .summary-table th { background: var(--color-primary-light); color: var(--color-primary); font-size: 11px; text-align: right; white-space: nowrap; }
+    .summary-table th:first-child, .summary-table td:first-child { text-align: left; }
+    .summary-table td { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .summary-table .sum-label { font-weight: 500; color: var(--color-text-secondary); }
+    .summary-table .sum-total { background: #F8FAFC; color: var(--color-primary); }
+
+    /* SECTION 5 - PENYELESAIAN DANA */
+    .pen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+    .pen-item { background: #F8FAFC; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.55rem 0.8rem; min-height: 68px; display: flex; flex-direction: column; justify-content: center; }
+    .pen-item .info-label { font-size: 11px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 0.15rem; }
+    .pen-item .info-value { font-size: var(--font-base); font-weight: 600; color: var(--color-text-primary); }
+    .pen-item .info-value-currency { text-align: right; font-variant-numeric: tabular-nums; }
+    .pen-status-badge { font-size: var(--font-base); font-weight: 700; }
+    .badge-lebih { background: #FEF3C7; color: #D97706; border: 1px solid #FDE68A; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+    .badge-kurang { background: #FEE2E2; color: #EF4444; border: 1px solid #FECACA; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+    .badge-selesai { background: #D1FAE5; color: #065F46; border: 1px solid #6EE7B7; padding: 0.25rem 0.75rem; border-radius: 4px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+    .pen-keterangan { margin-top: 0.75rem; padding: 0.6rem 0.85rem; background: #FFF7ED; border: 1px solid #FDBA74; border-radius: var(--radius-sm); font-size: var(--font-sm); color: #9A3412; }
 
     .bottom-actions { display: flex; gap: 1rem; justify-content: flex-end; align-items: center; margin-top: 1.5rem; flex-wrap: wrap; }
     .bottom-actions .app-btn { width: auto; padding: 0.75rem 2rem; margin-top: 0; }
@@ -64,15 +115,12 @@
       .app-content-body { max-width: 100%; padding: 0 1rem; }
     }
 
-    @media (max-width: 1024px) {
-      .grid-4 { grid-template-columns: 1fr 1fr; }
-    }
-
     @media (max-width: 768px) and (orientation: portrait) {
       .app-sidebar-container { display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important; bottom: 0 !important; width: 280px !important; max-width: 85vw !important; height: 100vh !important; z-index: 9999 !important; transform: translateX(-100%); transition: transform 0.25s ease; }
       body.menu-mode-active .app-sidebar-container { transform: translateX(0); }
       body.menu-mode-active .app-menu-close-btn { display: flex; position: absolute; right: 1rem; top: 1.5rem; background: none; border: none; color: var(--color-text-secondary); cursor: pointer; }
-      .grid-2, .grid-4 { grid-template-columns: 1fr !important; gap: 0.75rem; }
+      .info-grid, .pen-grid { grid-template-columns: 1fr !important; }
+      .info-item-wide { grid-column: span 1 !important; }
       .info-bar { flex-direction: column; align-items: stretch; }
       .info-bar .app-input-group { min-width: auto; max-width: none; }
       .bottom-actions { flex-direction: column; }
@@ -119,7 +167,7 @@
           </a>
           <h1 class="app-page-title" style="font-size:1.4rem;margin:0;">Laporan UPD</h1>
         </div>
-        <p style="font-size:var(--font-sm);color:var(--color-text-secondary);margin-top:0.25rem;">Laporan realisasi biaya perjalanan dinas dari pengajuan EUPD berstatus Paid.</p>
+        <p style="font-size:var(--font-sm);color:var(--color-text-secondary);margin-top:0.25rem;">Laporan realisasi biaya perjalanan dinas dari pengajuan EUPD berstatus Paid. Data estimasi &amp; dana hanya sebagai informasi (tidak disimpan).</p>
       </div>
 
       <div id="access-denied" style="display:none;">
@@ -129,68 +177,70 @@
       <div id="page-content" style="display:none;">
         <div id="form-alert" class="app-alert"></div>
 
+        <!-- ================= SECTION 1: INFORMASI DOKUMEN ================= -->
         <div class="info-bar">
           <div class="app-input-group">
             <label>Nomor Laporan UPD</label>
-            <input type="text" id="noLaporan" class="app-input" readonly style="background:#F1F5F9;font-style:italic;font-size:12px;" value="Generate otomatis saat disimpan">
+            <input type="text" id="noLaporan" class="app-input" readonly value="Generate otomatis saat disimpan">
           </div>
           <div class="app-input-group">
             <label>Tanggal Dokumen <span style="color:var(--color-danger);">*</span></label>
             <input type="date" id="tanggalDokumen" class="app-input">
           </div>
-          <div class="app-input-group">
-            <label>Tanggal PD</label>
-            <input type="date" id="tanggalPD" class="app-input">
+          <input type="hidden" id="tanggalPD">
+        </div>
+
+        <!-- ================= SECTION 2: INFORMASI PENGAJUAN EUPD ================= -->
+        <div class="form-section-card">
+          <div class="section-header"><span>Informasi Pengajuan EUPD</span></div>
+          <div class="app-input-group" style="max-width:520px;margin-bottom:0.5rem;">
+            <label>Nomor Pengajuan EUPD <span style="color:var(--color-danger);">*</span></label>
+            <div class="autocomplete-wrapper">
+              <input type="text" id="noEUPD" class="app-input" placeholder="Ketik nomor pengajuan EUPD..." oninput="filterEUPDAutocomplete(this)" onkeydown="onEUPDAutocompleteKeydown(event, this)" autocomplete="off">
+              <div class="autocomplete-list"></div>
+            </div>
+            <div class="eupd-sub" id="eupd-sub"></div>
           </div>
-          <div class="app-input-group">
-            <label>Nomor Pengajuan EUPD</label>
-            <input type="text" id="noEUPD" class="app-input" readonly>
-          </div>
-          <div class="app-input-group">
-            <label>Nama Driver</label>
-            <input type="text" id="namaDriver" class="app-input" readonly>
-          </div>
-          <div class="app-input-group">
-            <label>Nama Tujuan</label>
-            <input type="text" id="namaTujuan" class="app-input" readonly>
-          </div>
-          <div class="app-input-group">
-            <label>Tanggal Pulang</label>
-            <input type="text" id="tanggalPulang" class="app-input" readonly>
+
+          <div class="info-grid" style="margin-top:1rem;">
+            <div class="info-item"><div class="info-label">Uang Makan (Estimasi)</div><div class="info-value info-value-currency" id="info-uang-makan">0,00</div></div>
+            <div class="info-item"><div class="info-label">BBM (Estimasi)</div><div class="info-value info-value-currency" id="info-bbm">0,00</div></div>
+            <div class="info-item"><div class="info-label">Penginapan (Estimasi)</div><div class="info-value info-value-currency" id="info-penginapan">0,00</div></div>
+            <div class="info-item"><div class="info-label">Biaya Lain-Lain (Estimasi)</div><div class="info-value info-value-currency" id="info-biaya-lain">0,00</div></div>
+            <div class="info-item"><div class="info-label">Total Biaya Keseluruhan (Estimasi)</div><div class="info-value info-value-currency" id="info-keseluruhan">0,00</div></div>
+            <div class="info-item"><div class="info-label">Total Tambahan Dana</div><div class="info-value info-value-currency" id="info-tambahan">0,00</div></div>
+            <div class="info-item info-item-wide"><div class="info-label">Total Dana Ditransfer</div><div class="info-value info-value-currency info-value-primary" id="info-dana-transfer">0,00</div></div>
           </div>
         </div>
 
+        <!-- ================= SECTION 3: INPUT BIAYA AKTUAL ================= -->
         <div class="form-section-card">
-          <div class="section-header"><span>Detail Biaya Perjalanan</span></div>
-          <div class="grid-4" id="biaya-container">
-            <div class="app-input-group biaya-row" data-tipe="Uang Makan">
-              <label>Uang Makan</label>
-              <input type="text" class="app-input biaya-jumlah" placeholder="0" onfocus="removeDecimalFormat(this)" oninput="cleanNumberInput(this);recalcAllocation()" onblur="formatDecimalDisplay(this);recalcAllocation()">
-            </div>
-            <div class="app-input-group biaya-row" data-tipe="BBM">
-              <label>BBM</label>
-              <input type="text" class="app-input biaya-jumlah" placeholder="0" onfocus="removeDecimalFormat(this)" oninput="cleanNumberInput(this);recalcAllocation()" onblur="formatDecimalDisplay(this);recalcAllocation()">
-            </div>
-            <div class="app-input-group biaya-row" data-tipe="Penginapan">
-              <label>Penginapan</label>
-              <input type="text" class="app-input biaya-jumlah" placeholder="0" onfocus="removeDecimalFormat(this)" oninput="cleanNumberInput(this);recalcAllocation()" onblur="formatDecimalDisplay(this);recalcAllocation()">
-            </div>
-            <div class="app-input-group biaya-row" data-tipe="Biaya Lainnya">
-              <label>Biaya Lainnya</label>
-              <input type="text" class="app-input biaya-jumlah" placeholder="0" onfocus="removeDecimalFormat(this)" oninput="cleanNumberInput(this);recalcAllocation()" onblur="formatDecimalDisplay(this);recalcAllocation()">
-            </div>
+          <div class="section-header">
+            <span>Input Biaya Aktual</span>
+            <button type="button" class="btn-outline-primary" id="btn-add-biaya" onclick="addBiayaRow({})">+ Tambah Baris Biaya</button>
           </div>
-          <div class="app-input-group" style="margin-top:1rem;margin-bottom:0;">
-            <label>Keterangan</label>
-            <textarea id="keterangan" class="app-input" rows="2" placeholder="Keterangan laporan..."></textarea>
+          <div class="table-wrap">
+            <table class="biaya-table">
+              <thead>
+                <tr>
+                  <th>Tanggal</th>
+                  <th>Keterangan</th>
+                  <th>Tipe Biaya</th>
+                  <th style="text-align:right;">Jumlah Biaya</th>
+                  <th class="td-remove"></th>
+                </tr>
+              </thead>
+              <tbody id="biaya-body"></tbody>
+            </table>
           </div>
           <div class="summary-bar">
-            <span><span class="total-label">Total Keseluruhan:</span> <span class="total-value" id="total-keseluruhan">0,00</span></span>
+            <span><span class="total-label">Total Biaya Aktual:</span> <span class="total-value" id="total-biaya-aktual">0,00</span></span>
           </div>
         </div>
 
+        <!-- ================= SURAT JALAN (ListDOCPA) ================= -->
         <div class="form-section-card">
-          <div class="section-header"><span>Surat Jalan (ListDOCPA)</span></div>
+          <div class="section-header"><span>Distribusi Biaya ke Surat Jalan (ListDOCPA)</span></div>
           <div class="sj-select-bar">
             <div class="app-input-group">
               <label>Pilih Surat Jalan</label>
@@ -223,6 +273,55 @@
           </div>
         </div>
 
+        <!-- ================= SECTION 4: SUMMARY BIAYA ================= -->
+        <div class="form-section-card">
+          <div class="section-header"><span>Summary Biaya</span></div>
+          <div class="table-wrap">
+            <table class="summary-table">
+              <thead>
+                <tr>
+                  <th></th>
+                  <th>Uang Makan</th>
+                  <th>BBM</th>
+                  <th>Penginapan</th>
+                  <th>Biaya Lain-Lain</th>
+                  <th>Total Biaya</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="sum-label">Aktual</td>
+                  <td id="sum-aktual-0">0,00</td>
+                  <td id="sum-aktual-1">0,00</td>
+                  <td id="sum-aktual-2">0,00</td>
+                  <td id="sum-aktual-3">0,00</td>
+                  <td class="sum-total" id="sum-aktual-total">0,00</td>
+                </tr>
+                <tr>
+                  <td class="sum-label">Selisih (Estimasi - Aktual)</td>
+                  <td id="sum-selisih-0">0,00</td>
+                  <td id="sum-selisih-1">0,00</td>
+                  <td id="sum-selisih-2">0,00</td>
+                  <td id="sum-selisih-3">0,00</td>
+                  <td class="sum-total" id="sum-selisih-total">0,00</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ================= SECTION 5: PENYELESAIAN DANA ================= -->
+        <div class="form-section-card">
+          <div class="section-header"><span>Penyelesaian Dana</span></div>
+          <div class="pen-grid">
+            <div class="pen-item"><div class="info-label">Total Dana Ditransfer</div><div class="info-value info-value-currency" id="pen-dana">0,00</div></div>
+            <div class="pen-item"><div class="info-label">Total Biaya Aktual</div><div class="info-value info-value-currency" id="pen-biaya">0,00</div></div>
+            <div class="pen-item"><div class="info-label">Selisih Dana</div><div class="info-value info-value-currency" id="pen-selisih">0,00</div></div>
+            <div class="pen-item"><div class="info-label">Status</div><div class="pen-status-badge" id="pen-status">-</div></div>
+          </div>
+          <div class="pen-keterangan" id="pen-keterangan"></div>
+        </div>
+
         <div class="bottom-actions">
           <button type="button" class="app-btn" onclick="handleSimpan()" id="btn-simpan" style="width:auto;padding:0.75rem 2rem;">Simpan Laporan UPD</button>
         </div>
@@ -239,9 +338,16 @@
 <script>
   const GAS_URL = window.GAS_URL || "https://script.google.com/macros/s/AKfycbwf5oEpUkMp65-aTQ77PIj6CEhQV64yXjBqJMiBrkacXed5AbRYimF_Cb9qTa5mczLa/exec";
 
-  let availableSuratJalan = [];
-  let currentStatus = '';
+  const TIPE_BIAYA = ["Uang Makan", "BBM", "Penginapan", "Biaya Lain-Lain"];
 
+  let eupdList = [];
+  let eupdInfo = null;
+  let currentNamaDriver = '';
+  let currentStatus = 'Draft';
+  let formReadOnly = false;
+  let availableSuratJalan = [];
+
+  // ---------- UTIL ----------
   function showLoading(show) {
     const el = document.getElementById('loadingOverlay');
     el.classList.toggle('active', show);
@@ -335,6 +441,11 @@
     return parseFloat(String(valStr).replace(/\./g, '').replace(/,/g, '.')) || 0;
   }
 
+  function round2(n) {
+    return Math.round((n + Number.EPSILON) * 100) / 100;
+  }
+
+  // ---------- HAK AKSES ----------
   function loadFeatureAccess() {
     const user = localStorage.getItem("wax_logged_user") || "";
     if (!user) return Promise.resolve([]);
@@ -370,21 +481,177 @@
     });
   }
 
+  // ---------- SECTION 2: AUTOCOMPLETE EUPD ----------
+  async function loadEUPDAutocomplete() {
+    try {
+      var res = await fetch(GAS_URL + '?action=getLaporanEUPDList');
+      var json = await res.json();
+      if (json.status === 'success') eupdList = json.data || [];
+    } catch (err) {
+      console.error('Gagal memuat daftar EUPD:', err);
+    }
+  }
+
+  function filterEUPDAutocomplete(inputEl) {
+    if (inputEl.readOnly) return;
+    var wrapper = inputEl.closest('.autocomplete-wrapper');
+    var listEl = wrapper.querySelector('.autocomplete-list');
+    var q = inputEl.value.trim().toLowerCase();
+    var items = eupdList.filter(function(it) {
+      if (!q) return true;
+      return String(it.noPengajuan || "").toLowerCase().indexOf(q) !== -1 ||
+             String(it.namaDriver || "").toLowerCase().indexOf(q) !== -1 ||
+             String(it.namaTujuan || "").toLowerCase().indexOf(q) !== -1;
+    });
+    listEl.innerHTML = '';
+    if (items.length === 0) { listEl.style.display = 'none'; return; }
+    items.forEach(function(it) {
+      var div = document.createElement('div');
+      div.className = 'autocomplete-item';
+      div.innerHTML = '<div class="ac-main">' + esc(it.noPengajuan) + '</div>' +
+        '<div class="ac-sub">' + esc(it.namaDriver || '-') + ' · ' + esc(it.namaTujuan || '-') + '</div>';
+      div.onclick = function() {
+        inputEl.value = it.noPengajuan;
+        listEl.style.display = 'none';
+        selectEUPDRow(it.noPengajuan);
+      };
+      listEl.appendChild(div);
+    });
+    listEl.style.display = 'block';
+  }
+
+  function onEUPDAutocompleteKeydown(e, inputEl) {
+    if (inputEl.readOnly) return;
+    var wrapper = inputEl.closest('.autocomplete-wrapper');
+    var listEl = wrapper.querySelector('.autocomplete-list');
+    var items = Array.prototype.slice.call(listEl.querySelectorAll('.autocomplete-item'));
+    if (e.key === 'Escape') { listEl.style.display = 'none'; return; }
+    if (items.length === 0) return;
+    if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+      e.preventDefault();
+      var activeIdx = items.findIndex(function(it) { return it.classList.contains('ac-active'); });
+      if (e.key === 'ArrowDown') activeIdx = Math.min(items.length - 1, activeIdx + 1);
+      else activeIdx = Math.max(0, activeIdx - 1);
+      items.forEach(function(it, i) {
+        it.classList.toggle('ac-active', i === activeIdx);
+        if (i === activeIdx) it.scrollIntoView({ block: 'nearest' });
+      });
+      if (listEl.style.display === 'none') listEl.style.display = 'block';
+      return;
+    }
+    if (e.key === 'Enter') {
+      var active = listEl.querySelector('.ac-active') || items[0];
+      if (active) { e.preventDefault(); active.click(); }
+    }
+  }
+
+  async function selectEUPDRow(noEUPD) {
+    if (!noEUPD) {
+      eupdInfo = null;
+      currentNamaDriver = '';
+      clearInfoCard();
+      recalcAll();
+      return;
+    }
+    var res = await fetch(GAS_URL + '?action=getLaporanUPDInfo&noEUPD=' + encodeURIComponent(noEUPD));
+    var json = await res.json();
+    if (json.status !== 'success' || !json.data) {
+      showAlert('error', json.message || 'Gagal memuat informasi EUPD.');
+      eupdInfo = null;
+      currentNamaDriver = '';
+      clearInfoCard();
+      recalcAll();
+      return;
+    }
+    eupdInfo = json.data;
+    currentNamaDriver = eupdInfo.namaDriver || '';
+    document.getElementById('tanggalPD').value = eupdInfo.tanggalPD || '';
+    document.getElementById('eupd-sub').innerText = (eupdInfo.namaDriver || '-') + ' · ' + (eupdInfo.namaTujuan || '-');
+    populateInfoCard();
+    recalcAll();
+  }
+
+  function clearInfoCard() {
+    document.getElementById('eupd-sub').innerText = '';
+    document.getElementById('tanggalPD').value = '';
+    setInfoValue('info-uang-makan', 0);
+    setInfoValue('info-bbm', 0);
+    setInfoValue('info-penginapan', 0);
+    setInfoValue('info-biaya-lain', 0);
+    setInfoValue('info-keseluruhan', 0);
+    setInfoValue('info-tambahan', 0);
+    setInfoValue('info-dana-transfer', 0);
+  }
+
+  function populateInfoCard() {
+    if (!eupdInfo) return;
+    setInfoValue('info-uang-makan', eupdInfo.totalUangMakan);
+    setInfoValue('info-bbm', eupdInfo.totalBBM);
+    setInfoValue('info-penginapan', eupdInfo.totalBiayaPenginapan);
+    setInfoValue('info-biaya-lain', eupdInfo.totalBiayaLainLain);
+    setInfoValue('info-keseluruhan', eupdInfo.totalBiayaKeseluruhan);
+    setInfoValue('info-tambahan', eupdInfo.totalTambahanDana);
+    setInfoValue('info-dana-transfer', eupdInfo.totalDanaDitransfer);
+  }
+
+  function setInfoValue(id, val) {
+    var el = document.getElementById(id);
+    if (el) el.innerText = formatCurrency(val);
+  }
+
+  // ---------- SECTION 3: INPUT BIAYA AKTUAL ----------
+  function tipeOptions(selected) {
+    var html = '';
+    TIPE_BIAYA.forEach(function(t) {
+      html += '<option value="' + t + '"' + (t === selected ? ' selected' : '') + '>' + t + '</option>';
+    });
+    return html;
+  }
+
+  function addBiayaRow(data) {
+    data = data || {};
+    var tbody = document.getElementById('biaya-body');
+    var tr = document.createElement('tr');
+    var ro = formReadOnly;
+    tr.innerHTML =
+      '<td><input type="date" class="app-input biaya-tanggal" value="' + esc(data.tanggal || '') + '"' + (ro ? ' readonly' : '') + '></td>' +
+      '<td><input type="text" class="app-input biaya-keterangan" value="' + esc(data.keterangan || '') + '" placeholder="Keterangan biaya..."' + (ro ? ' readonly' : '') + '></td>' +
+      '<td><select class="app-input biaya-tipe"' + (ro ? ' disabled' : '') + '>' + tipeOptions(data.tipe || 'Uang Makan') + '</select></td>' +
+      '<td><input type="text" class="app-input biaya-jumlah" value="' + (Number(data.jumlah) > 0 ? formatCurrency(Number(data.jumlah)) : '') + '" placeholder="0"' +
+        (ro ? ' readonly' : ' oninput="cleanNumberInput(this);recalcAll()" onfocus="removeDecimalFormat(this)" onblur="formatDecimalDisplay(this);recalcAll()"') + '></td>' +
+      '<td class="td-remove">' + (ro ? '' : '<button type="button" class="btn-journal-remove" onclick="removeBiayaRow(this)">x</button>') + '</td>';
+    tbody.appendChild(tr);
+  }
+
+  function removeBiayaRow(btn) {
+    var tr = btn.closest('tr');
+    tr.remove();
+    recalcAll();
+  }
+
   function getBiayaList() {
     var list = [];
-    document.querySelectorAll('.biaya-row').forEach(function(row) {
-      var jumlah = getRawValue(row.querySelector('.biaya-jumlah').value);
-      if (jumlah > 0) list.push({ tipe: row.dataset.tipe, jumlah: jumlah });
+    document.querySelectorAll('#biaya-body tr').forEach(function(tr) {
+      var jumlah = getRawValue(tr.querySelector('.biaya-jumlah').value);
+      if (jumlah > 0) {
+        list.push({
+          tanggal: tr.querySelector('.biaya-tanggal').value || '',
+          keterangan: tr.querySelector('.biaya-keterangan').value.trim(),
+          tipe: tr.querySelector('.biaya-tipe').value,
+          jumlah: jumlah
+        });
+      }
     });
     return list;
   }
 
-  function getTotalKeseluruhan() {
+  function getTotalBiayaAktual() {
     var total = 0;
     getBiayaList().forEach(function(b) { total += b.jumlah; });
     return total;
   }
 
+  // ---------- SURAT JALAN (ListDOCPA) ----------
   function getProducts() {
     var prods = [];
     document.querySelectorAll('#products-body tr').forEach(function(tr) {
@@ -431,7 +698,7 @@
     if (!item) return;
     addProductRow(item, false);
     sel.value = '';
-    recalcAllocation();
+    recalcAll();
   }
 
   function addProductRow(p, readonly) {
@@ -464,16 +731,13 @@
   function removeProduct(btn) {
     var tr = btn.closest('tr');
     tr.remove();
-    recalcAllocation();
+    recalcAll();
   }
 
-  function round2(n) {
-    return Math.round((n + Number.EPSILON) * 100) / 100;
-  }
-
+  // ---------- ALOKASI BIAYA (dipertahankan) ----------
   function recalcAllocation() {
-    var total = getTotalKeseluruhan();
-    document.getElementById('total-keseluruhan').innerText = formatCurrency(total);
+    var total = getTotalBiayaAktual();
+    document.getElementById('total-biaya-aktual').innerText = formatCurrency(total);
 
     var prods = getProducts();
     var sumInduk = 0;
@@ -545,61 +809,119 @@
     }
   }
 
-  function setFormReadOnly(readonly) {
-    document.querySelectorAll('.biaya-jumlah').forEach(function(inp) { inp.readOnly = readonly; });
-    document.getElementById('tanggalDokumen').readOnly = readonly;
-    document.getElementById('tanggalPD').readOnly = readonly;
-    document.getElementById('keterangan').readOnly = readonly;
-    document.getElementById('select-surat-jalan').disabled = readonly;
-    document.getElementById('btn-add-product').style.display = readonly ? 'none' : '';
+  // ---------- SECTION 4: SUMMARY BIAYA ----------
+  function updateSummary() {
+    var est = eupdInfo || {};
+    var estimates = [
+      Number(est.totalUangMakan) || 0,
+      Number(est.totalBBM) || 0,
+      Number(est.totalBiayaPenginapan) || 0,
+      Number(est.totalBiayaLainLain) || 0
+    ];
+    var aktual = { 'Uang Makan': 0, 'BBM': 0, 'Penginapan': 0, 'Biaya Lain-Lain': 0 };
+    getBiayaList().forEach(function(b) { aktual[b.tipe] = (aktual[b.tipe] || 0) + b.jumlah; });
+
+    var totalEst = Number(est.totalBiayaKeseluruhan) || 0;
+    var totalAktual = getTotalBiayaAktual();
+
+    for (var i = 0; i < estimates.length; i++) {
+      var a = aktual[TIPE_BIAYA[i]] || 0;
+      document.getElementById('sum-aktual-' + i).innerText = formatCurrency(a);
+      document.getElementById('sum-selisih-' + i).innerText = formatCurrency(round2(estimates[i] - a));
+    }
+    document.getElementById('sum-aktual-total').innerText = formatCurrency(totalAktual);
+    document.getElementById('sum-selisih-total').innerText = formatCurrency(round2(totalEst - totalAktual));
   }
 
-  function populateFromDetail(d, isView) {
-    currentStatus = String(d.status || 'Reported').trim() || 'Reported';
+  // ---------- SECTION 5: PENYELESAIAN DANA ----------
+  function updatePenyelesaian() {
+    var dana = eupdInfo ? (Number(eupdInfo.totalDanaDitransfer) || 0) : 0;
+    var total = getTotalBiayaAktual();
+    var selisih = round2(dana - total);
+
+    document.getElementById('pen-dana').innerText = formatCurrency(dana);
+    document.getElementById('pen-biaya').innerText = formatCurrency(total);
+    document.getElementById('pen-selisih').innerText = formatCurrency(selisih);
+
+    var statusEl = document.getElementById('pen-status');
+    var ketEl = document.getElementById('pen-keterangan');
+    if (selisih > 0) {
+      statusEl.innerHTML = '<span class="badge-lebih">Lebih Bayar</span>';
+      ketEl.innerText = 'Driver harus mengembalikan dana sebesar nilai selisih.';
+    } else if (selisih < 0) {
+      statusEl.innerHTML = '<span class="badge-kurang">Kurang Bayar</span>';
+      ketEl.innerText = 'Perusahaan masih harus melakukan pembayaran tambahan.';
+    } else {
+      statusEl.innerHTML = '<span class="badge-selesai">Selesai</span>';
+      ketEl.innerText = 'Dana yang ditransfer sudah sesuai dengan biaya aktual.';
+    }
+  }
+
+  function recalcAll() {
+    recalcAllocation();
+    updateSummary();
+    updatePenyelesaian();
+  }
+
+  // ---------- MODE & READONLY ----------
+  function setFormReadOnly(readonly) {
+    formReadOnly = readonly;
+    document.getElementById('tanggalDokumen').readOnly = readonly;
+    document.getElementById('noEUPD').readOnly = readonly;
+    document.getElementById('select-surat-jalan').disabled = readonly;
+    document.getElementById('btn-add-product').style.display = readonly ? 'none' : '';
+    document.getElementById('btn-add-biaya').style.display = readonly ? 'none' : '';
+    document.querySelectorAll('#biaya-body input, #biaya-body select').forEach(function(el) {
+      if (el.tagName === 'SELECT') el.disabled = readonly;
+      else el.readOnly = readonly;
+    });
+    document.querySelectorAll('#biaya-body .btn-journal-remove').forEach(function(btn) { btn.style.display = readonly ? 'none' : ''; });
+    document.querySelectorAll('#products-body .btn-journal-remove').forEach(function(btn) { btn.style.display = readonly ? 'none' : ''; });
+  }
+
+  // ---------- LOAD DETAIL (View / Edit) ----------
+  async function populateFromDetail(d, isView) {
+    currentStatus = String(d.status || 'Draft').trim() || 'Draft';
     document.getElementById('noLaporan').value = d.noLaporan;
     document.getElementById('noLaporan').style.fontStyle = 'normal';
     document.getElementById('noLaporan').style.fontWeight = '700';
     document.getElementById('noLaporan').style.color = 'var(--color-primary)';
     if (d.tanggalDokumen) document.getElementById('tanggalDokumen').value = d.tanggalDokumen;
-    if (d.tanggalPD) document.getElementById('tanggalPD').value = d.tanggalPD;
+    document.getElementById('tanggalPD').value = d.tanggalPD || '';
     document.getElementById('noEUPD').value = d.noEUPD || '';
-    document.getElementById('namaDriver').value = d.namaDriver || '';
-    document.getElementById('keterangan').value = d.keterangan || '';
+    document.getElementById('noEUPD').readOnly = true;
+    currentNamaDriver = d.namaDriver || '';
 
-    var tujuanSet = {};
-    (d.products || []).forEach(function(p) { if (p.namaTujuan) tujuanSet[p.namaTujuan] = true; });
-    document.getElementById('namaTujuan').value = Object.keys(tujuanSet).join(', ') || '-';
-    document.getElementById('tanggalPulang').value = '-';
+    if (d.noEUPD) await selectEUPDRow(d.noEUPD);
 
     (d.biaya || []).forEach(function(b) {
-      document.querySelectorAll('.biaya-row').forEach(function(row) {
-        if (row.dataset.tipe === b.tipe) {
-          row.querySelector('.biaya-jumlah').value = formatCurrency(Number(b.jumlah) || 0);
-        }
-      });
+      addBiayaRow({ tanggal: b.tanggal || '', keterangan: b.keterangan || '', tipe: b.tipe, jumlah: b.jumlah });
     });
-
     (d.products || []).forEach(function(p) {
       addProductRow(p, isView);
     });
+    recalcAll();
   }
 
+  // ---------- SIMPAN ----------
   async function handleSimpan() {
     var mode = getMode();
     if (mode === 'view') return;
 
     var tanggalDokumen = document.getElementById('tanggalDokumen').value;
     if (!tanggalDokumen) { showAlert('error', 'Tanggal Dokumen wajib diisi.'); return; }
+
     var noEUPD = document.getElementById('noEUPD').value.trim();
-    if (!noEUPD) { showAlert('error', 'Nomor Pengajuan EUPD belum tersedia.'); return; }
+    if (!noEUPD) { showAlert('error', 'Pilih Nomor Pengajuan EUPD terlebih dahulu.'); return; }
+
     var biaya = getBiayaList();
-    if (biaya.length === 0) { showAlert('error', 'Minimal satu tipe biaya harus diisi.'); return; }
+    if (biaya.length === 0) { showAlert('error', 'Minimal satu baris biaya aktual harus diisi.'); return; }
 
     recalcAllocation();
     var products = getProducts();
     if (products.length === 0) { showAlert('error', 'Minimal satu surat jalan harus dipilih.'); return; }
 
-    var total = getTotalKeseluruhan();
+    var total = getTotalBiayaAktual();
     var sumProduk = 0;
     products.forEach(function(p) { sumProduk += p.totalBiayaPerProduk; });
     if (Math.abs(sumProduk - total) > 0.001) { showAlert('error', 'Alokasi biaya belum seimbang.'); return; }
@@ -610,11 +932,10 @@
       noEUPD: noEUPD,
       tanggalDokumen: tanggalDokumen,
       tanggalPD: document.getElementById('tanggalPD').value,
-      keterangan: document.getElementById('keterangan').value.trim(),
       totalKeseluruhan: total,
       totalBiayaProdukPerPerjalanan: sumProduk,
-      namaDriver: document.getElementById('namaDriver').value.trim(),
-      status: currentStatus || 'Reported',
+      namaDriver: currentNamaDriver || '',
+      status: currentStatus || 'Draft',
       biaya: biaya,
       products: products
     };
@@ -649,6 +970,7 @@
     }
   }
 
+  // ---------- INIT ----------
   async function initPage() {
     showLoading(true);
     try {
@@ -680,6 +1002,8 @@
         document.getElementById('btn-simpan').innerText = 'Update Laporan UPD';
       }
 
+      await loadEUPDAutocomplete();
+
       var sjUrl = GAS_URL + '?action=getAvailableSuratJalan';
       if (isEdit) sjUrl += '&excludeNoLaporan=' + encodeURIComponent(noLaporan);
       var sjRes = await fetch(sjUrl);
@@ -690,27 +1014,13 @@
       }
 
       if (isCreate) {
+        document.getElementById('tanggalDokumen').value = getTodayDateInputISO();
+        addBiayaRow({});
         var params = new URLSearchParams(window.location.search);
         var noEUPD = params.get('noEUPD') || '';
-        var namaDriver = params.get('namaDriver') || '';
-        var namaTujuan = params.get('namaTujuan') || '';
-        var tanggalPulang = params.get('tanggalPulang') || '';
-
-        if (!noEUPD) { showAlert('error', 'Nomor Pengajuan EUPD tidak ditemukan pada URL.'); return; }
-
-        document.getElementById('noEUPD').value = noEUPD;
-        document.getElementById('namaDriver').value = namaDriver;
-        document.getElementById('namaTujuan').value = namaTujuan || '-';
-        document.getElementById('tanggalPulang').value = formatTanggal(tanggalPulang);
-        document.getElementById('tanggalDokumen').value = getTodayDateInputISO();
-
-        var infoRes = await fetch(GAS_URL + '?action=getEUPDInfo&noEUPD=' + encodeURIComponent(noEUPD));
-        var infoJson = await infoRes.json();
-        if (infoJson.status === 'success' && infoJson.data) {
-          var info = infoJson.data;
-          document.getElementById('namaDriver').value = info.namaDriver || namaDriver;
-          document.getElementById('namaTujuan').value = info.namaTujuan || namaTujuan || '-';
-          if (info.jadwalPulang) document.getElementById('tanggalPulang').value = formatTanggal(info.jadwalPulang);
+        if (noEUPD) {
+          document.getElementById('noEUPD').value = noEUPD;
+          await selectEUPDRow(noEUPD);
         }
       } else {
         document.getElementById('noLaporan').value = noLaporan;
@@ -718,20 +1028,20 @@
         var detailJson = await detailRes.json();
         if (detailJson.status !== 'success' || !detailJson.data) {
           showAlert('error', detailJson.message || 'Data tidak ditemukan.');
+          showLoading(false);
           return;
         }
         if (isEdit && String(detailJson.data.status || "").trim() === "Locked") {
-          mode = 'view';
           isView = true;
           isEdit = false;
           document.querySelector('h1.app-page-title').innerText = 'View Laporan UPD';
           document.getElementById('btn-simpan').style.display = 'none';
           setFormReadOnly(true);
         }
-        populateFromDetail(detailJson.data, isView);
+        await populateFromDetail(detailJson.data, isView);
       }
 
-      recalcAllocation();
+      recalcAll();
     } catch (err) {
       console.error('Init error:', err);
       showAlert('error', 'Gagal memuat data. Periksa koneksi.');
@@ -739,6 +1049,12 @@
       showLoading(false);
     }
   }
+
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.autocomplete-wrapper') && !e.target.closest('.autocomplete-list')) {
+      document.querySelectorAll('.autocomplete-list').forEach(function(l) { l.style.display = 'none'; });
+    }
+  });
 
   document.addEventListener('DOMContentLoaded', initPage);
 </script>
