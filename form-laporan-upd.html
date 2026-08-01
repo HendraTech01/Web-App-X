@@ -43,13 +43,16 @@
     .autocomplete-item .ac-sub { font-size: 12px; color: var(--color-text-secondary); }
     .eupd-sub { font-size: 12px; color: var(--color-text-secondary); margin-top: 0.35rem; min-height: 16px; font-weight: 500; }
 
-    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
-    .info-item { background: #F8FAFC; border: 1px solid var(--color-border); border-radius: var(--radius-sm); padding: 0.4rem 0.6rem; min-height: 44px; display: flex; flex-direction: column; justify-content: center; }
-    .info-item .info-label { font-size: 10.5px; font-weight: 500; color: var(--color-text-secondary); margin-bottom: 0.1rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .info-item .info-value { font-size: var(--font-base); font-weight: 600; color: var(--color-text-primary); word-break: break-word; }
-    .info-value-currency { text-align: right; font-variant-numeric: tabular-nums; }
-    .info-value-primary { color: var(--color-primary); font-size: 0.95rem; }
-    .info-item-wide { grid-column: span 2; }
+    .info-compact { display: flex; flex-direction: column; gap: 6px; }
+    .info-ident-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--color-border); border: 1px solid var(--color-border); border-radius: var(--radius-sm); overflow: hidden; }
+    .info-totals-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1.5fr; gap: 1px; background: var(--color-border); border: 1px solid var(--color-border); border-radius: var(--radius-sm); overflow: hidden; }
+    .info-dana-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--color-border); border: 1px solid var(--color-border); border-radius: var(--radius-sm); overflow: hidden; }
+    .info-compact .cell { background: #F8FAFC; padding: 0.3rem 0.5rem; display: flex; align-items: baseline; justify-content: space-between; gap: 5px; min-width: 0; }
+    .info-compact .cell .lbl { font-size: 9.5px; font-weight: 500; color: var(--color-text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+    .info-compact .cell .val { font-size: 12px; font-weight: 700; color: var(--color-text-primary); white-space: nowrap; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+    .info-compact .cell-total { background: #F1F5F9; }
+    .info-compact .cell-total .val { color: var(--color-primary); }
+    .info-compact .info-ident-row .val { font-weight: 600; flex-shrink: 1; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 
     /* SECTION 3 - TABEL BIAYA AKTUAL */
     .biaya-table { width: 100%; border-collapse: collapse; font-size: var(--font-sm); min-width: 0; table-layout: fixed; }
@@ -143,8 +146,9 @@
       .app-sidebar-container { display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important; bottom: 0 !important; width: 280px !important; max-width: 85vw !important; height: 100vh !important; z-index: 9999 !important; transform: translateX(-100%); transition: transform 0.25s ease; }
       body.menu-mode-active .app-sidebar-container { transform: translateX(0); }
       body.menu-mode-active .app-menu-close-btn { display: flex; position: absolute; right: 1rem; top: 1.5rem; background: none; border: none; color: var(--color-text-secondary); cursor: pointer; }
-      .info-grid, .pen-grid { grid-template-columns: 1fr !important; }
-      .info-item-wide { grid-column: span 1 !important; }
+      .info-totals-row { grid-template-columns: 1fr 1fr !important; }
+      .info-ident-row, .info-dana-row { grid-template-columns: 1fr !important; }
+      .pen-grid { grid-template-columns: 1fr !important; }
       .info-bar { flex-direction: column; align-items: stretch; }
       .info-bar .app-input-group { min-width: auto; max-width: none; }
       .bottom-actions { flex-direction: column; }
@@ -225,14 +229,22 @@
             <div class="eupd-sub" id="eupd-sub"></div>
           </div>
 
-          <div class="info-grid" style="margin-top:1rem;">
-            <div class="info-item"><div class="info-label">Uang Makan (Estimasi)</div><div class="info-value info-value-currency" id="info-uang-makan">0,00</div></div>
-            <div class="info-item"><div class="info-label">BBM (Estimasi)</div><div class="info-value info-value-currency" id="info-bbm">0,00</div></div>
-            <div class="info-item"><div class="info-label">Penginapan (Estimasi)</div><div class="info-value info-value-currency" id="info-penginapan">0,00</div></div>
-            <div class="info-item"><div class="info-label">Biaya Lain-Lain (Estimasi)</div><div class="info-value info-value-currency" id="info-biaya-lain">0,00</div></div>
-            <div class="info-item"><div class="info-label">Total Biaya Keseluruhan (Estimasi)</div><div class="info-value info-value-currency" id="info-keseluruhan">0,00</div></div>
-            <div class="info-item"><div class="info-label">Total Tambahan Dana</div><div class="info-value info-value-currency" id="info-tambahan">0,00</div></div>
-            <div class="info-item info-item-wide"><div class="info-label">Total Dana Ditransfer</div><div class="info-value info-value-currency info-value-primary" id="info-dana-transfer">0,00</div></div>
+          <div class="info-compact" style="margin-top:0.75rem;">
+            <div class="info-ident-row">
+              <div class="cell"><span class="lbl">Nama Driver</span><span class="val" id="info-driver">-</span></div>
+              <div class="cell"><span class="lbl">Nama Tujuan</span><span class="val" id="info-tujuan">-</span></div>
+            </div>
+            <div class="info-totals-row">
+              <div class="cell"><span class="lbl">Uang Makan</span><span class="val" id="info-uang-makan">0,00</span></div>
+              <div class="cell"><span class="lbl">BBM</span><span class="val" id="info-bbm">0,00</span></div>
+              <div class="cell"><span class="lbl">Penginapan</span><span class="val" id="info-penginapan">0,00</span></div>
+              <div class="cell"><span class="lbl">Biaya Lain-Lain</span><span class="val" id="info-biaya-lain">0,00</span></div>
+              <div class="cell cell-total"><span class="lbl">Total Biaya Keseluruhan</span><span class="val" id="info-keseluruhan">0,00</span></div>
+            </div>
+            <div class="info-dana-row">
+              <div class="cell"><span class="lbl">Total Tambahan Dana</span><span class="val" id="info-tambahan">0,00</span></div>
+              <div class="cell cell-total"><span class="lbl">Total Dana Ditransfer</span><span class="val" id="info-dana-transfer">0,00</span></div>
+            </div>
           </div>
         </div>
 
@@ -373,7 +385,7 @@
   let currentStatus = 'Draft';
   let formReadOnly = false;
   let availableSuratJalan = [];
-  let selectedSJItem = null;
+  let selectedSJNo = '';
 
   // ---------- UTIL ----------
   function showLoading(show) {
@@ -607,6 +619,8 @@
   function clearInfoCard() {
     document.getElementById('eupd-sub').innerText = '';
     document.getElementById('tanggalPD').value = '';
+    document.getElementById('info-driver').innerText = '-';
+    document.getElementById('info-tujuan').innerText = '-';
     setInfoValue('info-uang-makan', 0);
     setInfoValue('info-bbm', 0);
     setInfoValue('info-penginapan', 0);
@@ -618,6 +632,8 @@
 
   function populateInfoCard() {
     if (!eupdInfo) return;
+    document.getElementById('info-driver').innerText = eupdInfo.namaDriver || '-';
+    document.getElementById('info-tujuan').innerText = eupdInfo.namaTujuan || '-';
     setInfoValue('info-uang-makan', eupdInfo.totalUangMakan);
     setInfoValue('info-bbm', eupdInfo.totalBBM);
     setInfoValue('info-penginapan', eupdInfo.totalBiayaPenginapan);
@@ -721,15 +737,35 @@
     });
   }
 
+  function getSJByNo(noSJ) {
+    var key = String(noSJ || '').trim();
+    if (!key) return [];
+    return availableSuratJalan.filter(function(s) {
+      return String(s.nomorSuratJalan || '').trim() === key;
+    });
+  }
+
+  function getUniqueSJNumbers() {
+    var seen = {};
+    var uniq = [];
+    getSJSorted().forEach(function(s) {
+      var key = String(s.nomorSuratJalan || '').trim();
+      if (!key || seen[key]) return;
+      seen[key] = true;
+      uniq.push(key);
+    });
+    return uniq;
+  }
+
   function renderSJList(items) {
     var listEl = document.getElementById('sj-autocomplete-list');
     listEl.innerHTML = '';
     if (!items || items.length === 0) { listEl.style.display = 'none'; return; }
-    items.forEach(function(s) {
+    items.forEach(function(no) {
       var div = document.createElement('div');
       div.className = 'autocomplete-item';
-      div.innerHTML = '<div class="ac-main">' + esc(s.nomorSuratJalan) + '</div>';
-      div.onclick = function() { selectSJ(s); };
+      div.innerHTML = '<div class="ac-main">' + esc(no) + '</div>';
+      div.onclick = function() { selectSJ(no); };
       listEl.appendChild(div);
     });
     listEl.style.display = 'block';
@@ -740,11 +776,11 @@
     var q = String(inputEl.value || '').trim().toLowerCase();
     var items;
     if (q) {
-      items = availableSuratJalan.filter(function(s) {
-        return String(s.nomorSuratJalan || '').toLowerCase().indexOf(q) !== -1;
+      items = getUniqueSJNumbers().filter(function(no) {
+        return no.toLowerCase().indexOf(q) !== -1;
       });
     } else {
-      items = getSJSorted().slice(0, 5);
+      items = getUniqueSJNumbers().slice(0, 5);
     }
     renderSJList(items);
   }
@@ -773,20 +809,22 @@
     }
   }
 
-  function selectSJ(s) {
-    selectedSJItem = s;
-    document.getElementById('sj-search').value = s.nomorSuratJalan;
+  function selectSJ(noSJ) {
+    selectedSJNo = String(noSJ || '');
+    document.getElementById('sj-search').value = selectedSJNo;
     document.getElementById('sj-autocomplete-list').style.display = 'none';
+    var tujuan = [];
+    getSJByNo(selectedSJNo).forEach(function(s) {
+      var t = String(s.namaTujuan || '').trim();
+      if (t && tujuan.indexOf(t) === -1) tujuan.push(t);
+    });
     var infoEl = document.getElementById('sj-selected-info');
-    infoEl.innerHTML = '<strong>' + esc(s.nomorSuratJalan) + '</strong>' +
-      ' · ' + esc(s.namaTujuan || '-') +
-      ' · ' + esc(s.namaBarang || '-') +
-      ' · Tgl ' + formatTanggal(s.tanggalSuratJalan) +
-      ' · Jml ' + formatQty(s.jumlahSatuanDasar) + '/' + formatQty(s.jumlahSatuanInduk);
+    infoEl.innerHTML = '<strong>' + esc(selectedSJNo) + '</strong>' +
+      (tujuan.length ? ' · ' + esc(tujuan.join(', ')) : '');
   }
 
   function clearSJSelection() {
-    selectedSJItem = null;
+    selectedSJNo = '';
     var inputEl = document.getElementById('sj-search');
     if (inputEl) inputEl.value = '';
     var infoEl = document.getElementById('sj-selected-info');
@@ -794,12 +832,13 @@
   }
 
   function addProduct() {
-    var item = selectedSJItem;
-    if (!item) { showAlert('error', 'Pilih surat jalan terlebih dahulu.'); return; }
-    var noSJ = item.nomorSuratJalan;
+    if (!selectedSJNo) { showAlert('error', 'Pilih surat jalan terlebih dahulu.'); return; }
+    var noSJ = selectedSJNo;
     var exists = getProducts().some(function(p) { return p.nomorSuratJalan === noSJ; });
     if (exists) { showAlert('error', 'Surat jalan ' + noSJ + ' sudah ditambahkan.'); return; }
-    addProductRow(item, false);
+    var records = getSJByNo(noSJ);
+    if (records.length === 0) { showAlert('error', 'Data surat jalan tidak ditemukan.'); return; }
+    records.forEach(function(r) { addProductRow(r, false); });
     clearSJSelection();
     recalcAll();
   }
