@@ -212,9 +212,13 @@
       var json = await res.json();
       if (json.status === 'success') {
         tambahanEUPDList = json.data || [];
+      } else {
+        console.warn('getEUPDForTambahan gagal:', json.message);
+        showAlert('error', 'Gagal memuat daftar EUPD untuk Tambahan: ' + (json.message || ''));
       }
     } catch (err) {
       console.error('Gagal memuat data tambahan:', err);
+      showAlert('error', 'Gagal memuat daftar EUPD untuk Tambahan: ' + err.message);
     }
   }
 

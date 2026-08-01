@@ -49,6 +49,7 @@
     .btn-unlock:hover { background: #FECACA; }
     .btn-delete { background: #FEE2E2; color: #DC2626; }
     .btn-delete:hover { background: #FECACA; }
+    .actions-cell { display: inline-flex; flex-direction: column; align-items: flex-start; gap: 0.3rem; }
 
     .pagination-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; padding: 0.65rem 0.75rem; border-top: 1px solid var(--color-border); }
     .pagination-bar .page-info { font-size: var(--font-sm); color: var(--color-text-secondary); }
@@ -369,7 +370,7 @@
         '<td>' + (item.tujuan || '-') + '</td>' +
         '<td style="text-align:right;font-weight:600;">' + formatCurrency(item.totalBiaya) + '</td>' +
         '<td>' + getStatusBadge(item.status) + '</td>' +
-        '<td style="white-space:nowrap;">' + actionsHtml + '</td>';
+        '<td><div class="actions-cell">' + actionsHtml + '</div></td>';
       tbody.appendChild(tr);
     });
 
