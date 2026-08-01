@@ -157,6 +157,10 @@
         <p style="font-size:var(--font-sm);color:var(--color-text-secondary);margin-top:0.25rem;">Catat pembayaran pengajuan EUPD yang telah disetujui (Locked).</p>
       </div>
 
+      <div style="margin-bottom:1rem;">
+        <button type="button" id="btn-mode-toggle" class="btn-secondary" onclick="toggleMode()">Tambahan Uang Perjalanan Dinas</button>
+      </div>
+
       <div id="form-alert" class="app-alert"></div>
 
       <div class="info-bar">
@@ -195,6 +199,68 @@
   let postingAccounts = [];
   let groupCounter = 0;
   let selectedPengajuanMap = {};
+  let tambahanEUPDList = [];
+  let currentMode = 'EUPD';
+
+  function getActiveEUPDList() {
+    return currentMode === 'TAMBAHAN' ? tambahanEUPDList : availableEUPDList;
+  }
+
+  async function loadTambahanEUPD() {
+    try {
+      var res = await fetch(GAS_URL + '?action=getEUPDForTambahan');
+      var json = await res.json();
+      if (json.status === 'success') {
+        tambahanEUPDList = json.data || [];
+      }
+    } catch (err) {
+      console.error('Gagal memuat data tambahan:', err);
+    }
+  }
+
+  function toggleMode() {
+    if (getMode() === 'edit') {
+      showAlert('error', 'Mode tidak dapat diubah saat mengedit transaksi.');
+      return;
+    }
+    currentMode = (currentMode === 'EUPD') ? 'TAMBAHAN' : 'EUPD';
+    applyModeUI();
+    resetGroups();
+  }
+
+  function applyModeUI() {
+    var isTambah = currentMode === 'TAMBAHAN';
+    var m = getMode();
+    var modeLabel = isTambah ? 'Tambahan Uang Perjalanan Dinas' : 'Pembayaran EUPD';
+    var title = modeLabel;
+    if (m === 'view') title = 'View ' + modeLabel;
+    else if (m === 'edit') title = 'Edit ' + modeLabel;
+
+    var titleEl = document.querySelector('h1.app-page-title');
+    if (titleEl) titleEl.innerText = title;
+
+    var btn = document.getElementById('btn-mode-toggle');
+    if (btn) {
+      btn.innerText = isTambah ? 'Pembayaran EUPD' : 'Tambahan Uang Perjalanan Dinas';
+      btn.disabled = (m !== 'create');
+    }
+
+    var simpan = document.getElementById('btn-simpan');
+    if (simpan && m === 'create') {
+      simpan.innerText = isTambah ? 'Simpan Tambahan Uang Perjalanan Dinas' : 'Simpan Pembayaran EUPD';
+    }
+
+    if (isTambah && tambahanEUPDList.length === 0 && m === 'create') {
+      loadTambahanEUPD();
+    }
+  }
+
+  function resetGroups() {
+    selectedPengajuanMap = {};
+    groupCounter = 0;
+    document.getElementById('groups-container').innerHTML = '';
+    addGroup();
+  }
 
   function showLoading(show) {
     const el = document.getElementById('loadingOverlay');
@@ -427,6 +493,9 @@
 
   // ---- Available EUPD filter (for autocomplete) ----
   function filterAvailableEUPD(inputEl, groupId) {
+    if (currentMode === 'TAMBAHAN' && tambahanEUPDList.length === 0) {
+      loadTambahanEUPD();
+    }
     var wrapper = inputEl.closest('.autocomplete-wrapper');
     if (!wrapper) return;
     var listEl = wrapper.querySelector('.autocomplete-list');
@@ -434,9 +503,10 @@
     var val = inputEl.value.trim().toLowerCase();
 
     // Hide already selected
-    var filtered = availableEUPDList.filter(function(item) {
-      var no = String(item.noPengajuan || '').toLowerCase();
-      return no.includes(val) && !selectedPengajuanMap[item.noPengajuan];
+    var filtered = getActiveEUPDList().filter(function(item) {
+      var no = String(item.noPengajuan || item.nomorPengajuan || '').toLowerCase();
+      var key = item.noPengajuan || item.nomorPengajuan || '';
+      return no.includes(val) && !selectedPengajuanMap[key];
     });
 
     if (filtered.length === 0) { listEl.style.display = 'none'; return; }
@@ -447,15 +517,15 @@
       div.className = 'autocomplete-item';
       var mainEl = document.createElement('div');
       mainEl.className = 'ac-main';
-      mainEl.innerText = item.noPengajuan || '';
+      mainEl.innerText = item.noPengajuan || item.nomorPengajuan || '';
       div.appendChild(mainEl);
       var subEl = document.createElement('div');
       subEl.className = 'ac-sub';
-      subEl.innerText = (item.warehouse || '') + ' | ' + (item.driver || '');
+      subEl.innerText = (item.whAwal || item.warehouse || '') + ' | ' + (item.namaDriver || item.driver || '');
       div.appendChild(subEl);
       div.addEventListener('mousedown', function(e) {
         e.preventDefault();
-        inputEl.value = item.noPengajuan;
+        inputEl.value = item.noPengajuan || item.nomorPengajuan || '';
         listEl.style.display = 'none';
         onSelectPengajuan(item, groupId);
       });
@@ -471,10 +541,43 @@
     var group = document.querySelector('.group-card[data-group-id="' + groupId + '"]');
     if (!group) return;
 
-    selectedPengajuanMap[item.noPengajuan] = true;
+    var noPengSelected = item.noPengajuan || item.nomorPengajuan || '';
+    if (noPengSelected) selectedPengajuanMap[noPengSelected] = true;
     showLoading(true);
 
     try {
+      if (currentMode === 'TAMBAHAN') {
+        group.dataset.noPengajuan = item.nomorPengajuan;
+        group.dataset.whAwal = item.whAwal || '';
+        group.dataset.namaDriver = item.namaDriver || '';
+        group.dataset.nomorKendaraan = item.nomorKendaraan || '';
+        group.dataset.pemesan = item.pemesan || '';
+        group.dataset.tujuan = item.tujuan || '';
+        group.dataset.totalBiayaKeseluruhan = 0;
+        group.dataset.totalPembayaranSebelumnya = Number(item.totalPembayaranSebelumnya) || 0;
+
+        group.querySelector('.tinfo-wh').innerText = item.whAwal || '-';
+        group.querySelector('.tinfo-driver').innerText = item.namaDriver || '-';
+        group.querySelector('.tinfo-kendaraan').innerText = item.nomorKendaraan || '-';
+        group.querySelector('.tinfo-pemesan').innerText = item.pemesan || '-';
+        group.querySelector('.tinfo-tujuan').innerText = item.tujuan || '-';
+        group.querySelector('.tinfo-sebelumnya').innerText = formatCurrency(Number(item.totalPembayaranSebelumnya) || 0);
+
+        group.querySelector('.eupd-info').style.display = 'none';
+        group.querySelector('.tambahan-info').style.display = 'block';
+        group.querySelector('.total-pembayaran-group').style.display = 'block';
+        group.querySelector('.total-pembayaran-input').value = '';
+
+        var journalBody = group.querySelector('.journal-body');
+        journalBody.innerHTML = '';
+        addJournalRow(groupId);
+
+        group.querySelector('.journal-section').style.display = 'block';
+        group.dataset.loaded = 'true';
+        showLoading(false);
+        return;
+      }
+
       var res = await fetch(GAS_URL + '?action=getEUPDDetail&noPengajuan=' + encodeURIComponent(item.noPengajuan));
       var json = await res.json();
 
@@ -515,7 +618,10 @@
       journalBody.innerHTML = '';
       addJournalRow(groupId);
 
-      group.querySelector('.group-info-section').style.display = 'block';
+      group.querySelector('.eupd-info').style.display = 'block';
+      group.querySelector('.tambahan-info').style.display = 'none';
+      group.querySelector('.total-pembayaran-group').style.display = 'block';
+      group.querySelector('.total-pembayaran-input').value = formatCurrency(Number(d.totalBiayaKeseluruhan) || 0);
       group.querySelector('.journal-section').style.display = 'block';
       group.dataset.loaded = 'true';
     } catch (err) {
@@ -540,7 +646,7 @@
 
     div.innerHTML =
       '<div class="section-header">' +
-        '<span>Group Pengajuan EUPD #' + groupCounter + '</span>' +
+        '<span>' + (currentMode === 'TAMBAHAN' ? 'Group Pengajuan Tambahan #' : 'Group Pengajuan EUPD #') + groupCounter + '</span>' +
         '<div class="group-actions">' +
           '<button type="button" class="btn-remove-group" onclick="removeGroup(\'' + groupId + '\')">Hapus Group</button>' +
         '</div>' +
@@ -552,7 +658,7 @@
           '<div class="autocomplete-list"></div>' +
         '</div>' +
       '</div>' +
-      '<div class="group-info-section" style="display:none;">' +
+      '<div class="group-info-section eupd-info" style="display:none;">' +
         '<div class="info-grid">' +
           '<div class="info-item"><div class="info-label">WH Awal</div><div class="info-value info-wh">-</div></div>' +
           '<div class="info-item"><div class="info-label">Nama Driver</div><div class="info-value info-driver">-</div></div>' +
@@ -565,6 +671,20 @@
           '<div class="info-item"><div class="info-label">Biaya Lain</div><div class="info-value info-biaya-lain">0</div></div>' +
           '<div class="info-item info-total-item"><div class="info-label">Total Keseluruhan</div><div class="info-value info-total" style="font-weight:700;color:var(--color-primary);">0</div></div>' +
         '</div>' +
+      '</div>' +
+      '<div class="group-info-section tambahan-info" style="display:none;">' +
+        '<div class="info-grid">' +
+          '<div class="info-item"><div class="info-label">WH Awal</div><div class="info-value tinfo-wh">-</div></div>' +
+          '<div class="info-item"><div class="info-label">Nama Driver</div><div class="info-value tinfo-driver">-</div></div>' +
+          '<div class="info-item"><div class="info-label">Kendaraan</div><div class="info-value tinfo-kendaraan">-</div></div>' +
+          '<div class="info-item"><div class="info-label">Pemesan</div><div class="info-value tinfo-pemesan">-</div></div>' +
+          '<div class="info-item"><div class="info-label">Tujuan</div><div class="info-value tinfo-tujuan">-</div></div>' +
+          '<div class="info-item info-total-item"><div class="info-label">Total Pembayaran Sebelumnya</div><div class="info-value tinfo-sebelumnya" style="font-weight:700;color:var(--color-primary);">0</div></div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="app-input-group total-pembayaran-group" style="margin-top:0.75rem;display:none;max-width:320px;">' +
+        '<label>Total Pembayaran</label>' +
+        '<input type="text" class="app-input total-pembayaran-input" placeholder="0" style="text-align:right;font-weight:600;" oninput="cleanNumberInput(this);" onfocus="removeDecimalFormat(this)" onblur="formatDecimalDisplay(this)">' +
       '</div>' +
       '<div class="journal-section" style="display:none;">' +
         '<div class="journal-table-wrap">' +
@@ -760,6 +880,13 @@
         g.scrollIntoView({ behavior: 'smooth', block: 'center' });
         return false;
       }
+
+      var totalPembayaran = getRawValue(g.querySelector('.total-pembayaran-input').value);
+      if (currentMode === 'TAMBAHAN' && !(totalPembayaran > 0)) {
+        showAlert('error', 'Group #' + (i + 1) + ' (' + noPengajuan + '): Total Pembayaran harus diisi dan lebih dari 0.');
+        g.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+      }
     }
 
     return true;
@@ -808,6 +935,8 @@
         totalBiayaPenginapan: Number(g.dataset.totalBiayaPenginapan) || 0,
         totalBiayaLainLain: Number(g.dataset.totalBiayaLainLain) || 0,
         totalBiayaKeseluruhan: Number(g.dataset.totalBiayaKeseluruhan) || 0,
+        totalPembayaran: getRawValue(g.querySelector('.total-pembayaran-input').value),
+        totalPembayaranSebelumnya: Number(g.dataset.totalPembayaranSebelumnya) || 0,
         journals: journals
       });
     });
@@ -816,6 +945,7 @@
       action: getMode() === 'edit' ? 'updatePembayaranEUPD' : 'savePembayaranEUPD',
       noPembayaran: getModeNo(),
       tanggal: tanggal,
+      mode: currentMode,
       groups: groupData
     };
   }
@@ -889,6 +1019,15 @@
     groupCounter = 0;
 
     var noPengajuanList = Object.keys(groups);
+
+    // Restore mode dari transaksi tersimpan
+    var savedMode = String((groups[noPengajuanList[0]] && groups[noPengajuanList[0]][0]['Mode']) || 'EUPD').trim();
+    currentMode = (savedMode === 'TAMBAHAN') ? 'TAMBAHAN' : 'EUPD';
+    applyModeUI();
+    if (getMode() === 'edit') {
+      document.getElementById('btn-mode-toggle').disabled = true;
+    }
+
     noPengajuanList.forEach(function(noPengajuan) {
       var groupRows = groups[noPengajuan];
       var first = groupRows[0];
@@ -910,16 +1049,11 @@
       var pemesan = first['Pemesan'] || '';
       var tujuan = first['Tujuan'] || '';
 
-      group.querySelector('.info-wh').innerText = wh || '-';
-      group.querySelector('.info-driver').innerText = driver || '-';
-      group.querySelector('.info-kendaraan').innerText = kendaraan || '-';
-      group.querySelector('.info-pemesan').innerText = pemesan || '-';
-      group.querySelector('.info-tujuan').innerText = tujuan || '-';
-      group.querySelector('.info-uang-makan').innerText = formatCurrency(Number(first['Total Uang Makan']) || 0);
-      group.querySelector('.info-bbm').innerText = formatCurrency(Number(first['Total Uang BBM']) || 0);
-      group.querySelector('.info-inap').innerText = formatCurrency(Number(first['Total Biaya Penginapan']) || 0);
-      group.querySelector('.info-biaya-lain').innerText = formatCurrency(Number(first['Total Biaya Lain-Lain']) || 0);
-      group.querySelector('.info-total').innerText = formatCurrency(Number(first['Total Biaya Keseluruhan']) || 0);
+      var totalPembayaran = Number(first['Total Pembayaran']) || 0;
+      var tpi = group.querySelector('.total-pembayaran-input');
+      tpi.value = totalPembayaran > 0 ? formatCurrency(totalPembayaran) : '';
+      group.querySelector('.total-pembayaran-group').style.display = 'block';
+      if (isView) tpi.readOnly = true;
 
       group.dataset.noPengajuan = noPengajuan;
       group.dataset.whAwal = wh;
@@ -932,8 +1066,32 @@
       group.dataset.totalBiayaPenginapan = first['Total Biaya Penginapan'] || 0;
       group.dataset.totalBiayaLainLain = first['Total Biaya Lain-Lain'] || 0;
       group.dataset.totalBiayaKeseluruhan = first['Total Biaya Keseluruhan'] || 0;
+      group.dataset.totalPembayaranSebelumnya = Number(first['Total Pembayaran Sebelumnya']) || 0;
 
-      group.querySelector('.group-info-section').style.display = 'block';
+      if (currentMode === 'TAMBAHAN') {
+        group.querySelector('.tinfo-wh').innerText = wh || '-';
+        group.querySelector('.tinfo-driver').innerText = driver || '-';
+        group.querySelector('.tinfo-kendaraan').innerText = kendaraan || '-';
+        group.querySelector('.tinfo-pemesan').innerText = pemesan || '-';
+        group.querySelector('.tinfo-tujuan').innerText = tujuan || '-';
+        group.querySelector('.tinfo-sebelumnya').innerText = formatCurrency(Number(first['Total Pembayaran Sebelumnya']) || 0);
+        group.querySelector('.tambahan-info').style.display = 'block';
+        group.querySelector('.eupd-info').style.display = 'none';
+      } else {
+        group.querySelector('.info-wh').innerText = wh || '-';
+        group.querySelector('.info-driver').innerText = driver || '-';
+        group.querySelector('.info-kendaraan').innerText = kendaraan || '-';
+        group.querySelector('.info-pemesan').innerText = pemesan || '-';
+        group.querySelector('.info-tujuan').innerText = tujuan || '-';
+        group.querySelector('.info-uang-makan').innerText = formatCurrency(Number(first['Total Uang Makan']) || 0);
+        group.querySelector('.info-bbm').innerText = formatCurrency(Number(first['Total Uang BBM']) || 0);
+        group.querySelector('.info-inap').innerText = formatCurrency(Number(first['Total Biaya Penginapan']) || 0);
+        group.querySelector('.info-biaya-lain').innerText = formatCurrency(Number(first['Total Biaya Lain-Lain']) || 0);
+        group.querySelector('.info-total').innerText = formatCurrency(Number(first['Total Biaya Keseluruhan']) || 0);
+        group.querySelector('.eupd-info').style.display = 'block';
+        group.querySelector('.tambahan-info').style.display = 'none';
+      }
+
       group.querySelector('.journal-section').style.display = 'block';
 
       // Populate journal rows
@@ -990,6 +1148,7 @@
   async function initPage() {
     try {
       showLoading(true);
+      applyModeUI();
 
       var mode = getMode();
       var modeNo = getModeNo();
