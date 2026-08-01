@@ -41,18 +41,14 @@
     .autocomplete-item:hover, .autocomplete-item.ac-active { background-color: var(--color-primary-light); }
     .autocomplete-item .ac-main { font-weight: 600; font-size: var(--font-sm); color: var(--color-text-primary); }
     .autocomplete-item .ac-sub { font-size: 12px; color: var(--color-text-secondary); }
-    .eupd-sub { font-size: 12px; color: var(--color-text-secondary); margin-top: 0.35rem; min-height: 16px; font-weight: 500; }
 
-    .info-compact { display: flex; flex-direction: column; gap: 6px; }
-    .info-ident-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--color-border); border: 1px solid var(--color-border); border-radius: var(--radius-sm); overflow: hidden; }
-    .info-totals-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1.5fr; gap: 1px; background: var(--color-border); border: 1px solid var(--color-border); border-radius: var(--radius-sm); overflow: hidden; }
-    .info-dana-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--color-border); border: 1px solid var(--color-border); border-radius: var(--radius-sm); overflow: hidden; }
-    .info-compact .cell { background: #F8FAFC; padding: 0.3rem 0.5rem; display: flex; align-items: baseline; justify-content: space-between; gap: 5px; min-width: 0; }
-    .info-compact .cell .lbl { font-size: 9.5px; font-weight: 500; color: var(--color-text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
-    .info-compact .cell .val { font-size: 12px; font-weight: 700; color: var(--color-text-primary); white-space: nowrap; font-variant-numeric: tabular-nums; flex-shrink: 0; }
-    .info-compact .cell-total { background: #F1F5F9; }
-    .info-compact .cell-total .val { color: var(--color-primary); }
-    .info-compact .info-ident-row .val { font-weight: 600; flex-shrink: 1; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+    /* INFORMASI PENGAJUAN EUPD - TABEL (sama dengan Summary Biaya) */
+    .info-table th { white-space: normal; }
+    .info-table td { white-space: nowrap; }
+    .info-biaya-table td { text-align: right !important; }
+    .info-biaya-table td:first-child { text-align: right !important; }
+    .info-ident-table th, .info-ident-table td { text-align: left !important; }
+    .info-ident-wrap { margin-top: 0.75rem; }
 
     /* SECTION 3 - TABEL BIAYA AKTUAL */
     .biaya-table { width: 100%; border-collapse: collapse; font-size: var(--font-sm); min-width: 0; table-layout: fixed; }
@@ -146,8 +142,6 @@
       .app-sidebar-container { display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important; bottom: 0 !important; width: 280px !important; max-width: 85vw !important; height: 100vh !important; z-index: 9999 !important; transform: translateX(-100%); transition: transform 0.25s ease; }
       body.menu-mode-active .app-sidebar-container { transform: translateX(0); }
       body.menu-mode-active .app-menu-close-btn { display: flex; position: absolute; right: 1rem; top: 1.5rem; background: none; border: none; color: var(--color-text-secondary); cursor: pointer; }
-      .info-totals-row { grid-template-columns: 1fr 1fr !important; }
-      .info-ident-row, .info-dana-row { grid-template-columns: 1fr !important; }
       .pen-grid { grid-template-columns: 1fr !important; }
       .info-bar { flex-direction: column; align-items: stretch; }
       .info-bar .app-input-group { min-width: auto; max-width: none; }
@@ -226,25 +220,49 @@
               <input type="text" id="noEUPD" class="app-input" placeholder="Ketik nomor pengajuan EUPD..." oninput="filterEUPDAutocomplete(this)" onkeydown="onEUPDAutocompleteKeydown(event, this)" autocomplete="off">
               <div class="autocomplete-list"></div>
             </div>
-            <div class="eupd-sub" id="eupd-sub"></div>
           </div>
 
-          <div class="info-compact" style="margin-top:0.75rem;">
-            <div class="info-ident-row">
-              <div class="cell"><span class="lbl">Nama Driver</span><span class="val" id="info-driver">-</span></div>
-              <div class="cell"><span class="lbl">Nama Tujuan</span><span class="val" id="info-tujuan">-</span></div>
-            </div>
-            <div class="info-totals-row">
-              <div class="cell"><span class="lbl">Uang Makan</span><span class="val" id="info-uang-makan">0,00</span></div>
-              <div class="cell"><span class="lbl">BBM</span><span class="val" id="info-bbm">0,00</span></div>
-              <div class="cell"><span class="lbl">Penginapan</span><span class="val" id="info-penginapan">0,00</span></div>
-              <div class="cell"><span class="lbl">Biaya Lain-Lain</span><span class="val" id="info-biaya-lain">0,00</span></div>
-              <div class="cell cell-total"><span class="lbl">Total Biaya Keseluruhan</span><span class="val" id="info-keseluruhan">0,00</span></div>
-            </div>
-            <div class="info-dana-row">
-              <div class="cell"><span class="lbl">Total Tambahan Dana</span><span class="val" id="info-tambahan">0,00</span></div>
-              <div class="cell cell-total"><span class="lbl">Total Dana Ditransfer</span><span class="val" id="info-dana-transfer">0,00</span></div>
-            </div>
+          <div class="table-wrap info-ident-wrap">
+            <table class="summary-table info-table info-ident-table">
+              <thead>
+                <tr>
+                  <th>Nama Driver</th>
+                  <th>Nama Tujuan</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td id="info-driver">-</td>
+                  <td id="info-tujuan">-</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="table-wrap">
+            <table class="summary-table info-table info-biaya-table">
+              <thead>
+                <tr>
+                  <th>Uang Makan</th>
+                  <th>BBM</th>
+                  <th>Penginapan</th>
+                  <th>Biaya Lain-Lain</th>
+                  <th>Total Biaya Keseluruhan</th>
+                  <th>Total Tambahan Dana</th>
+                  <th>Total Dana Ditransfer</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td id="info-uang-makan">0,00</td>
+                  <td id="info-bbm">0,00</td>
+                  <td id="info-penginapan">0,00</td>
+                  <td id="info-biaya-lain">0,00</td>
+                  <td class="sum-total" id="info-keseluruhan">0,00</td>
+                  <td id="info-tambahan">0,00</td>
+                  <td class="sum-total" id="info-dana-transfer">0,00</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
@@ -611,13 +629,11 @@
     eupdInfo = json.data;
     currentNamaDriver = eupdInfo.namaDriver || '';
     document.getElementById('tanggalPD').value = eupdInfo.tanggalPD || '';
-    document.getElementById('eupd-sub').innerText = (eupdInfo.namaDriver || '-') + ' · ' + (eupdInfo.namaTujuan || '-');
     populateInfoCard();
     recalcAll();
   }
 
   function clearInfoCard() {
-    document.getElementById('eupd-sub').innerText = '';
     document.getElementById('tanggalPD').value = '';
     document.getElementById('info-driver').innerText = '-';
     document.getElementById('info-tujuan').innerText = '-';
