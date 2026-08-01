@@ -145,7 +145,7 @@
               <th onclick="sortBy('whAwal')">WH Awal <span class="sort-arrow" id="sort-whAwal"></span></th>
               <th onclick="sortBy('namaDriver')">Nama Driver <span class="sort-arrow" id="sort-namaDriver"></span></th>
               <th onclick="sortBy('tujuan')">Tujuan <span class="sort-arrow" id="sort-tujuan"></span></th>
-              <th onclick="sortBy('totalBiaya')">Total Biaya <span class="sort-arrow" id="sort-totalBiaya"></span></th>
+              <th onclick="sortBy('totalPembayaran')">Total Pembayaran <span class="sort-arrow" id="sort-totalPembayaran"></span></th>
               <th onclick="sortBy('status')">Status <span class="sort-arrow" id="sort-status"></span></th>
               <th>Action</th>
             </tr>
@@ -305,7 +305,7 @@
 
     filteredData.sort(function(a, b) {
       var va, vb;
-      if (col === 'totalBiaya') {
+      if (col === 'totalBiaya' || col === 'totalPembayaran') {
         va = Number(a[col]) || 0;
         vb = Number(b[col]) || 0;
       } else if (col === 'tanggal') {
@@ -368,7 +368,7 @@
         '<td>' + (item.whAwal || '-') + '</td>' +
         '<td>' + (item.namaDriver || '-') + '</td>' +
         '<td>' + (item.tujuan || '-') + '</td>' +
-        '<td style="text-align:right;font-weight:600;">' + formatCurrency(item.totalBiaya) + '</td>' +
+        '<td style="text-align:right;font-weight:600;">' + formatCurrency(item.totalPembayaran) + '</td>' +
         '<td>' + getStatusBadge(item.status) + '</td>' +
         '<td><div class="actions-cell">' + actionsHtml + '</div></td>';
       tbody.appendChild(tr);
@@ -508,7 +508,7 @@
       var data = json.data;
 
       var wb = XLSX.utils.book_new();
-      var wsData = [['No Pembayaran EUPD', 'Tanggal', 'Nomor Pengajuan EUPD', 'WH Awal', 'Nama Driver', 'Tujuan', 'Total Biaya Keseluruhan', 'Status']];
+      var wsData = [['No Pembayaran EUPD', 'Tanggal', 'Nomor Pengajuan EUPD', 'WH Awal', 'Nama Driver', 'Tujuan', 'Total Pembayaran', 'Status']];
       data.forEach(function(item) {
         wsData.push([
           item.noPembayaran || '',
@@ -517,7 +517,7 @@
           item.whAwal || '',
           item.namaDriver || '',
           item.tujuan || '',
-          Number(item.totalBiaya) || 0,
+          Number(item.totalPembayaran) || 0,
           item.status || ''
         ]);
       });
