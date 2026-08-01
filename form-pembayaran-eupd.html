@@ -1070,7 +1070,7 @@
       group.dataset.totalBiayaPenginapan = first['Total Biaya Penginapan'] || 0;
       group.dataset.totalBiayaLainLain = first['Total Biaya Lain-Lain'] || 0;
       group.dataset.totalBiayaKeseluruhan = first['Total Biaya Keseluruhan'] || 0;
-      group.dataset.totalPembayaranSebelumnya = Number(first['Total Pembayaran Sebelumnya']) || 0;
+      group.dataset.totalPembayaranSebelumnya = Number(first.totalPembayaranSebelumnya) || 0;
 
       if (currentMode === 'TAMBAHAN') {
         group.querySelector('.tinfo-wh').innerText = wh || '-';
@@ -1078,7 +1078,7 @@
         group.querySelector('.tinfo-kendaraan').innerText = kendaraan || '-';
         group.querySelector('.tinfo-pemesan').innerText = pemesan || '-';
         group.querySelector('.tinfo-tujuan').innerText = tujuan || '-';
-        group.querySelector('.tinfo-sebelumnya').innerText = formatCurrency(Number(first['Total Pembayaran Sebelumnya']) || 0);
+        group.querySelector('.tinfo-sebelumnya').innerText = formatCurrency(Number(first.totalPembayaranSebelumnya) || 0);
         group.querySelector('.tambahan-info').style.display = 'block';
         group.querySelector('.eupd-info').style.display = 'none';
       } else {
