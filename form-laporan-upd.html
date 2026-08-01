@@ -78,6 +78,7 @@
     .sj-select-bar { display: flex; align-items: flex-end; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
     .sj-select-bar .app-input-group { flex: 1 1 300px; margin-bottom: 0; }
     .sj-selected-info { font-size: 12px; color: var(--color-text-secondary); margin-top: 0.35rem; min-height: 16px; line-height: 1.4; word-break: break-word; }
+    .sj-phs-sub { font-size: 10.5px; color: var(--color-text-secondary); font-weight: 500; margin-top: 2px; white-space: nowrap; }
     .table-wrap { overflow-x: auto; width: 100%; margin-top: 0.5rem; }
     .journal-table { width: 100%; border-collapse: collapse; font-size: var(--font-sm); min-width: 0; table-layout: fixed; }
     .journal-table th { background: var(--color-primary-light); color: var(--color-primary); font-weight: 600; padding: 0.32rem 0.35rem; text-align: left; font-size: 10px; white-space: nowrap; border: 1px solid var(--color-border); vertical-align: middle; }
@@ -302,6 +303,10 @@
                 <div class="autocomplete-list" id="sj-autocomplete-list"></div>
               </div>
               <div class="sj-selected-info" id="sj-selected-info"></div>
+            </div>
+            <div class="app-input-group" style="flex:0 1 200px;">
+              <label>No. PHS CPA</label>
+              <input type="text" id="phs-cpa" class="app-input" placeholder="Masukkan No. PHS CPA...">
             </div>
             <button type="button" class="btn-outline-primary" id="btn-add-product" onclick="addProduct()">+ Tambah Surat Jalan</button>
           </div>
@@ -731,7 +736,8 @@
         jumlahSatuanDasar: Number(tr.dataset.dasar) || 0,
         jumlahSatuanInduk: Number(tr.dataset.induk) || 0,
         biayaPerSatuanInduk: Number(tr.dataset.biayaPerInduk) || 0,
-        totalBiayaPerProduk: Number(tr.dataset.totalBiaya) || 0
+        totalBiayaPerProduk: Number(tr.dataset.totalBiaya) || 0,
+        nomorPHS: tr.dataset.phs || ''
       });
     });
     return prods;
@@ -795,6 +801,7 @@
       items = getUniqueSJNumbers().filter(function(no) {
         return no.toLowerCase().indexOf(q) !== -1;
       });
+      if (items.length > 10) items = items.slice(0, 10);
     } else {
       items = getUniqueSJNumbers().slice(0, 5);
     }
@@ -854,9 +861,19 @@
     if (exists) { showAlert('error', 'Surat jalan ' + noSJ + ' sudah ditambahkan.'); return; }
     var records = getSJByNo(noSJ);
     if (records.length === 0) { showAlert('error', 'Data surat jalan tidak ditemukan.'); return; }
-    records.forEach(function(r) { addProductRow(r, false); });
+    var phs = document.getElementById('phs-cpa').value.trim();
+    records.forEach(function(r) {
+      addProductRow(mergePHSToRecord(r, phs), false);
+    });
     clearSJSelection();
     recalcAll();
+  }
+
+  function mergePHSToRecord(rec, phs) {
+    var merged = {};
+    for (var k in rec) merged[k] = rec[k];
+    merged.nomorPHS = phs;
+    return merged;
   }
 
   function addProductRow(p, readonly) {
@@ -871,9 +888,11 @@
     tr.dataset.induk = Number(p.jumlahSatuanInduk) || 0;
     tr.dataset.biayaPerInduk = Number(p.biayaPerSatuanInduk) || 0;
     tr.dataset.totalBiaya = Number(p.totalBiayaPerProduk) || 0;
+    tr.dataset.phs = p.nomorPHS || '';
 
     tr.innerHTML =
-      '<td><strong>' + esc(p.nomorSuratJalan) + '</strong></td>' +
+      '<td><strong>' + esc(p.nomorSuratJalan) + '</strong>' +
+        (tr.dataset.phs ? '<div class="sj-phs-sub">PHS: ' + esc(tr.dataset.phs) + '</div>' : '') + '</td>' +
       '<td>' + formatTanggal(p.tanggalSuratJalan) + '</td>' +
       '<td>' + esc(p.pemesan || '-') + '</td>' +
       '<td>' + esc(p.namaTujuan || '-') + '</td>' +
@@ -1027,6 +1046,7 @@
     document.getElementById('tanggalDokumen').readOnly = readonly;
     document.getElementById('noEUPD').readOnly = readonly;
     document.getElementById('sj-search').readOnly = readonly;
+    document.getElementById('phs-cpa').readOnly = readonly;
     document.getElementById('btn-add-product').style.display = readonly ? 'none' : '';
     document.getElementById('btn-add-biaya').style.display = readonly ? 'none' : '';
     document.querySelectorAll('#biaya-body input, #biaya-body select, #biaya-body textarea').forEach(function(el) {
