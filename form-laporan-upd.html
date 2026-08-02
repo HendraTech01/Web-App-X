@@ -78,26 +78,25 @@
     .sj-select-bar { display: flex; align-items: flex-end; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.75rem; }
     .sj-select-bar .app-input-group { flex: 1 1 300px; margin-bottom: 0; }
     .sj-selected-info { font-size: 12px; color: var(--color-text-secondary); margin-top: 0.35rem; min-height: 16px; line-height: 1.4; word-break: break-word; }
-    .sj-phs-sub { font-size: 10.5px; color: var(--color-text-secondary); font-weight: 500; margin-top: 2px; white-space: nowrap; }
     .table-wrap { overflow-x: auto; width: 100%; margin-top: 0.5rem; }
     .journal-table { width: 100%; border-collapse: collapse; font-size: var(--font-sm); min-width: 0; table-layout: fixed; }
     .journal-table th { background: var(--color-primary-light); color: var(--color-primary); font-weight: 600; padding: 0.32rem 0.35rem; text-align: left; font-size: 10px; white-space: nowrap; border: 1px solid var(--color-border); vertical-align: middle; }
-    .journal-table th:nth-child(1) { width: 13%; }
+    .journal-table th:nth-child(1) { width: 12%; }
     .journal-table th:nth-child(2) { width: 9%; }
-    .journal-table th:nth-child(3) { width: 9%; }
+    .journal-table th:nth-child(3) { width: 8%; }
     .journal-table th:nth-child(4) { width: 9%; }
-    .journal-table th:nth-child(5) { width: 11%; }
-    .journal-table th:nth-child(6) { width: 8%; }
+    .journal-table th:nth-child(5) { width: 9%; }
+    .journal-table th:nth-child(6) { width: 11%; }
     .journal-table th:nth-child(7) { width: 8%; }
-    .journal-table th:nth-child(8) { width: 11%; }
-    .journal-table th:nth-child(9) { width: 11%; }
-    .journal-table th:nth-child(10) { width: 4%; }
+    .journal-table th:nth-child(8) { width: 8%; }
+    .journal-table th:nth-child(9) { width: 10%; }
+    .journal-table th:nth-child(10) { width: 10%; }
+    .journal-table th:nth-child(11) { width: 4%; }
     .journal-table td { padding: 0.35rem 0.35rem; border: 1px solid var(--color-border); vertical-align: middle; word-break: break-word; overflow-wrap: break-word; font-size: var(--font-sm); }
-    .journal-table td:nth-child(1) { font-weight: 600; white-space: nowrap; }
-    .journal-table td:nth-child(2) { white-space: nowrap; }
-    .journal-table td:nth-child(3), .journal-table td:nth-child(4), .journal-table td:nth-child(5) { vertical-align: top; white-space: normal; }
-    .journal-table td:nth-child(6), .journal-table td:nth-child(7), .journal-table td:nth-child(8), .journal-table td:nth-child(9) { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
-    .journal-table th:nth-child(6), .journal-table th:nth-child(7), .journal-table th:nth-child(8), .journal-table th:nth-child(9) { text-align: right; }
+    .journal-table td:nth-child(1), .journal-table td:nth-child(2), .journal-table td:nth-child(4), .journal-table td:nth-child(5), .journal-table td:nth-child(6) { text-align: left; vertical-align: middle; white-space: normal; overflow-wrap: break-word; word-break: break-word; }
+    .journal-table td:nth-child(3) { text-align: left; vertical-align: middle; white-space: nowrap; }
+    .journal-table td:nth-child(7), .journal-table td:nth-child(8), .journal-table td:nth-child(9), .journal-table td:nth-child(10) { text-align: right; vertical-align: middle; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .journal-table th:nth-child(7), .journal-table th:nth-child(8), .journal-table th:nth-child(9), .journal-table th:nth-child(10) { text-align: right; }
     .allocation-bar { display: flex; gap: 1rem; justify-content: flex-end; align-items: center; margin-top: 0.6rem; padding: 0.5rem 0.75rem; background: #F8FAFC; border: 1px solid var(--color-border); border-radius: var(--radius-sm); font-size: var(--font-sm); font-weight: 600; flex-wrap: wrap; }
     .allocation-bar .total-label { color: var(--color-text-secondary); font-weight: 500; }
     .allocation-bar .total-value { color: var(--color-primary); min-width: 120px; text-align: right; }
@@ -315,6 +314,7 @@
               <thead>
                 <tr>
                   <th>No SJ</th>
+                  <th>No. PHS CPA</th>
                   <th>Tgl SJ</th>
                   <th>Pemesan</th>
                   <th>Nama Tujuan</th>
@@ -478,6 +478,33 @@
     var dd = String(d.getDate()); while (dd.length < 2) dd = "0" + dd;
     var mm = String(d.getMonth() + 1); while (mm.length < 2) mm = "0" + mm;
     return d.getFullYear() + '-' + mm + '-' + dd;
+  }
+
+  function biayaTanggalFocus(el) {
+    if (el.readOnly || el.disabled) return;
+    var v = String(el.value || '').trim();
+    el.dataset.prev = v;
+    el.type = 'date';
+    if (v) {
+      var m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+      if (m) el.value = m[3] + '-' + (m[2].length === 1 ? '0' : '') + m[2] + '-' + (m[1].length === 1 ? '0' : '') + m[1];
+    }
+  }
+
+  function formatTanggalInput(el) {
+    if (el.type !== 'date') return;
+    var v = el.value;
+    el.type = 'text';
+    if (v) {
+      var p = v.split('-');
+      if (p.length === 3 && p[0].length === 4) {
+        el.value = p[2] + '/' + p[1] + '/' + p[0];
+      } else {
+        el.value = el.dataset.prev || v;
+      }
+    } else {
+      el.value = el.dataset.prev || '';
+    }
   }
 
   function cleanNumberInput(el) {
@@ -684,7 +711,8 @@
     var tr = document.createElement('tr');
     var ro = formReadOnly;
     tr.innerHTML =
-      '<td><input type="date" class="app-input biaya-tanggal" value="' + esc(data.tanggal || '') + '"' + (ro ? ' readonly' : '') + '></td>' +
+      '<td><input type="text" class="app-input biaya-tanggal" value="' + esc(data.tanggal || '') + '" placeholder="dd/MM/yyyy"' +
+        (ro ? ' readonly' : ' onfocus="biayaTanggalFocus(this)" onblur="formatTanggalInput(this)"') + '></td>' +
       '<td><textarea class="app-input biaya-keterangan" rows="1" placeholder="Keterangan biaya..."' + (ro ? ' readonly' : ' oninput="autoResizeTextarea(this)"') + '>' + esc(data.keterangan || '') + '</textarea></td>' +
       '<td><select class="app-input biaya-tipe"' + (ro ? ' disabled' : '') + '>' + tipeOptions(data.tipe || 'Uang Makan') + '</select></td>' +
       '<td><input type="text" inputmode="decimal" class="app-input biaya-jumlah" value="' + (Number(data.jumlah) > 0 ? formatCurrency(Number(data.jumlah)) : '') + '" placeholder="0"' +
@@ -891,8 +919,8 @@
     tr.dataset.phs = p.nomorPHS || '';
 
     tr.innerHTML =
-      '<td><strong>' + esc(p.nomorSuratJalan) + '</strong>' +
-        (tr.dataset.phs ? '<div class="sj-phs-sub">PHS: ' + esc(tr.dataset.phs) + '</div>' : '') + '</td>' +
+      '<td>' + esc(p.nomorSuratJalan) + '</td>' +
+      '<td>' + esc(tr.dataset.phs || '') + '</td>' +
       '<td>' + formatTanggal(p.tanggalSuratJalan) + '</td>' +
       '<td>' + esc(p.pemesan || '-') + '</td>' +
       '<td>' + esc(p.namaTujuan || '-') + '</td>' +
