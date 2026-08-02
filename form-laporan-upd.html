@@ -43,15 +43,6 @@
     .autocomplete-item .ac-sub { font-size: 12px; color: var(--color-text-secondary); }
 
     /* INFORMASI PENGAJUAN EUPD - TABEL (sama dengan Summary Biaya) */
-    .info-table { table-layout: fixed; width: 100%; }
-    .info-table th { white-space: normal; padding: 0.45rem 0.35rem; }
-    .info-table td { white-space: normal; overflow-wrap: break-word; word-break: break-word; padding: 0.45rem 0.35rem; }
-    .info-biaya-table { font-size: 12px; }
-    .info-biaya-table th { font-size: 10.5px; }
-    .info-biaya-table td { text-align: right !important; }
-    .info-biaya-table td:first-child { text-align: right !important; }
-    .info-ident-table th, .info-ident-table td { text-align: left !important; vertical-align: middle; }
-    .info-ident-wrap { margin-top: 0.75rem; }
 
     /* SECTION 3 - TABEL BIAYA AKTUAL */
     .biaya-table { width: 100%; border-collapse: collapse; font-size: var(--font-sm); min-width: 0; table-layout: fixed; }
@@ -116,6 +107,16 @@
     .summary-table td { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
     .summary-table .sum-label { font-weight: 500; color: var(--color-text-secondary); }
     .summary-table .sum-total { background: #F8FAFC; color: var(--color-primary); }
+
+    /* INFORMASI PENGAJUAN EUPD - TABEL (override Summary Biaya: wrap + align middle) */
+    .info-table { table-layout: fixed; width: 100%; }
+    .info-table th, .info-table td { white-space: normal; overflow-wrap: break-word; word-break: break-word; vertical-align: middle; padding: 0.45rem 0.35rem; }
+    .info-biaya-table { font-size: 12px; }
+    .info-biaya-table th { font-size: 10.5px; }
+    .info-biaya-table td { text-align: right !important; }
+    .info-biaya-table td:first-child { text-align: right !important; }
+    .info-ident-table th, .info-ident-table td { text-align: left !important; }
+    .info-ident-wrap { margin-top: 0.75rem; }
 
     /* SECTION 5 - PENYELESAIAN DANA */
     .pen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
