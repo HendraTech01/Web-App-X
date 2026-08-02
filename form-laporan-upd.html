@@ -63,8 +63,6 @@
     .biaya-table input.app-input:focus, .biaya-table select.app-input:focus, .biaya-table textarea.app-input:focus { outline: none; border: none; background: transparent; box-shadow: 0 0 0 2px var(--color-primary-light); }
     .biaya-table .biaya-tanggal { font-size: 12px; color: var(--color-text-primary) !important; background: transparent; }
     .biaya-table .biaya-tanggal::placeholder, .biaya-table .biaya-tanggal::-webkit-input-placeholder { color: var(--color-text-primary) !important; opacity: 1 !important; }
-    .biaya-table .biaya-tanggal-td { position: relative; }
-    .biaya-table .biaya-tanggal-date { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; border: none; padding: 0; margin: 0; background: transparent; }
     .biaya-table .biaya-tanggal::-webkit-datetime-edit, .biaya-table .biaya-tanggal::-webkit-datetime-edit-fields-wrapper, .biaya-table .biaya-tanggal::-webkit-datetime-edit-month-field, .biaya-table .biaya-tanggal::-webkit-datetime-edit-day-field, .biaya-table .biaya-tanggal::-webkit-datetime-edit-year-field { color: var(--color-text-primary) !important; }
     .biaya-table .biaya-jumlah { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
     .biaya-table textarea.app-input.biaya-keterangan { display: block; width: 100%; min-width: 0; min-height: 34px; max-height: 120px; padding: 0.45rem 0.5rem; border: none; background: transparent; border-radius: 0; box-shadow: none; resize: none; overflow: hidden; white-space: pre-wrap; overflow-wrap: break-word; word-break: break-word; font-family: inherit; font-size: var(--font-sm); line-height: 1.4; vertical-align: middle; }
@@ -487,28 +485,14 @@
     return d.getFullYear() + '-' + mm + '-' + dd;
   }
 
-  function isoToBiayaTanggal(v) {
+  function toISOInput(v) {
     if (!v) return '';
-    var m = String(v).match(/^(\d{4})-(\d{2})-(\d{2})/);
-    if (m) return m[3] + '/' + m[2] + '/' + m[1];
-    return String(v);
-  }
-
-  function syncBiayaTanggalDate(di, tg) {
-    var v = String(tg.value || '').trim();
-    var m = v.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
-    if (m) di.value = m[3] + '-' + (m[2].length === 1 ? '0' : '') + m[2] + '-' + (m[1].length === 1 ? '0' : '') + m[1];
-    else di.value = '';
-  }
-
-  function setupBiayaTanggalPicker(td, tg) {
-    var di = document.createElement('input');
-    di.type = 'date';
-    di.className = 'biaya-tanggal-date';
-    di.tabIndex = -1;
-    di.addEventListener('focus', function() { syncBiayaTanggalDate(di, tg); });
-    di.addEventListener('change', function() { tg.value = isoToBiayaTanggal(di.value); });
-    td.appendChild(di);
+    var s = String(v).trim();
+    var m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (m) return m[3] + '-' + (m[2].length === 1 ? '0' : '') + m[2] + '-' + (m[1].length === 1 ? '0' : '') + m[1];
+    m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (m) return m[1] + '-' + m[2] + '-' + m[3];
+    return '';
   }
 
   function cleanNumberInput(el) {
@@ -715,15 +699,13 @@
     var tr = document.createElement('tr');
     var ro = formReadOnly;
     tr.innerHTML =
-      '<td class="biaya-tanggal-td"><input type="text" class="app-input biaya-tanggal" value="' + esc(data.tanggal || '') + '" placeholder="dd/mm/yyyy"' + (ro ? ' readonly' : '') + '></td>' +
+      '<td><input type="date" class="app-input biaya-tanggal" value="' + esc(toISOInput(data.tanggal || '')) + '"' + (ro ? ' readonly' : '') + '></td>' +
       '<td><textarea class="app-input biaya-keterangan" rows="1" placeholder="Keterangan biaya..."' + (ro ? ' readonly' : ' oninput="autoResizeTextarea(this)"') + '>' + esc(data.keterangan || '') + '</textarea></td>' +
       '<td><select class="app-input biaya-tipe"' + (ro ? ' disabled' : '') + '>' + tipeOptions(data.tipe || 'Uang Makan') + '</select></td>' +
       '<td><input type="text" inputmode="decimal" class="app-input biaya-jumlah" value="' + (Number(data.jumlah) > 0 ? formatCurrency(Number(data.jumlah)) : '') + '" placeholder="0"' +
         (ro ? ' readonly' : ' oninput="cleanNumberInput(this);recalcAll()" onfocus="removeDecimalFormat(this)" onblur="formatDecimalDisplay(this);recalcAll()"') + '></td>' +
       '<td class="td-remove">' + (ro ? '' : '<button type="button" class="btn-journal-remove" onclick="removeBiayaRow(this)">x</button>') + '</td>';
     tbody.appendChild(tr);
-    var tdTg = tr.querySelector('.biaya-tanggal-td');
-    if (tdTg && !ro) setupBiayaTanggalPicker(tdTg, tdTg.querySelector('.biaya-tanggal'));
     var ta = tr.querySelector('.biaya-keterangan');
     if (ta) autoResizeTextarea(ta);
   }
@@ -1109,7 +1091,7 @@
     if (d.noEUPD) await selectEUPDRow(d.noEUPD);
 
     (d.biaya || []).forEach(function(b) {
-      addBiayaRow({ tanggal: b.tanggal || isoToBiayaTanggal(d.tanggalPD) || '', keterangan: b.keterangan || '', tipe: b.tipe, jumlah: b.jumlah });
+      addBiayaRow({ tanggal: b.tanggal || toISOInput(d.tanggalPD) || '', keterangan: b.keterangan || '', tipe: b.tipe, jumlah: b.jumlah });
     });
     (d.products || []).forEach(function(p) {
       addProductRow(p, isView);
