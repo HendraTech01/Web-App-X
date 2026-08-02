@@ -342,7 +342,7 @@
       }
       document.getElementById("page-content").style.display = "block";
 
-      var res = await fetch(GAS_URL + '?action=getLaporanUPDPage');
+      var res = await fetch(GAS_URL + '?action=getLaporanUPDPage&username=' + encodeURIComponent(getCurrentUser()));
       var json = await res.json();
       if (json.status === 'success') {
         unreportedData = json.unreported || [];
