@@ -47,7 +47,8 @@
     .info-table td { white-space: nowrap; }
     .info-biaya-table td { text-align: right !important; }
     .info-biaya-table td:first-child { text-align: right !important; }
-    .info-ident-table th, .info-ident-table td { text-align: left !important; }
+    .info-ident-table th, .info-ident-table td { text-align: left !important; vertical-align: middle; }
+    .info-ident-table td { white-space: normal; overflow-wrap: break-word; word-break: break-word; }
     .info-ident-wrap { margin-top: 0.75rem; }
 
     /* SECTION 3 - TABEL BIAYA AKTUAL */
@@ -61,9 +62,7 @@
     .biaya-table input.app-input, .biaya-table select.app-input { height: 34px; padding: 0 0.5rem; border: none; background: transparent; border-radius: 0; box-shadow: none; width: 100%; box-sizing: border-box; font-size: var(--font-sm); }
     .biaya-table select.app-input { padding: 0 0.35rem; }
     .biaya-table input.app-input:focus, .biaya-table select.app-input:focus, .biaya-table textarea.app-input:focus { outline: none; border: none; background: transparent; box-shadow: 0 0 0 2px var(--color-primary-light); }
-    .biaya-table .biaya-tanggal { font-size: 12px; color: var(--color-text-primary) !important; background: transparent; }
-    .biaya-table .biaya-tanggal::placeholder, .biaya-table .biaya-tanggal::-webkit-input-placeholder { color: var(--color-text-primary) !important; opacity: 1 !important; }
-    .biaya-table .biaya-tanggal::-webkit-datetime-edit, .biaya-table .biaya-tanggal::-webkit-datetime-edit-fields-wrapper, .biaya-table .biaya-tanggal::-webkit-datetime-edit-month-field, .biaya-table .biaya-tanggal::-webkit-datetime-edit-day-field, .biaya-table .biaya-tanggal::-webkit-datetime-edit-year-field { color: var(--color-text-primary) !important; }
+    .biaya-table .biaya-tanggal { font-size: 12px; background: transparent; }
     .biaya-table .biaya-jumlah { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
     .biaya-table textarea.app-input.biaya-keterangan { display: block; width: 100%; min-width: 0; min-height: 34px; max-height: 120px; padding: 0.45rem 0.5rem; border: none; background: transparent; border-radius: 0; box-shadow: none; resize: none; overflow: hidden; white-space: pre-wrap; overflow-wrap: break-word; word-break: break-word; font-family: inherit; font-size: var(--font-sm); line-height: 1.4; vertical-align: middle; }
     .td-remove { text-align: center; width: 34px; }
@@ -232,13 +231,17 @@
             <table class="summary-table info-table info-ident-table">
               <thead>
                 <tr>
+                  <th>Warehouse Asal</th>
                   <th>Nama Driver</th>
+                  <th>Nomor Kendaraan</th>
                   <th>Nama Tujuan</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
+                  <td id="info-warehouse">-</td>
                   <td id="info-driver">-</td>
+                  <td id="info-kendaraan">-</td>
                   <td id="info-tujuan">-</td>
                 </tr>
               </tbody>
@@ -282,7 +285,7 @@
             <table class="biaya-table">
               <thead>
                 <tr>
-                  <th>Tanggal</th>
+                  <th>Tanggal PD</th>
                   <th>Keterangan</th>
                   <th>Tipe Biaya</th>
                   <th style="text-align:right;">Jumlah Biaya</th>
@@ -583,7 +586,9 @@
     var items = eupdList.filter(function(it) {
       if (!q) return true;
       return String(it.noPengajuan || "").toLowerCase().indexOf(q) !== -1 ||
+             String(it.warehouseAsal || "").toLowerCase().indexOf(q) !== -1 ||
              String(it.namaDriver || "").toLowerCase().indexOf(q) !== -1 ||
+             String(it.nomorKendaraan || "").toLowerCase().indexOf(q) !== -1 ||
              String(it.namaTujuan || "").toLowerCase().indexOf(q) !== -1;
     });
     listEl.innerHTML = '';
@@ -592,7 +597,7 @@
       var div = document.createElement('div');
       div.className = 'autocomplete-item';
       div.innerHTML = '<div class="ac-main">' + esc(it.noPengajuan) + '</div>' +
-        '<div class="ac-sub">' + esc(it.namaDriver || '-') + ' · ' + esc(it.namaTujuan || '-') + '</div>';
+        '<div class="ac-sub">' + esc(it.warehouseAsal || '-') + ' · ' + esc(it.namaDriver || '-') + ' · ' + esc(it.nomorKendaraan || '-') + ' · ' + esc(it.namaTujuan || '-') + '</div>';
       div.onclick = function() {
         inputEl.value = it.noPengajuan;
         listEl.style.display = 'none';
@@ -655,7 +660,9 @@
 
   function clearInfoCard() {
     document.getElementById('tanggalPD').value = '';
+    document.getElementById('info-warehouse').innerText = '-';
     document.getElementById('info-driver').innerText = '-';
+    document.getElementById('info-kendaraan').innerText = '-';
     document.getElementById('info-tujuan').innerText = '-';
     setInfoValue('info-uang-makan', 0);
     setInfoValue('info-bbm', 0);
@@ -668,7 +675,9 @@
 
   function populateInfoCard() {
     if (!eupdInfo) return;
+    document.getElementById('info-warehouse').innerText = eupdInfo.warehouseAsal || '-';
     document.getElementById('info-driver').innerText = eupdInfo.namaDriver || '-';
+    document.getElementById('info-kendaraan').innerText = eupdInfo.nomorKendaraan || '-';
     document.getElementById('info-tujuan').innerText = eupdInfo.namaTujuan || '-';
     setInfoValue('info-uang-makan', eupdInfo.totalUangMakan);
     setInfoValue('info-bbm', eupdInfo.totalBBM);
