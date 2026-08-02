@@ -43,12 +43,14 @@
     .autocomplete-item .ac-sub { font-size: 12px; color: var(--color-text-secondary); }
 
     /* INFORMASI PENGAJUAN EUPD - TABEL (sama dengan Summary Biaya) */
-    .info-table th { white-space: normal; }
-    .info-table td { white-space: nowrap; }
+    .info-table { table-layout: fixed; width: 100%; }
+    .info-table th { white-space: normal; padding: 0.45rem 0.35rem; }
+    .info-table td { white-space: normal; overflow-wrap: break-word; word-break: break-word; padding: 0.45rem 0.35rem; }
+    .info-biaya-table { font-size: 12px; }
+    .info-biaya-table th { font-size: 10.5px; }
     .info-biaya-table td { text-align: right !important; }
     .info-biaya-table td:first-child { text-align: right !important; }
     .info-ident-table th, .info-ident-table td { text-align: left !important; vertical-align: middle; }
-    .info-ident-table td { white-space: normal; overflow-wrap: break-word; word-break: break-word; }
     .info-ident-wrap { margin-top: 0.75rem; }
 
     /* SECTION 3 - TABEL BIAYA AKTUAL */
