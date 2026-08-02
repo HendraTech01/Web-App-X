@@ -131,7 +131,7 @@
           <div class="filter-bar" style="border:none;border-radius:0;box-shadow:none;margin-bottom:0;">
             <div class="app-input-group" style="flex:1 1 auto;min-width:200px;max-width:none;">
               <label>Cari</label>
-              <input type="text" id="search-unreported" class="app-input" placeholder="Cari No Pengajuan, Driver, atau Tujuan..." oninput="applyUnreportedFilters()">
+              <input type="text" id="search-unreported" class="app-input" placeholder="Cari No Pengajuan, Warehouse, Driver, atau Tujuan..." oninput="applyUnreportedFilters()">
             </div>
           </div>
           <div class="table-scroll">
@@ -139,6 +139,7 @@
               <thead>
                 <tr>
                   <th onclick="sortUnreported('noEUPD')">Nomor Pengajuan EUPD <span class="sort-arrow" id="sortu-noEUPD"></span></th>
+                  <th onclick="sortUnreported('warehouseAsal')">Warehouse Asal <span class="sort-arrow" id="sortu-warehouseAsal"></span></th>
                   <th onclick="sortUnreported('namaDriver')">Nama Driver <span class="sort-arrow" id="sortu-namaDriver"></span></th>
                   <th onclick="sortUnreported('namaTujuan')">Nama Tujuan <span class="sort-arrow" id="sortu-namaTujuan"></span></th>
                   <th onclick="sortUnreported('jadwalPulang')">Jadwal Pulang <span class="sort-arrow" id="sortu-jadwalPulang"></span></th>
@@ -175,7 +176,7 @@
             </div>
             <div class="app-input-group" style="flex:1 1 auto;min-width:160px;max-width:none;">
               <label>Cari</label>
-              <input type="text" id="search-reports" class="app-input" placeholder="Cari No Laporan, Driver, atau Tujuan..." oninput="applyReportFilters()">
+              <input type="text" id="search-reports" class="app-input" placeholder="Cari No Laporan, Warehouse, Driver, atau Tujuan..." oninput="applyReportFilters()">
             </div>
             <button type="button" class="filter-btn" onclick="applyReportFilters()">Filter</button>
             <button type="button" class="filter-reset" onclick="resetReportFilters()">Reset</button>
@@ -185,6 +186,7 @@
               <thead>
                 <tr>
                   <th onclick="sortReports('noLaporan')">Nomor Laporan UPD <span class="sort-arrow" id="sortr-noLaporan"></span></th>
+                  <th onclick="sortReports('warehouseAsal')">Warehouse Asal <span class="sort-arrow" id="sortr-warehouseAsal"></span></th>
                   <th onclick="sortReports('tanggalDokumen')">Tanggal Dokumen <span class="sort-arrow" id="sortr-tanggalDokumen"></span></th>
                   <th onclick="sortReports('namaDriver')">Nama Driver <span class="sort-arrow" id="sortr-namaDriver"></span></th>
                   <th onclick="sortReports('namaTujuan')">Nama Tujuan <span class="sort-arrow" id="sortr-namaTujuan"></span></th>
@@ -364,6 +366,7 @@
     filteredUnreported = unreportedData.filter(function(item) {
       if (!q) return true;
       return String(item.noEUPD || "").toLowerCase().indexOf(q) !== -1 ||
+             String(item.warehouseAsal || "").toLowerCase().indexOf(q) !== -1 ||
              String(item.namaDriver || "").toLowerCase().indexOf(q) !== -1 ||
              String(item.namaTujuan || "").toLowerCase().indexOf(q) !== -1;
     });
@@ -436,6 +439,7 @@
       var tr = document.createElement('tr');
       tr.innerHTML =
         '<td><strong style="color:var(--color-primary);">' + esc(item.noEUPD) + '</strong></td>' +
+        '<td>' + esc(item.warehouseAsal || '-') + '</td>' +
         '<td>' + esc(item.namaDriver || '-') + '</td>' +
         '<td>' + esc(item.namaTujuan || '-') + '</td>' +
         '<td>' + formatTanggal(item.jadwalPulang) + '</td>' +
@@ -483,6 +487,7 @@
     filteredReports = reportsData.filter(function(item) {
       if (q) {
         var hay = String(item.noLaporan || "").toLowerCase() + ' ' +
+                  String(item.warehouseAsal || "").toLowerCase() + ' ' +
                   String(item.namaDriver || "").toLowerCase() + ' ' +
                   String(item.namaTujuan || "").toLowerCase();
         if (hay.indexOf(q) === -1) return false;
@@ -587,6 +592,7 @@
       var tr = document.createElement('tr');
       tr.innerHTML =
         '<td><strong style="color:var(--color-primary);">' + esc(rawNo) + '</strong></td>' +
+        '<td>' + esc(item.warehouseAsal || '-') + '</td>' +
         '<td>' + formatTanggal(item.tanggalDokumen) + '</td>' +
         '<td>' + esc(item.namaDriver || '-') + '</td>' +
         '<td>' + esc(item.namaTujuan || '-') + '</td>' +
