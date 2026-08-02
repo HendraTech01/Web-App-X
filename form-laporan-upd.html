@@ -62,6 +62,7 @@
     .biaya-table select.app-input { padding: 0 0.35rem; }
     .biaya-table input.app-input:focus, .biaya-table select.app-input:focus, .biaya-table textarea.app-input:focus { outline: none; border: none; background: transparent; box-shadow: 0 0 0 2px var(--color-primary-light); }
     .biaya-table .biaya-tanggal { font-size: 12px; color: var(--color-text-primary) !important; background: transparent; }
+    .biaya-table .biaya-tanggal::placeholder, .biaya-table .biaya-tanggal::-webkit-input-placeholder { color: var(--color-text-primary) !important; opacity: 1 !important; }
     .biaya-table .biaya-tanggal::-webkit-datetime-edit, .biaya-table .biaya-tanggal::-webkit-datetime-edit-fields-wrapper, .biaya-table .biaya-tanggal::-webkit-datetime-edit-month-field, .biaya-table .biaya-tanggal::-webkit-datetime-edit-day-field, .biaya-table .biaya-tanggal::-webkit-datetime-edit-year-field { color: var(--color-text-primary) !important; }
     .biaya-table .biaya-jumlah { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
     .biaya-table textarea.app-input.biaya-keterangan { display: block; width: 100%; min-width: 0; min-height: 34px; max-height: 120px; padding: 0.45rem 0.5rem; border: none; background: transparent; border-radius: 0; box-shadow: none; resize: none; overflow: hidden; white-space: pre-wrap; overflow-wrap: break-word; word-break: break-word; font-family: inherit; font-size: var(--font-sm); line-height: 1.4; vertical-align: middle; }
@@ -715,7 +716,7 @@
     var tr = document.createElement('tr');
     var ro = formReadOnly;
     tr.innerHTML =
-      '<td><input type="text" class="app-input biaya-tanggal" value="' + esc(data.tanggal || '') + '"' +
+      '<td><input type="text" class="app-input biaya-tanggal" value="' + esc(data.tanggal || '') + '" placeholder="dd/mm/yyyy"' +
         (ro ? ' readonly' : ' onfocus="biayaTanggalFocus(this)" onblur="formatTanggalInput(this)"') + '></td>' +
       '<td><textarea class="app-input biaya-keterangan" rows="1" placeholder="Keterangan biaya..."' + (ro ? ' readonly' : ' oninput="autoResizeTextarea(this)"') + '>' + esc(data.keterangan || '') + '</textarea></td>' +
       '<td><select class="app-input biaya-tipe"' + (ro ? ' disabled' : '') + '>' + tipeOptions(data.tipe || 'Uang Makan') + '</select></td>' +
